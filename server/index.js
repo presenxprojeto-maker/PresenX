@@ -471,8 +471,11 @@ async function sincronizarBancoComFirebase() {
   }
 }
 
-// Inicialização e schema das tabelas
-db.serialize(async () => {
+// ======================================================
+// INICIALIZAÇÃO E SCHEMA DAS TABELAS (EM SEGUNDO PLANO)
+// ======================================================
+async function inicializarBancoESincronizacao() {
+  try {
   db.run(`
     CREATE TABLE IF NOT EXISTS pavilhoes (
       id TEXT PRIMARY KEY,
@@ -688,7 +691,10 @@ db.serialize(async () => {
   if (firebaseDb) {
     await sincronizarBancoComFirebase();
   }
-});
+  } catch (err) {
+    console.warn("Aviso na inicialização do banco:", err.message);
+  }
+}
 
 // ======================================================
 // MIDDLEWARES E CONFIGURAÇÕES
@@ -2439,12 +2445,21 @@ app.post("/api/backup/sincronizar-nuvem", authAdmin, async (req, res) => {
 });
 
 // ======================================================
-// INICIALIZAÇÃO DO SERVIDOR
+// INICIALIZAÇÃO DO SERVIDOR (PORT BINDING IMEDIATO)
 // ======================================================
-app.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`=========================================`);
-  console.log(` PresenX Servidor Ativo: http://localhost:${PORT}`);
+  console.log(` PresenX Servidor Ativo: http://0.0.0.0:${PORT}`);
   console.log(` Banco de Dados SQLite Unificado Conectado`);
   console.log(` Criptografia de Senhas Segura Ativa`);
   console.log(`=========================================`);
+
+  // Executa inicialização das tabelas e sincronização em segundo plano (sem travar a porta)
+  inicializarBancoESincronizacao().catch(err => {
+    console.warn("Aviso na inicialização do banco:", err.message);
+  });
+});
+
+server.on("error", (err) => {
+  console.error("Erro no servidor HTTP:", err.message);
 });
