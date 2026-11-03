@@ -44,7 +44,7 @@ unsigned long lastWifiAttempt = 0;
 const unsigned long WIFI_RETRY_INTERVAL = 10000;
 
 unsigned long lastPingTime = 0;
-const unsigned long PING_INTERVAL = 30000; // Envia heartbeat a cada 30 segundos
+const unsigned long PING_INTERVAL = 10000; // Envia heartbeat a cada 10 segundos para telemetria em tempo real
 
 // ====================================================================
 // FUNÇÕES DE ÁUDIO / BUZZER
@@ -282,6 +282,13 @@ void setup() {
   // Inicializa SPI e leitor RFID RC522
   SPI.begin(18, 19, 23, SS_PIN);
   rfid.PCD_Init();
+  byte rfidVer = rfid.PCD_ReadRegister(MFRC522::VersionReg);
+  Serial.printf("[RFID] RC522 Versao do Firmware: 0x%02X\n", rfidVer);
+  if (rfidVer == 0x00 || rfidVer == 0xFF) {
+    Serial.println("[RFID] AVISO: Leitor RC522 nao detectado ou cabos desconectados!");
+  } else {
+    Serial.println("[RFID] Leitor RC522 pronto e operacional!");
+  }
 
   // Inicializa display LCD I2C
   Wire.begin(21, 22); // SDA=21, SCL=22 no ESP32

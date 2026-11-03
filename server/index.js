@@ -1554,11 +1554,11 @@ app.get("/api/leitores", async (req, res) => {
   try {
     const rows = await allAsync("SELECT * FROM leitores_rfid ORDER BY nome ASC");
     const agora = Date.now();
-    const LIMITE_OFFLINE_MS = 90 * 1000; // 90s sem ping = offline
+    const LIMITE_OFFLINE_SEGUNDOS = 25; // 25s sem ping = offline (ESP envia a cada 10s)
 
     const leitores = rows.map(r => {
       const diffSeg = r.ultimo_ping ? Math.max(0, Math.floor((agora - r.ultimo_ping) / 1000)) : 999999;
-      const online = diffSeg < 90 && r.ultimo_ping > 0;
+      const online = diffSeg <= LIMITE_OFFLINE_SEGUNDOS && r.ultimo_ping > 0;
       let tempoTexto = "nunca";
       if (r.ultimo_ping > 0) {
         if (diffSeg < 60) tempoTexto = `há ${diffSeg}s`;

@@ -932,7 +932,7 @@ async function carregarMonitoramentoLeitores() {
         const off = offlineLeitores[0];
         const tempo = off?.tempo_decorrido || "offline";
         el.textLeitorHeader.textContent = tempo !== "offline" && tempo !== "nunca"
-          ? `Leitor Portaria: sem sinal ${tempo}`
+          ? `Leitor Portaria: sem sinal (${tempo})`
           : "Leitor Portaria: sem sinal";
       }
     }
@@ -947,7 +947,7 @@ async function carregarMonitoramentoLeitores() {
         const off = offlineLeitores[0];
         const tempo = off?.tempo_decorrido || "offline";
         el.textLeitorSidebar.textContent = tempo !== "offline" && tempo !== "nunca"
-          ? `Leitor: sem sinal há ${tempo}`
+          ? `Leitor: sem sinal (${tempo})`
           : "Leitor: sem sinal";
       }
     }
