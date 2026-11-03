@@ -480,6 +480,8 @@ function setConnBad() {
 // NAVEGAÇÃO ENTRE ABAS
 // ======================================================
 function aplicarNavegacao(secaoAlvo) {
+  fecharMenuMobile();
+
   el.navBtns.forEach(b => {
     if (b.dataset.section === secaoAlvo) b.classList.add("active");
     else b.classList.remove("active");
@@ -658,6 +660,11 @@ function aplicarNavegacao(secaoAlvo) {
   // Suporte global à tecla ESC para fechar modais ou limpar busca
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      // 0. Menu drawer mobile
+      if (document.body.classList.contains("mobile-drawer-open")) {
+        fecharMenuMobile();
+        return;
+      }
       // 1. Modal de confirmação
       if (el.confirmModal && el.confirmModal.classList.contains("active")) {
         if (el.confirmCancel) el.confirmCancel.click();
@@ -695,7 +702,60 @@ function aplicarNavegacao(secaoAlvo) {
 
 }
 
+// ======================================================
+// CONTROLE DO MENU DRAWER MOBILE
+// ======================================================
+function abrirMenuMobile() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebarOverlayMobile");
+  if (sidebar) sidebar.classList.add("open-mobile");
+  if (overlay) overlay.classList.add("active");
+  document.body.classList.add("mobile-drawer-open");
+}
+
+function fecharMenuMobile() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebarOverlayMobile");
+  if (sidebar) sidebar.classList.remove("open-mobile");
+  if (overlay) overlay.classList.remove("active");
+  document.body.classList.remove("mobile-drawer-open");
+}
+
+function initMenuMobile() {
+  const btnOpen = document.getElementById("btnOpenMobileMenu");
+  const btnClose = document.getElementById("btnCloseSidebarMobile");
+  const overlay = document.getElementById("sidebarOverlayMobile");
+
+  if (btnOpen) {
+    btnOpen.addEventListener("click", abrirMenuMobile);
+  }
+  if (btnClose) {
+    btnClose.addEventListener("click", fecharMenuMobile);
+  }
+  if (overlay) {
+    overlay.addEventListener("click", fecharMenuMobile);
+  }
+
+  // Permite fechar com gesto de deslizar para a esquerda
+  let touchStartX = 0;
+  const sidebar = document.querySelector(".sidebar");
+  if (sidebar) {
+    sidebar.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].clientX;
+    }, { passive: true });
+
+    sidebar.addEventListener("touchend", (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      if (touchStartX - touchEndX > 50) {
+        fecharMenuMobile();
+      }
+    }, { passive: true });
+  }
+}
+
 function initNavegacao() {
+  initMenuMobile();
+
   el.navBtns.forEach(botao => {
     botao.addEventListener("click", () => {
       aplicarNavegacao(botao.dataset.section);

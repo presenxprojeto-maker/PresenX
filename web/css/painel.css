@@ -1206,42 +1206,216 @@ body.hide-cursor, body.hide-cursor * {
   letter-spacing: 0.2px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   html, body {
-    height: auto;
-    min-height: 100vh;
-    overflow: auto;
-    cursor: auto;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    cursor: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
-  body { padding: 10px; }
+  body {
+    padding: 10px 10px 24px 10px !important;
+  }
 
-  .painel-root { gap: 10px; height: auto; }
+  .painel-root {
+    gap: 12px !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
 
   .painel-header {
-    padding: 14px 16px;
-    border-radius: var(--r-md);
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    border-radius: var(--r-md) !important;
   }
 
-  .painel-header-logo   { width: 46px; height: 46px; font-size: 9px; }
-  .painel-header-titulo { font-size: 20px; }
-  .painel-header-hora   { font-size: 28px; }
+  .painel-header-marca {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
 
-  .painel-contexto-dia  { padding-right: 0; border-right: none; }
-  .painel-contexto-esq  { flex-wrap: wrap; }
-  .painel-legenda       { flex-wrap: wrap; gap: 10px; }
+  .painel-header-logo {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 9px !important;
+  }
 
-  .painel-lateral       { flex-direction: column; }
+  .painel-header-titulo {
+    font-size: 20px !important;
+  }
+
+  .painel-pavilhao-seletor {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    background: #f8fafc;
+    border: 1px solid rgba(16, 26, 74, 0.08);
+    padding: 6px 12px !important;
+    border-radius: 8px;
+    margin: 0 !important;
+  }
+
+  .painel-header-datahora {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding-top: 6px;
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .painel-header-hora {
+    font-size: 26px !important;
+  }
+
+  .painel-header-data {
+    font-size: 13px !important;
+  }
+
+  .painel-contexto {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+    border-radius: var(--r-md) !important;
+  }
+
+  .painel-contexto-esq {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .painel-contexto-dia {
+    padding-right: 0 !important;
+    border-right: none !important;
+    font-size: 15px !important;
+  }
+
+  .painel-chip {
+    padding: 5px 10px !important;
+    font-size: 11.5px !important;
+  }
+
+  .painel-legenda {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding-top: 8px;
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .legenda-item {
+    font-size: 12px !important;
+  }
+
+  .painel-corpo {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    flex: initial !important;
+    gap: 14px !important;
+  }
 
   .painel-grade-wrap {
-    padding: 12px;
-    height: auto;
-    overflow: auto;
+    padding: 14px 12px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    flex: initial !important;
+    border-radius: var(--r-lg) !important;
   }
 
-  .painel-grade  { gap: 10px; }
-  .painel-quadro { padding: 12px 12px 12px 16px; }
-  .painel-turma  { font-size: 16px; }
+  .painel-grade {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    gap: 12px !important;
+    padding-right: 0 !important;
+  }
+
+  .painel-quadro {
+    padding: 14px 14px 14px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .painel-turma {
+    font-size: 18px !important;
+  }
+
+  .painel-valor {
+    font-size: 14.5px !important;
+  }
+
+  .painel-lateral {
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 12px !important;
+  }
+
+  .painel-lateral-bloco {
+    padding: 14px 12px !important;
+    border-radius: var(--r-md) !important;
+    max-height: 280px !important;
+  }
+
+  .painel-rodape {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 12px 0 6px 0 !important;
+    text-align: center !important;
+  }
+
+  .painel-rodape-info {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (min-width: 520px) and (max-width: 768px) {
+  .painel-grade {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .painel-header-hora {
+    font-size: 22px !important;
+  }
+  .painel-header-titulo {
+    font-size: 18px !important;
+  }
+  .painel-turma {
+    font-size: 16px !important;
+  }
+  .tela-selecao-titulo {
+    font-size: 26px !important;
+  }
+  .tela-selecao-pavilhao-overlay,
+  .modal-pavilhao-overlay {
+    padding: 18px 14px !important;
+  }
+  .btn-opcao-pavilhao {
+    padding: 0 12px !important;
+  }
 }
 
 /* Respeita preferência por menos movimento */

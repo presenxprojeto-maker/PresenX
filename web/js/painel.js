@@ -380,18 +380,19 @@ function render() {
     }
   }
 
+  const isMobile = window.innerWidth <= 768;
   const GAP = 14;
   const gradeH = el.painelGrade.clientHeight || 400;
   const rows = Math.max(1, Math.floor((gradeH + GAP) / (alturaCardEstimada + GAP)));
-  let capacidade = cols * rows;
+  let capacidade = isMobile ? lista.length : (cols * rows);
 
-  let totalPaginas = Math.max(1, Math.ceil(lista.length / capacidade));
+  let totalPaginas = isMobile ? 1 : Math.max(1, Math.ceil(lista.length / capacidade));
   ultimoTotalPaginasSalas = totalPaginas;
 
   if (contextoMudou) {
     paginaAtual = 0;
     ultimaChavePagina = chaveContexto;
-    agendarProximaPaginaSalas();
+    if (!isMobile) agendarProximaPaginaSalas();
   }
 
   const cardHtml = item => {
@@ -447,8 +448,8 @@ function render() {
     ultimoHtmlGrade = htmlPagina;
   }
 
-  // Autocorreção imediata se houver overflow
-  if (el.painelGrade.scrollHeight > el.painelGrade.clientHeight + 2 && capacidade > cols) {
+  // Autocorreção imediata se houver overflow (apenas modo TV/desktop)
+  if (!isMobile && el.painelGrade.scrollHeight > el.painelGrade.clientHeight + 2 && capacidade > cols) {
     capacidade -= cols;
     totalPaginas = Math.max(1, Math.ceil(lista.length / capacidade));
     ({ paginaExibida, html: htmlPagina } = montarPagina());
@@ -458,7 +459,7 @@ function render() {
 
   el.painelPagina.textContent = totalPaginas > 1
     ? `Mostrando salas ${paginaExibida * capacidade + 1}–${Math.min((paginaExibida + 1) * capacidade, lista.length)} de ${lista.length}`
-    : `${lista.length} sala(s) exibida(s)`;
+    : `${lista.length} sala(s) em aula`;
 
   atualizarDotsPaginacaoSalas(totalPaginas, paginaExibida);
   renderIcons();
@@ -618,6 +619,7 @@ function alternarPavilhaoCarrossel() {
 
 function agendarProximaPaginaSalas() {
   if (timerPaginaSalas) clearTimeout(timerPaginaSalas);
+  if (window.innerWidth <= 768) return; // No auto-scroll de páginas no mobile
   timerPaginaSalas = setTimeout(() => {
     if (ultimoTotalPaginasSalas > 1) {
       paginaAtual++;
