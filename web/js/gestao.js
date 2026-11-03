@@ -616,6 +616,19 @@ function aplicarNavegacao(secaoAlvo) {
     if (btnNovoEvento) btnNovoEvento.classList.remove("hidden");
     if (pageSubtitle) pageSubtitle.classList.add("hidden");
     renderListaEventos();
+  } else if (secaoAlvo === "usuarios") {
+    if (el.pageTitle) el.pageTitle.textContent = "Coordenadores";
+    if (telemetryHeader) telemetryHeader.classList.add("hidden");
+    if (sidebarTelemetry) sidebarTelemetry.classList.remove("hidden");
+    if (btnNovoProf) btnNovoProf.classList.add("hidden");
+    if (btnNovaDisc) btnNovaDisc.classList.add("hidden");
+    if (btnNovaTurma) btnNovaTurma.classList.add("hidden");
+    if (btnSalvarGrade) btnSalvarGrade.classList.add("hidden");
+    if (btnSalvarTurnos) btnSalvarTurnos.classList.add("hidden");
+    if (btnNovoAviso) btnNovoAviso.classList.add("hidden");
+    if (btnNovoEvento) btnNovoEvento.classList.add("hidden");
+    if (pageSubtitle) pageSubtitle.classList.add("hidden");
+    carregarCoordenadores();
   } else {
     if (telemetryHeader) telemetryHeader.classList.add("hidden");
     if (sidebarTelemetry) sidebarTelemetry.classList.remove("hidden");
@@ -2809,6 +2822,116 @@ async function excluirEvento(id) {
   }
 }
 
+// ======================================================
+// GESTÃO DE COORDENADORES / USUÁRIOS ADMINISTRATIVOS
+// ======================================================
+let coordenadoresLista = [];
+
+async function carregarCoordenadores() {
+  try {
+    const dados = await apiGet("/api/admin-usuarios");
+    coordenadoresLista = dados.usuarios || [];
+    renderListaCoordenadores();
+  } catch (e) {
+    console.warn("Erro ao carregar coordenadores:", e);
+  }
+}
+
+function renderListaCoordenadores() {
+  const tbody = document.getElementById("tbodyCoordenadores");
+  const counter = document.getElementById("totalCoordenadoresCounter");
+  const emptyState = document.getElementById("coordenadoresEmpty");
+  const searchInput = document.getElementById("searchCoordenadorInput");
+
+  if (!tbody) return;
+
+  const termo = (searchInput ? searchInput.value : "").trim().toLowerCase();
+  const filtrados = coordenadoresLista.filter(u => !termo || u.email.toLowerCase().includes(termo));
+
+  if (counter) counter.textContent = `${coordenadoresLista.length} cadastrados`;
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = "";
+    if (emptyState) emptyState.classList.remove("hidden");
+    return;
+  }
+  if (emptyState) emptyState.classList.add("hidden");
+
+  tbody.innerHTML = filtrados.map(u => {
+    const isMestre = u.email === "admin@presenx.com";
+    return `
+      <tr>
+        <td><strong>${escapeHtml(u.email)}</strong></td>
+        <td>
+          <span class="status-pill ${isMestre ? 'ativo' : 'inativo'}">
+            ${isMestre ? 'Administrador Geral' : 'Coordenador'}
+          </span>
+        </td>
+        <td class="col-acoes-prof">
+          ${isMestre ? '' : `
+            <button type="button" class="btn-action-delete" data-action="excluir-coordenador" data-id="${u.id}" data-email="${escapeHtml(u.email)}">
+              Excluir
+            </button>
+          `}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  renderIcons();
+}
+
+async function salvarCoordenador() {
+  const emailInput = document.getElementById("cadAdminEmail");
+  const senhaInput = document.getElementById("cadAdminSenha");
+  const btnSalvar = document.getElementById("btnSalvarCoordenador");
+  const msgBox = document.getElementById("msgCoordenador");
+
+  const email = (emailInput ? emailInput.value : "").trim().toLowerCase();
+  const senha = (senhaInput ? senhaInput.value : "").trim();
+
+  if (msgBox) msgBox.textContent = "";
+
+  if (!email || !senha) {
+    toast.warning("Preencha o e-mail e a senha inicial.");
+    return;
+  }
+  if (senha.length < 6) {
+    toast.warning("A senha deve conter no mínimo 6 caracteres.");
+    return;
+  }
+
+  await executarComLoading(btnSalvar, async () => {
+    try {
+      await apiSend("/api/admin-usuarios", "POST", { email, senha });
+      if (emailInput) emailInput.value = "";
+      if (senhaInput) senhaInput.value = "";
+      toast.success(`Acesso criado com sucesso para ${email}!`);
+      await carregarCoordenadores();
+    } catch (e) {
+      toast.error(e.message || "Erro ao criar coordenador.");
+    }
+  });
+}
+
+async function excluirCoordenador(id, email) {
+  const ok = await confirmarAcao({
+    titulo: "Remover coordenador",
+    mensagem: `Tem certeza que deseja remover o acesso de "${email}"?`,
+    textoConfirmar: "Remover",
+    tipo: "danger"
+  });
+  if (!ok) return;
+
+  try {
+    await apiSend(`/api/admin-usuarios/${id}`, "DELETE", {});
+    toast.success("Coordenador removido com sucesso.");
+    await carregarCoordenadores();
+  } catch (e) {
+    toast.error(e.message || "Erro ao remover coordenador.");
+  }
+}
+
 window.sair = function () {
   localStorage.removeItem("px_admin_token");
   window.location.href = "./login-gestao.html";
@@ -3079,6 +3202,22 @@ async function start() {
       } else if (acao === "excluir-evento") {
         excluirEvento(id);
       }
+    });
+  }
+
+  // Listeners de Coordenadores
+  const btnSalvarCoord = document.getElementById("btnSalvarCoordenador");
+  if (btnSalvarCoord) btnSalvarCoord.addEventListener("click", salvarCoordenador);
+
+  const searchCoordInput = document.getElementById("searchCoordenadorInput");
+  if (searchCoordInput) searchCoordInput.addEventListener("input", renderListaCoordenadores);
+
+  const tbodyCoord = document.getElementById("tbodyCoordenadores");
+  if (tbodyCoord) {
+    tbodyCoord.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action='excluir-coordenador']");
+      if (!btn) return;
+      excluirCoordenador(btn.dataset.id, btn.dataset.email);
     });
   }
 

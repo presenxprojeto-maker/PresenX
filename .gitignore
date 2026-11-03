@@ -3,13 +3,8 @@ node_modules/
 dist/
 .cache/
 
-# Banco de dados local e arquivos de lock SQLite
-*.db
+# Arquivos de lock SQLite
 *.db-journal
-*.sqlite
-*.sqlite3
-server/presenx.db
-server/presenx.db-journal
 
 # Credenciais, Contas de Serviço e Chaves Privadas
 serviceAccountKey.json

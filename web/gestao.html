@@ -65,6 +65,10 @@
         <button class="nav-btn" data-section="eventos">
           <span>Eventos</span>
         </button>
+
+        <button class="nav-btn" data-section="usuarios" id="navBtnUsuarios">
+          <span>Coordenadores</span>
+        </button>
       </nav>
     </div>
 
@@ -822,6 +826,66 @@
             </div>
 
             <div id="msgEvento" class="msg-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 9. COORDENADORES / USUÁRIOS SECTION -->
+      <section id="usuariosSection" class="page-section">
+
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: LISTA DE COORDENADORES -->
+          <div class="dash-card prof-lista-card">
+            <div class="prof-search-row">
+              <div class="form-field prof-search-field">
+                <label for="searchCoordenadorInput" class="form-label">Buscar</label>
+                <input id="searchCoordenadorInput" type="text" class="form-input" placeholder="E-mail do coordenador" />
+              </div>
+              <span id="totalCoordenadoresCounter" class="prof-counter">0 cadastrados</span>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="tabela-gestao">
+                <thead>
+                  <tr>
+                    <th>E-mail de Acesso</th>
+                    <th>Nível</th>
+                    <th class="col-acoes-prof"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyCoordenadores"></tbody>
+              </table>
+            </div>
+
+            <div id="coordenadoresEmpty" class="hidden empty-state">
+              <i data-lucide="shield-alert" class="empty-icon-svg"></i>
+              <h3>Nenhum coordenador encontrado</h3>
+            </div>
+            <div id="msgListaCoordenadores" class="msg-box"></div>
+          </div>
+
+          <!-- CARD DIREITA: FORMULÁRIO DE NOVO COORDENADOR -->
+          <div class="dash-card prof-form-card">
+            <div class="prof-form-header">
+              <h2 class="dash-card-title">Novo coordenador</h2>
+            </div>
+
+            <div class="form-field">
+              <label for="cadAdminEmail" class="form-label">E-mail institucional</label>
+              <input id="cadAdminEmail" type="email" class="form-input" placeholder="exemplo@cetep.edu.br" autocomplete="off" />
+            </div>
+
+            <div class="form-field">
+              <label for="cadAdminSenha" class="form-label">Senha inicial de acesso</label>
+              <input id="cadAdminSenha" type="password" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnSalvarCoordenador" type="button" class="btn-form-salvar">Adicionar acesso</button>
+            </div>
+
+            <div id="msgCoordenador" class="msg-box" style="margin-top:12px;"></div>
           </div>
         </div>
 

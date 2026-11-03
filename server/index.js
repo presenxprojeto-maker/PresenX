@@ -1464,6 +1464,72 @@ app.post("/api/alterar-senha", async (req, res) => {
 });
 
 // ======================================================
+// GESTÃO DE COORDENADORES / USUÁRIOS ADMINISTRATIVOS
+// ======================================================
+app.get("/api/admin-usuarios", authAdmin, async (req, res) => {
+  try {
+    const rows = await allAsync("SELECT id, email FROM admin_usuarios ORDER BY id ASC");
+    ok(res, { usuarios: rows });
+  } catch (err) {
+    fail(res, 500, "Erro ao listar coordenadores.");
+  }
+});
+
+app.post("/api/admin-usuarios", authAdmin, async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const senha = String(req.body.senha || "").trim();
+
+    if (!email || !senha) {
+      return fail(res, 400, "E-mail e senha são obrigatórios.");
+    }
+    if (senha.length < 6) {
+      return fail(res, 400, "A senha deve ter pelo menos 6 caracteres.");
+    }
+    if (!email.includes("@")) {
+      return fail(res, 400, "Informe um e-mail válido.");
+    }
+
+    const jaExiste = await getAsync("SELECT id FROM admin_usuarios WHERE email = ?", [email]);
+    if (jaExiste) {
+      return fail(res, 400, "Este e-mail já está cadastrado.");
+    }
+
+    const hash = hashPassword(senha);
+    await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)", [email, hash]);
+
+    ok(res, { mensagem: "Coordenador cadastrado com sucesso!" });
+  } catch (err) {
+    fail(res, 500, "Erro ao cadastrar coordenador.");
+  }
+});
+
+app.delete("/api/admin-usuarios/:id", authAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) return fail(res, 400, "ID inválido.");
+
+    const row = await getAsync("SELECT email FROM admin_usuarios WHERE id = ?", [id]);
+    if (!row) return fail(res, 404, "Usuário não encontrado.");
+
+    if (row.email === "admin@presenx.com") {
+      return fail(res, 400, "O usuário mestre admin@presenx.com não pode ser removido.");
+    }
+
+    if (req.adminUser && req.adminUser.email === row.email) {
+      return fail(res, 400, "Você não pode excluir sua própria conta enquanto estiver logado.");
+    }
+
+    await runAsync("DELETE FROM admin_usuarios WHERE id = ?", [id]);
+    await runAsync("DELETE FROM admin_sessoes WHERE email = ?", [row.email]);
+
+    ok(res, { mensagem: "Coordenador removido com sucesso." });
+  } catch (err) {
+    fail(res, 500, "Erro ao remover coordenador.");
+  }
+});
+
+// ======================================================
 // INICIALIZAÇÃO DO SERVIDOR
 // ======================================================
 app.listen(PORT, "0.0.0.0", () => {
