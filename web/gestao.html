@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PresenX | Administrativo</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./css/cetep.css" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+
+    <div>
+      <div class="brand">
+        <div class="title">
+          <span>Presen</span><svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X"><line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/><path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>
+        </div>
+        <div class="subtitle">Administrativo • CETEP / LNAB</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-section="dashboard">
+          <span>Painel</span>
+        </button>
+
+        <button class="nav-btn" data-section="professores">
+          <span>Professores</span>
+        </button>
+
+        <button class="nav-btn" data-section="disciplinas">
+          <span>Disciplinas</span>
+        </button>
+
+        <button class="nav-btn" data-section="turmas">
+          <span>Turmas e pavilhões</span>
+        </button>
+
+        <button class="nav-btn" data-section="grade">
+          <span>Grade horária</span>
+        </button>
+
+        <button class="nav-btn" data-section="turnos">
+          <span>Turnos e horários</span>
+        </button>
+
+        <button class="nav-btn" data-section="relatorios">
+          <span>Relatórios</span>
+        </button>
+
+        <button class="nav-btn" data-section="avisos">
+          <span>Avisos</span>
+        </button>
+
+        <button class="nav-btn" data-section="eventos">
+          <span>Eventos</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <div id="sidebarTelemetry" class="sidebar-telemetry hidden">
+        <div class="sidebar-telemetry-item">
+          <span class="telemetry-dot online" id="dot-status-sidebar"></span>
+          <span class="telemetry-label" id="text-status-sidebar">API local: online</span>
+        </div>
+        <div class="sidebar-telemetry-item">
+          <span class="telemetry-dot offline" id="dot-leitor-sidebar"></span>
+          <span class="telemetry-label" id="text-leitor-sidebar">Leitor: sem sinal</span>
+        </div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <a href="painel.html" target="_blank" class="sidebar-footer-link">
+        <span>Abrir painel público</span>
+        <span class="arrow-diagonal">↗</span>
+      </a>
+      <button onclick="sair()" class="sidebar-footer-logout" type="button">
+        <span>Sair</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <main class="main-content">
+
+    <div class="container">
+
+      <!-- HEADER -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title" id="pageTitle">Hoje</h1>
+          <div class="page-subtitle" id="pageSubtitle">Segunda-feira, 2 de novembro • atualizado às --:--:--</div>
+        </div>
+
+        <div class="header-right-actions">
+          <div class="header-telemetry" id="headerTelemetry">
+            <div class="telemetry-pill">
+              <span class="telemetry-dot online" id="dot-status"></span>
+              <span class="telemetry-label" id="text-status">API local: online</span>
+            </div>
+            <div class="telemetry-pill">
+              <span class="telemetry-dot offline" id="dot-leitor-header"></span>
+              <span class="telemetry-label" id="text-leitor-header">Leitor Portaria: online</span>
+            </div>
+          </div>
+
+          <button id="btnNovoProfessor" class="btn-novo-prof hidden" type="button">Novo professor</button>
+          <button id="btnNovaDisciplina" class="btn-novo-prof hidden" type="button">Nova disciplina</button>
+          <button id="btnNovaTurma" class="btn-novo-prof hidden" type="button">Nova turma</button>
+          <button id="btnSalvarGradeHeader" class="btn-novo-prof hidden" type="button">Salvar grade</button>
+          <button id="btnSalvarTurnosHeader" class="btn-novo-prof hidden" type="button">Salvar horários</button>
+          <button id="btnNovoAvisoHeader" class="btn-novo-prof hidden" type="button">Novo aviso</button>
+          <button id="btnNovoEventoHeader" class="btn-novo-prof hidden" type="button">Novo evento</button>
+        </div>
+      </header>
+
+      <!-- 1. DASHBOARD / PAINEL SECTION -->
+      <section id="dashboardSection" class="page-section active">
+
+        <!-- ALERTA DE LEITOR OFFLINE -->
+        <div id="alertaLeitorOffline" class="alerta-leitor-banner hidden">
+          <div class="alerta-leitor-conteudo">
+            <i data-lucide="alert-triangle" style="width:24px; height:24px; color:var(--danger); flex-shrink:0;"></i>
+            <div>
+              <strong style="color:var(--danger);">Atenção: Leitor RFID desconectado ou sem energia!</strong>
+              <div id="alertaLeitorTexto" style="font-size:13px; color:var(--muted); margin-top:2px;">
+                O leitor não envia sinal há mais de 2 minutos. Verifique a fonte de alimentação ou a conexão Wi-Fi.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI BAR (4 COLUNAS EM CARD ÚNICO) -->
+        <div class="kpi-container-bar">
+          <div class="kpi-col">
+            <div class="kpi-col-number" id="kpiPresentes">00</div>
+            <div class="kpi-col-label">
+              <span class="dot-kpi dot-green"></span>
+              <span>Presentes</span>
+            </div>
+          </div>
+
+          <div class="kpi-col">
+            <div class="kpi-col-number" id="kpiAusentes">00</div>
+            <div class="kpi-col-label">
+              <span class="dot-kpi dot-red"></span>
+              <span>Ausentes</span>
+            </div>
+          </div>
+
+          <div class="kpi-col">
+            <div class="kpi-col-number" id="kpiSemRegistro">00</div>
+            <div class="kpi-col-label">
+              <span class="dot-kpi dot-gray"></span>
+              <span>Sem registro</span>
+            </div>
+          </div>
+
+          <div class="kpi-col">
+            <div class="kpi-col-number" id="kpiCadastrados">00</div>
+            <div class="kpi-col-label">
+              <span>Professores cadastrados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DUAS COLUNAS INFERIORES: AUSENTES AGORA & ÚLTIMOS REGISTROS -->
+        <div class="dashboard-two-cols">
+
+          <!-- AUSENTES AGORA -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <h2 class="dash-card-title">Ausentes agora</h2>
+              <p class="dash-card-subtitle">Professores com aula neste horário e sem registro de presença.</p>
+            </div>
+
+            <div class="dash-table-wrapper">
+              <table class="dash-table" id="tabelaAusentesAgora">
+                <thead>
+                  <tr>
+                    <th>Professor</th>
+                    <th>Disciplina</th>
+                    <th>Sala</th>
+                    <th>Aula desde</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyAusentesAgora">
+                  <tr>
+                    <td colspan="4" class="dash-empty-cell">Carregando horários e presenças...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ÚLTIMOS REGISTROS -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <h2 class="dash-card-title">Últimos registros</h2>
+              <p class="dash-card-subtitle">Leituras de cartão RFID de hoje.</p>
+            </div>
+
+            <div id="ultimosRegistros" class="ultimos-registros-list">
+              <div class="dash-empty-registros">Aguardando leituras de cartão RFID...</div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- 2. PROFESSORES SECTION -->
+      <section id="professoresSection" class="page-section">
+
+        <!-- BANNER RFID DESCONHECIDO -->
+        <div id="rfidBanner" class="rfid-banner hidden">
+          <div class="rfid-banner-conteudo">
+            <div class="rfid-banner-info">
+              <i data-lucide="credit-card" style="width:22px; height:22px; color:var(--primary);"></i>
+              <div>
+                <strong>Cartão RFID detectado!</strong>
+                <span>UID: <code id="rfidBannerUid">---</code> — Não cadastrado no sistema</span>
+              </div>
+            </div>
+            <div class="rfid-banner-acoes">
+              <button id="btnRfidPreencher" type="button">
+                <i data-lucide="user-plus" style="width:14px; height:14px;"></i>
+                <span>Cadastrar com este UID</span>
+              </button>
+              <button id="btnRfidVincular" type="button" class="btn-secondary">
+                <i data-lucide="link" style="width:14px; height:14px;"></i>
+                <span>Vincular a professor existente</span>
+              </button>
+              <button id="btnRfidFechar" type="button" class="link-btn" style="font-size:12px;">Fechar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: BUSCA E LISTA DE PROFESSORES -->
+          <div class="dash-card">
+            <div class="prof-search-header">
+              <label for="searchInput" class="prof-search-label">Buscar</label>
+              <div class="prof-search-row">
+                <input id="searchInput" type="text" class="prof-search-input" placeholder="Nome ou UID" />
+                <span id="totalCadastradosProfessores" class="prof-counter-badge">0 cadastrados</span>
+              </div>
+            </div>
+
+            <div class="table-wrapper" style="margin-top:20px;">
+              <table class="tabela-gestao tabela-professores">
+                <thead>
+                  <tr>
+                    <th>Professor</th>
+                    <th>UID</th>
+                    <th>Disciplinas</th>
+                    <th>Status</th>
+                    <th class="col-acoes-prof"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyProfessores"></tbody>
+              </table>
+            </div>
+
+            <div id="professoresEmpty" class="hidden empty-state">
+              <i data-lucide="search-x" class="empty-icon-svg"></i>
+              <h3>Nenhum professor encontrado</h3>
+            </div>
+            <div id="msgLista" class="msg-box"></div>
+          </div>
+
+          <!-- CARD DIREITA: FORMULÁRIO DE PROFESSOR -->
+          <div class="dash-card prof-form-card">
+            <div class="prof-form-header">
+              <h2 id="formProfessorTitulo" class="dash-card-title">Novo professor</h2>
+            </div>
+
+            <div class="form-field">
+              <label for="cadNome" class="form-label">Nome do professor</label>
+              <input id="cadNome" type="text" class="form-input" placeholder="Nome completo" />
+            </div>
+
+            <div class="form-field">
+              <label for="cadUid" class="form-label">UID do cartão RFID ou matrícula</label>
+              <input id="cadUid" type="text" class="form-input" placeholder="Ex: 336C58ED" />
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Disciplinas que leciona (opcional)</label>
+              <div class="dropdown-disciplinas">
+                <button type="button" id="btnDropdownDisciplinas" class="dropdown-disciplinas-btn">
+                  <span id="txtDropdownDisciplinas">Selecionar disciplinas</span>
+                  <span class="dropdown-arrow">▾</span>
+                </button>
+                <div id="menuDropdownDisciplinas" class="dropdown-disciplinas-menu hidden">
+                  <div id="profDisciplinasCheckboxes" class="checkbox-grid-disciplinas"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-field" style="margin-top:10px;">
+              <label class="checkbox-custom-label">
+                <input id="cadAtivo" type="checkbox" checked />
+                <span>Professor ativo</span>
+              </label>
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnSalvarProfessor" type="button" class="btn-form-salvar">Salvar</button>
+              <button id="btnCancelarEdicao" type="button" class="btn-form-cancelar">Cancelar</button>
+            </div>
+
+            <div id="msgProfessor" class="msg-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 3. DISCIPLINAS SECTION -->
+      <section id="disciplinasSection" class="page-section">
+
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: BUSCA E LISTA DE DISCIPLINAS -->
+          <div class="dash-card">
+            <div class="prof-search-header">
+              <label for="searchDisciplinaInput" class="prof-search-label">Buscar</label>
+              <div class="prof-search-row">
+                <input id="searchDisciplinaInput" type="text" class="prof-search-input" placeholder="Nome ou código" />
+                <span id="totalCadastradosDisciplinas" class="prof-counter-badge">0 cadastrados</span>
+              </div>
+            </div>
+
+            <div class="table-wrapper" style="margin-top:20px;">
+              <table class="tabela-gestao tabela-professores">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Disciplina</th>
+                    <th>Professores</th>
+                    <th class="col-acoes-prof"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyDisciplinas"></tbody>
+              </table>
+            </div>
+
+            <div id="disciplinasEmpty" class="hidden empty-state">
+              <i data-lucide="search-x" class="empty-icon-svg"></i>
+              <h3>Nenhuma disciplina encontrada</h3>
+            </div>
+            <div id="msgListaDisciplinas" class="msg-box"></div>
+          </div>
+
+          <!-- CARD DIREITA: FORMULÁRIO DE DISCIPLINA -->
+          <div class="dash-card prof-form-card">
+            <div class="prof-form-header">
+              <h2 id="formDisciplinaTitulo" class="dash-card-title">Nova disciplina</h2>
+            </div>
+
+            <div class="form-field">
+              <label for="discNomeInput" class="form-label">Nome da disciplina</label>
+              <input id="discNomeInput" type="text" class="form-input" placeholder="Ex: Matemática" />
+            </div>
+
+            <div class="form-field">
+              <label for="discCodigoInput" class="form-label">Código (opcional)</label>
+              <input id="discCodigoInput" type="text" class="form-input" placeholder="Ex: MAT-01" />
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Professores habilitados</label>
+              <div class="dropdown-disciplinas">
+                <button type="button" id="btnDropdownProfessores" class="dropdown-disciplinas-btn">
+                  <span id="txtDropdownProfessores">Selecionar professores</span>
+                  <span class="dropdown-arrow">▾</span>
+                </button>
+                <div id="menuDropdownProfessores" class="dropdown-disciplinas-menu hidden">
+                  <div id="discProfessoresCheckboxes" class="checkbox-grid-disciplinas"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnSalvarDisciplina" type="button" class="btn-form-salvar">Salvar</button>
+              <button id="btnCancelarEdicaoDisciplina" type="button" class="btn-form-cancelar">Cancelar</button>
+            </div>
+
+            <div id="msgDisciplina" class="msg-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 4. TURMAS & PAVILHÕES SECTION -->
+      <section id="turmasSection" class="page-section">
+
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: BUSCA, FILTROS E LISTA DE TURMAS -->
+          <div class="dash-card">
+            <div class="turmas-filters-row">
+              <div class="form-field turmas-filter-field flex-grow">
+                <label for="searchTurmaInput" class="form-label">Buscar</label>
+                <input id="searchTurmaInput" type="text" class="form-input" placeholder="Turma ou sala" />
+              </div>
+
+              <div class="form-field turmas-filter-field">
+                <label for="filtroTurmaPavilhao" class="form-label">Pavilhão</label>
+                <select id="filtroTurmaPavilhao" class="form-input">
+                  <option value="">Todos</option>
+                  <option value="acm">Pavilhão ACM</option>
+                  <option value="luis_viana">Pavilhão Luís Viana</option>
+                </select>
+              </div>
+
+              <div class="form-field turmas-filter-field">
+                <label for="filtroTurmaTurno" class="form-label">Turno</label>
+                <select id="filtroTurmaTurno" class="form-input">
+                  <option value="">Todos</option>
+                  <option value="matutino">Matutino</option>
+                  <option value="vespertino">Vespertino</option>
+                  <option value="noturno">Noturno</option>
+                </select>
+              </div>
+
+              <div class="turmas-counter-box">
+                <span id="totalCadastradosTurmas" class="prof-counter-badge">0 turmas</span>
+              </div>
+            </div>
+
+            <div class="table-wrapper" style="margin-top:20px;">
+              <table class="tabela-gestao tabela-professores">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Turma</th>
+                    <th>Pavilhão</th>
+                    <th>Sala</th>
+                    <th>Turno</th>
+                    <th class="col-acoes-prof"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyTurmas"></tbody>
+              </table>
+            </div>
+
+            <div id="turmasEmpty" class="hidden empty-state">
+              <i data-lucide="search-x" class="empty-icon-svg"></i>
+              <h3>Nenhuma turma encontrada</h3>
+            </div>
+            <div id="msgListaTurmas" class="msg-box"></div>
+          </div>
+
+          <!-- CARD DIREITA: FORMULÁRIO DE TURMA -->
+          <div class="dash-card prof-form-card">
+            <div class="prof-form-header">
+              <h2 id="formTurmaTitulo" class="dash-card-title">Nova turma</h2>
+            </div>
+
+            <div class="form-field">
+              <label for="turmaIdInput" class="form-label">Identificador</label>
+              <input id="turmaIdInput" type="text" class="form-input" placeholder="Ex: 1TACM1" />
+            </div>
+
+            <div class="form-field">
+              <label for="turmaNomeInput" class="form-label">Nome / descrição</label>
+              <input id="turmaNomeInput" type="text" class="form-input" placeholder="Ex: 1º ano Técnico ACM 1" />
+            </div>
+
+            <div class="form-field">
+              <label for="turmaPavilhaoInput" class="form-label">Pavilhão</label>
+              <select id="turmaPavilhaoInput" class="form-input">
+                <option value="acm">Pavilhão ACM</option>
+                <option value="luis_viana">Pavilhão Luís Viana</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="turmaSalaInput" class="form-label">Sala</label>
+              <input id="turmaSalaInput" type="text" class="form-input" placeholder="Ex: Sala 01" />
+            </div>
+
+            <div class="form-field">
+              <label for="turmaTurnoInput" class="form-label">Turno</label>
+              <select id="turmaTurnoInput" class="form-input">
+                <option value="matutino">Matutino</option>
+                <option value="vespertino">Vespertino</option>
+                <option value="noturno">Noturno</option>
+              </select>
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnSalvarTurma" type="button" class="btn-form-salvar">Salvar</button>
+              <button id="btnCancelarEdicaoTurma" type="button" class="btn-form-cancelar">Cancelar</button>
+            </div>
+
+            <div id="msgTurma" class="msg-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 5. GRADE HORÁRIA SECTION -->
+      <section id="gradeSection" class="page-section">
+
+        <div class="dash-card">
+          <!-- SELETOR DE TURMA E AÇÃO DE COPIAR -->
+          <div class="grade-header-bar">
+            <div class="form-field grade-turma-field">
+              <label for="gradeSeletorTurma" class="form-label">Turma</label>
+              <select id="gradeSeletorTurma" class="form-input"></select>
+            </div>
+
+            <div class="grade-copiar-box">
+              <button id="btnCopiarGradeModal" type="button" class="btn-form-cancelar">Copiar para outra turma</button>
+            </div>
+          </div>
+
+          <!-- MENSAGEM DE STATUS -->
+          <div id="msgGrade" class="msg-box" style="margin-top:10px;"></div>
+
+          <!-- TABELA SEMANAL DA GRADE -->
+          <div class="table-wrapper grade-table-wrapper" style="margin-top:20px;">
+            <table class="tabela-gestao tabela-grade-moderna">
+              <thead>
+                <tr>
+                  <th class="col-grade-horario">Horário</th>
+                  <th>Segunda</th>
+                  <th>Terça</th>
+                  <th>Quarta</th>
+                  <th>Quinta</th>
+                  <th>Sexta</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyGradeSemanal"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 5.1 TURNOS & HORÁRIOS SECTION -->
+      <section id="turnosSection" class="page-section">
+
+        <div class="turnos-three-cards-grid">
+          <!-- MATUTINO -->
+          <div class="dash-card turno-config-card">
+            <h2 class="dash-card-title">Matutino</h2>
+            <div class="form-field">
+              <label class="form-label" for="mat_inicio_aulas">Início das aulas</label>
+              <input id="mat_inicio_aulas" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="mat_fim_aulas">Fim das aulas</label>
+              <input id="mat_fim_aulas" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="mat_inicio_intervalo">Início do intervalo</label>
+              <input id="mat_inicio_intervalo" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="mat_fim_intervalo">Fim do intervalo</label>
+              <input id="mat_fim_intervalo" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+          </div>
+
+          <!-- VESPERTINO -->
+          <div class="dash-card turno-config-card">
+            <h2 class="dash-card-title">Vespertino</h2>
+            <div class="form-field">
+              <label class="form-label" for="vesp_inicio_aulas">Início das aulas</label>
+              <input id="vesp_inicio_aulas" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="vesp_fim_aulas">Fim das aulas</label>
+              <input id="vesp_fim_aulas" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="vesp_inicio_intervalo">Início do intervalo</label>
+              <input id="vesp_inicio_intervalo" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="vesp_fim_intervalo">Fim do intervalo</label>
+              <input id="vesp_fim_intervalo" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+          </div>
+
+          <!-- NOTURNO -->
+          <div class="dash-card turno-config-card">
+            <h2 class="dash-card-title">Noturno</h2>
+            <div class="form-field">
+              <label class="form-label" for="not_inicio_aulas">Início das aulas</label>
+              <input id="not_inicio_aulas" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="not_fim_aulas">Fim das aulas</label>
+              <input id="not_fim_aulas" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="not_inicio_intervalo">Início do intervalo</label>
+              <input id="not_inicio_intervalo" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="not_fim_intervalo">Fim do intervalo</label>
+              <input id="not_fim_intervalo" type="text" class="form-input input-hora-turno" placeholder="[hh:mm]" maxlength="5" />
+            </div>
+          </div>
+        </div>
+
+        <div id="msgTurnos" class="msg-box" style="margin-top:16px;"></div>
+
+      </section>
+
+      <!-- 6. RELATÓRIOS SECTION -->
+      <section id="relatoriosSection" class="page-section">
+
+        <div class="dash-card relatorios-card">
+          <!-- LINHA DE FILTROS E AÇÕES -->
+          <div class="relatorios-filter-row">
+            <div class="filter-col filter-col-data">
+              <label class="form-label" for="filtroData">Data</label>
+              <input id="filtroData" type="date" class="form-input" placeholder="[dd/mm/aaaa]" />
+            </div>
+
+            <div class="filter-col filter-col-prof">
+              <label class="form-label" for="filtroProfessor">Professor</label>
+              <select id="filtroProfessor" class="form-input form-select">
+                <option value="">Todos os professores</option>
+              </select>
+            </div>
+
+            <div class="filter-actions-group">
+              <button id="btnGerarRelatorio" type="button" class="btn-filter-primary">Filtrar</button>
+              <button id="btnExport" type="button" class="btn-filter-outline">Exportar CSV</button>
+              <button id="btnImprimirFrequencia" type="button" class="btn-filter-outline">Imprimir folha de frequência</button>
+            </div>
+          </div>
+
+          <!-- TABELA DE RELATÓRIO -->
+          <div class="table-wrapper">
+            <table class="tabela-gestao">
+              <thead>
+                <tr>
+                  <th>Professor</th>
+                  <th>Status</th>
+                  <th>Entrada</th>
+                  <th>Saída</th>
+                  <th>UID</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="empty" class="hidden empty-state">
+            <i data-lucide="file-x" class="empty-icon-svg"></i>
+            <h3>Nenhum resultado encontrado</h3>
+          </div>
+
+          <!-- PAGINAÇÃO -->
+          <div class="relatorios-footer-paginacao">
+            <span id="paginacaoInfo" class="paginacao-info">Página 1 de 1</span>
+            <div class="paginacao-botoes">
+              <button id="btnPaginaAnterior" type="button" class="btn-filter-outline btn-paginacao">Anterior</button>
+              <button id="btnPaginaProxima" type="button" class="btn-filter-outline btn-paginacao">Próxima</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 7. AVISOS SECTION -->
+      <section id="avisosSection" class="page-section">
+
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: LISTA DE AVISOS -->
+          <div class="dash-card prof-lista-card">
+            <div class="prof-search-row">
+              <div class="form-field prof-search-field">
+                <label for="searchAvisoInput" class="form-label">Buscar</label>
+                <input id="searchAvisoInput" type="text" class="form-input" placeholder="Título ou mensagem" />
+              </div>
+              <span id="totalAvisosCounter" class="prof-counter">0 ativos • 0 expirados</span>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="tabela-gestao">
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Prioridade</th>
+                    <th>Válido até</th>
+                    <th>Status</th>
+                    <th class="col-acoes-prof"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyAvisos"></tbody>
+              </table>
+            </div>
+
+            <div id="avisosEmpty" class="hidden empty-state">
+              <i data-lucide="bell-off" class="empty-icon-svg"></i>
+              <h3>Nenhum aviso encontrado</h3>
+            </div>
+            <div id="msgListaAvisos" class="msg-box"></div>
+          </div>
+
+          <!-- CARD DIREITA: FORMULÁRIO DE AVISO -->
+          <div class="dash-card prof-form-card">
+            <div class="prof-form-header">
+              <h2 id="formAvisoTitulo" class="dash-card-title">Novo aviso</h2>
+            </div>
+
+            <input id="avisoIdEditando" type="hidden" value="" />
+
+            <div class="form-field">
+              <label for="avisoTitulo" class="form-label">Título</label>
+              <input id="avisoTitulo" type="text" class="form-input" placeholder="Ex: Reunião pedagógica" />
+            </div>
+
+            <div class="form-field">
+              <label for="avisoMensagem" class="form-label">Mensagem</label>
+              <textarea id="avisoMensagem" class="form-input form-textarea" rows="4" placeholder="Escreva o aviso" style="resize:vertical; min-height:90px;"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label for="avisoPrioridade" class="form-label">Prioridade</label>
+              <select id="avisoPrioridade" class="form-input form-select">
+                <option value="normal" selected>Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgente">Urgente</option>
+                <option value="informativo">Informativo</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="avisoExpiracao" class="form-label">Válido até</label>
+              <input id="avisoExpiracao" type="date" class="form-input" placeholder="[dd/mm/aaaa]" />
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnSalvarAviso" type="button" class="btn-form-salvar">Publicar aviso</button>
+              <button id="btnCancelarEdicaoAviso" type="button" class="btn-form-cancelar">Cancelar</button>
+            </div>
+
+            <div id="msgAviso" class="msg-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 8. EVENTOS SECTION -->
+      <section id="eventosSection" class="page-section">
+
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: LISTA DE EVENTOS -->
+          <div class="dash-card prof-lista-card">
+            <div class="prof-search-row">
+              <div class="form-field prof-search-field">
+                <label for="searchEventoInput" class="form-label">Buscar</label>
+                <input id="searchEventoInput" type="text" class="form-input" placeholder="Título" />
+              </div>
+              <span id="totalEventosCounter" class="prof-counter">0 próximos • 0 encerrados</span>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="tabela-gestao">
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                    <th class="col-acoes-prof"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyEventos"></tbody>
+              </table>
+            </div>
+
+            <div id="eventosEmpty" class="hidden empty-state">
+              <i data-lucide="calendar-x" class="empty-icon-svg"></i>
+              <h3>Nenhum evento encontrado</h3>
+            </div>
+            <div id="msgListaEventos" class="msg-box"></div>
+          </div>
+
+          <!-- CARD DIREITA: FORMULÁRIO DE EVENTO -->
+          <div class="dash-card prof-form-card">
+            <div class="prof-form-header">
+              <h2 id="formEventoTitulo" class="dash-card-title">Novo evento</h2>
+            </div>
+
+            <input id="eventoIdEditando" type="hidden" value="" />
+
+            <div class="form-field">
+              <label for="eventoTitulo" class="form-label">Título</label>
+              <input id="eventoTitulo" type="text" class="form-input" placeholder="Ex: Reunião de pais e mestres" />
+            </div>
+
+            <div class="form-field">
+              <label for="eventoDescricao" class="form-label">Descrição</label>
+              <textarea id="eventoDescricao" class="form-input form-textarea" rows="4" placeholder="Detalhes do evento" style="resize:vertical; min-height:90px;"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label for="eventoData" class="form-label">Data do evento</label>
+              <input id="eventoData" type="date" class="form-input" placeholder="[dd/mm/aaaa]" />
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnSalvarEvento" type="button" class="btn-form-salvar">Salvar</button>
+              <button id="btnCancelarEdicaoEvento" type="button" class="btn-form-cancelar">Cancelar</button>
+            </div>
+
+            <div id="msgEvento" class="msg-box" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="footer">
+        PresenX • Sistema Administrativo Escolar
+      </footer>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div id="confirmModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-icon">
+        <i data-lucide="alert-octagon" style="width:36px; height:36px; color:var(--danger);"></i>
+      </div>
+      <h3 id="confirmTitle">Confirmar ação</h3>
+      <p id="confirmMessage">Tem certeza que deseja continuar?</p>
+      <div class="modal-actions">
+        <button id="confirmCancel" type="button" class="btn-secondary">Cancelar</button>
+        <button id="confirmOk" type="button" class="btn-danger">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VINCULAR CARTÃO RFID -->
+  <div id="modalVincularCartao" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-icon" style="background: rgba(37,99,235,0.1); color: var(--primary);">
+        <i data-lucide="credit-card" style="width:32px; height:32px;"></i>
+      </div>
+      <h3>Vincular Cartão RFID</h3>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
+        Vincular o cartão detectado <code id="modalVincularUid" style="font-weight:700; color:var(--primary); background:rgba(37,99,235,0.08); padding:2px 6px; border-radius:4px;">---</code> a um professor já cadastrado:
+      </p>
+      <div class="field" style="text-align:left; margin-bottom:16px;">
+        <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Selecione o Professor</label>
+        <select id="selectVincularProfessor" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); font-size:14px; background:var(--surface); color:var(--text);">
+          <option value="">Selecione um professor...</option>
+        </select>
+      </div>
+      <div id="msgModalVincular" class="msg-box" style="margin-bottom:12px;"></div>
+      <div class="modal-actions">
+        <button id="btnModalVincularCancelar" type="button" class="btn-secondary">Cancelar</button>
+        <button id="btnModalVincularConfirmar" type="button">Vincular Cartão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR HORÁRIO DA GRADE -->
+  <div id="modalEditarSlotGrade" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 440px; text-align: left;">
+      <h3 id="modalSlotTitulo" style="margin-bottom: 4px; font-family: 'Bricolage Grotesque', sans-serif;">Editar horário</h3>
+      <p id="modalSlotSubtitulo" style="font-size: 13.5px; color: #4b5481; margin-bottom: 20px;">Segunda-feira • 1º Horário</p>
+
+      <div class="form-field">
+        <label for="selectSlotDisciplina" class="form-label">Disciplina</label>
+        <select id="selectSlotDisciplina" class="form-input">
+          <option value="">Selecione uma disciplina...</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="selectSlotProfessor" class="form-label">Professor</label>
+        <select id="selectSlotProfessor" class="form-input">
+          <option value="">Selecione um professor...</option>
+        </select>
+      </div>
+
+      <div class="form-actions-row" style="margin-top: 24px; justify-content: flex-end;">
+        <button id="btnSlotRemover" type="button" class="btn-action-delete" style="margin-right: auto; margin-left: 0;">Remover aula</button>
+        <button id="btnSlotCancelar" type="button" class="btn-form-cancelar">Cancelar</button>
+        <button id="btnSlotSalvar" type="button" class="btn-form-salvar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL COPIAR GRADE -->
+  <div id="modalCopiarGrade" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 440px; text-align: left;">
+      <h3 style="margin-bottom: 4px; font-family: 'Bricolage Grotesque', sans-serif;">Copiar grade horária</h3>
+      <p id="modalCopiarSubtitulo" style="font-size: 13.5px; color: #4b5481; margin-bottom: 20px;">Replicar grade para outra turma</p>
+
+      <div class="form-field">
+        <label for="selectTurmaDestinoGrade" class="form-label">Turma de destino</label>
+        <select id="selectTurmaDestinoGrade" class="form-input">
+          <option value="">Selecione a turma destino...</option>
+        </select>
+      </div>
+
+      <div class="form-actions-row" style="margin-top: 24px; justify-content: flex-end;">
+        <button id="btnCopiarGradeCancelar" type="button" class="btn-form-cancelar">Cancelar</button>
+        <button id="btnCopiarGradeConfirmar" type="button" class="btn-form-salvar">Copiar grade</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÁREA DE IMPRESSÃO OFICIAL (VISÍVEL APENAS NA IMPRESSÃO) -->
+  <div id="areaImpressao" class="print-area print-only"></div>
+
+  <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
+  <div id="toastContainer" class="presenx-toast-container" aria-live="polite"></div>
+
+  <script src="js/gestao.js"></script>
+
+</body>
+</html>

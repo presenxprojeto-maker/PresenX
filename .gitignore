@@ -1,0 +1,41 @@
+# Dependências
+node_modules/
+dist/
+.cache/
+
+# Banco de dados local e arquivos de lock SQLite
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+server/presenx.db
+server/presenx.db-journal
+
+# Credenciais, Contas de Serviço e Chaves Privadas
+serviceAccountKey.json
+*serviceAccount*.json
+*.pem
+*.key
+*.cert
+
+# Variáveis de ambiente secretas
+.env
+.env.*
+!.env.example
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs de depuração
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Builds e Arquivos Temporários
+frontend/dist/
+frontend/.env.local
+scratch/
+.vscode/
+

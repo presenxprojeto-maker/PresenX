@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PresenX | Painel Institucional</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg">
+
+    <link rel="stylesheet" href="./css/painel.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <main class="painel-root">
+
+        <!-- CABEÇALHO INSTITUCIONAL -->
+        <header class="painel-header">
+
+            <div class="painel-header-marca">
+                <div class="painel-header-logo">
+                    <span>CETEP</span>
+                </div>
+
+                <div class="painel-header-textos">
+                    <span class="painel-header-titulo"><span>Presen</span><svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X"><line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/><path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg></span>
+                    <span class="painel-header-instituicao">
+                        <span class="nome-principal">CETEP</span>
+                        <span class="nome-separador">/</span>
+                        <span class="nome-unidade">LNAB</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- CONTROLE / NAVEGAÇÃO DE PAVILHÕES -->
+            <div class="painel-pavilhao-seletor" id="painelPavilhaoSeletor">
+                <div class="pavilhao-selecionado-chip" id="pavilhaoSelecionadoChip">
+                    <i data-lucide="building-2" id="iconePavilhaoSelecionado" style="width:14px; height:14px;"></i>
+                    <span id="txtPavilhaoSelecionado">Pavilhão Luís Viana</span>
+                </div>
+                <button type="button" class="btn-trocar-pavilhao-header" id="btnAbrirModalPavilhao" title="Trocar de pavilhão">
+                    <i data-lucide="layers" style="width:14px; height:14px;"></i>
+                    <span>Trocar</span>
+                </button>
+            </div>
+
+            <div class="painel-header-datahora">
+                <div class="painel-datahora-textos">
+                    <div id="painelData" class="painel-header-data">--/--/----</div>
+                    <div id="painelHoraAtual" class="painel-header-hora">--:--:--</div>
+                </div>
+                <button type="button" id="btnFullscreen" class="btn-fullscreen" title="Alternar Tela Cheia (F11)">
+                    <i data-lucide="maximize-2"></i>
+                </button>
+                <a href="./login-gestao.html" class="btn-fullscreen" title="Acesso Administrativo / Portal" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="shield"></i>
+                </a>
+            </div>
+
+        </header>
+
+        <!-- FAIXA DE CONTEXTO E STATUS -->
+        <section class="painel-contexto">
+
+            <div class="painel-contexto-esq">
+                <span id="painelDia" class="painel-contexto-dia">
+                    <i data-lucide="calendar"></i>
+                    <span id="txtDia">Segunda-feira</span>
+                </span>
+
+                <span id="painelHorario" class="painel-chip">
+                    <i data-lucide="clock"></i>
+                    <span id="txtHorario">1º horário</span>
+                </span>
+
+                <span id="painelTurno" class="painel-chip">
+                    <i data-lucide="sun"></i>
+                    <span id="txtTurno">Matutino</span>
+                </span>
+            </div>
+
+            <div class="painel-legenda">
+                <div class="legenda-item">
+                    <span class="legenda-cor verde"></span>
+                    <span>Presente</span>
+                </div>
+
+                <div class="legenda-item">
+                    <span class="legenda-cor vermelho"></span>
+                    <span>Ausente</span>
+                </div>
+
+                <div class="legenda-item">
+                    <span class="legenda-cor cinza"></span>
+                    <span>Sem aula</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- CORPO PRINCIPAL -->
+        <section class="painel-corpo">
+
+            <!-- ÁREA PRINCIPAL: GRADE DE TURMAS DO PAVILHÃO ATIVO -->
+            <section class="painel-grade-wrap">
+
+                <div id="painelGrade" class="painel-grade"></div>
+
+                <div id="painelVazio" class="painel-vazio" style="display:none;">
+                    <i data-lucide="inbox" style="width:48px; height:48px; color:var(--muted);"></i>
+                    <span>Nenhuma turma em aula neste pavilhão no momento</span>
+                </div>
+
+            </section>
+
+            <!-- LATERAL: AVISOS E EVENTOS -->
+            <aside class="painel-lateral">
+
+                <section class="painel-lateral-bloco">
+                    <div class="painel-lateral-titulo">
+                        <span>AVISOS DA GESTÃO</span>
+                    </div>
+
+                    <div id="painelAvisos" class="painel-lateral-lista">
+                        <div class="painel-lateral-vazio">
+                            Nenhum aviso no momento
+                        </div>
+                    </div>
+                </section>
+
+                <section class="painel-lateral-bloco">
+                    <div class="painel-lateral-titulo">
+                        <span>PRÓXIMOS EVENTOS</span>
+                    </div>
+
+                    <div id="painelEventos" class="painel-lateral-lista">
+                        <div class="painel-lateral-vazio">
+                            Nenhum evento programado
+                        </div>
+                    </div>
+                </section>
+
+            </aside>
+
+        </section>
+
+        <!-- RODAPÉ -->
+        <footer class="painel-rodape">
+            <div class="painel-rodape-info">
+                <i data-lucide="activity" style="width:16px; height:16px;"></i>
+                <span>Sistema PresenX • Atualização em tempo real</span>
+                <span class="rodape-divisor">•</span>
+                <div id="painelLeitorStatus" class="painel-leitor-tag online" title="Status do Leitor RFID">
+                    <span class="ponto-status"></span>
+                    <i data-lucide="radio" style="width:13px; height:13px;"></i>
+                    <span id="painelLeitorNome">Leitor: Conectando...</span>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div class="salas-paginas-dots" id="salasPaginasDots" style="display:none;"></div>
+                <span id="painelPagina">Página 1/1</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- TELA DE SELEÇÃO INICIAL DE PAVILHÃO (Obrigatório antes de visualizar o painel) -->
+    <div class="tela-selecao-pavilhao-overlay visivel" id="modalSelecaoPavilhao" role="dialog" aria-modal="true" aria-labelledby="modalPavilhaoTitulo">
+        
+        <!-- CABEÇALHO SUPERIOR DA TELA -->
+        <header class="tela-selecao-topbar">
+            <div class="tela-selecao-marca">
+                <span class="tela-selecao-logo"><span>Presen</span><svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X"><line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/><path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg></span>
+                <span class="tela-selecao-instituicao">CETEP / LNAB</span>
+            </div>
+        </header>
+
+        <!-- CONTEÚDO CENTRAL -->
+        <div class="tela-selecao-conteudo">
+            <h1 class="tela-selecao-titulo" id="modalPavilhaoTitulo">
+                <span class="titulo-qual">Qual</span> pavilhão?
+            </h1>
+
+            <div class="tela-selecao-lista">
+                <!-- Pavilhão Luís Viana -->
+                <button type="button" class="btn-opcao-pavilhao card-luis-viana card-opcao-pavilhao" data-pavilhao-escolha="luis_viana" id="opcaoPavilhaoLuisViana">
+                    <span class="nome-pavilhao">Pavilhão Luís Viana</span>
+                    <div class="meta-pavilhao">
+                        <span class="status-salas" id="qtdSalasLuisViana">[N] salas em aula agora</span>
+                        <span class="seta-pavilhao" aria-hidden="true">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- Pavilhão ACM -->
+                <button type="button" class="btn-opcao-pavilhao card-acm card-opcao-pavilhao" data-pavilhao-escolha="acm" id="opcaoPavilhaoAcm">
+                    <span class="nome-pavilhao">Pavilhão ACM</span>
+                    <div class="meta-pavilhao">
+                        <span class="status-salas" id="qtdSalasAcm">[N] salas em aula agora</span>
+                        <span class="seta-pavilhao" aria-hidden="true">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- Todos os pavilhões -->
+                <button type="button" class="btn-opcao-pavilhao card-todos card-opcao-pavilhao" data-pavilhao-escolha="todos" id="opcaoPavilhaoTodos">
+                    <span class="nome-pavilhao">Todos os pavilhões</span>
+                    <div class="meta-pavilhao">
+                        <span class="status-salas" id="qtdSalasTodos">[N] salas em aula agora</span>
+                        <span class="seta-pavilhao" aria-hidden="true">&rarr;</span>
+                    </div>
+                </button>
+            </div>
+
+            <p class="tela-selecao-rodape-nota">
+                Dá para trocar a qualquer momento pelo cabeçalho do painel.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="./js/turnos.js"></script>
+    <script src="./js/painel.js"></script>
+
+</body>
+</html> 

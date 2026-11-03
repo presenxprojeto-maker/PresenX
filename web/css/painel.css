@@ -1,0 +1,1667 @@
+/* =========================================================
+   TOKENS
+========================================================= */
+
+:root {
+  /* ── Fundos ── */
+  --bg-primary:   #f4f1ea;
+  --bg-secondary: #e8e4dc;
+
+  /* ── Superfícies (glassmorphism) ── */
+  --surface:      rgba(255, 255, 255, 0.90);
+  --surface-soft: rgba(255, 255, 255, 0.60);
+
+  /* ── Status de presença ── */
+  --green:      #0dc86b;   /* vibrante mas não neon */
+  --green-tint: rgba(13, 200, 107, 0.06);
+  --red:        #f84c60;
+  --red-tint:   rgba(248, 76, 96, 0.04);
+  --gray:       #94a3b8;
+
+  /* ── Azul de sistema ── */
+  --blue-pro:  #3b82f6;
+  --blue-dark: #2563eb;
+
+  /* ── Texto ── */
+  --text:       #101a4a;
+  --text-soft:  #475569;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+
+  /* ── Bordas ── */
+  --border:       rgba(226, 232, 240, 0.80);
+  --border-white: rgba(255, 255, 255, 0.90);
+
+  /* ── Sombras em 4 níveis ── */
+  --shadow-xs:
+    0 1px 3px  rgba(15, 23, 42, 0.04);
+  --shadow-sm:
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 1px 4px  rgba(15, 23, 42, 0.04);
+  --shadow-md:
+    0 10px 30px rgba(15, 23, 42, 0.07),
+    0 2px 8px  rgba(15, 23, 42, 0.04);
+  --shadow-lg:
+    0 24px 48px rgba(15, 23, 42, 0.10),
+    0 6px 16px rgba(15, 23, 42, 0.05);
+
+  /* ── Raios ── */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 28px;
+
+  /* ── Easing ── */
+  --ease:        cubic-bezier(.16, .84, .44, 1);
+  --ease-spring: cubic-bezier(.175, .885, .32, 1.275);
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  color: var(--text);
+
+  /* Fundo institucional #f4f1ea */
+  background-color: #f4f1ea;
+  background-image: none;
+
+  /* modo kiosk / TV */
+}
+
+body {
+  padding: 14px;
+}
+
+/* Scrollbar para áreas internas */
+::-webkit-scrollbar          { width: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(100,116,139,.20); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,.35); }
+
+/* =========================================================
+   ROOT
+========================================================= */
+
+.painel-root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =========================================================
+   CABEÇALHO INSTITUCIONAL
+========================================================= */
+
+.painel-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 36px;
+
+  padding: 20px 30px;
+  border-radius: var(--r-lg);
+
+  background: var(--surface);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border-white);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Marca ── */
+.painel-header-marca {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.painel-header-logo {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #101a4a;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-align: center;
+  line-height: 1.25;
+
+  box-shadow: 0 8px 22px rgba(16, 26, 74, 0.24);
+}
+
+.painel-header-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.painel-header-titulo {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  line-height: 1;
+  color: #101a4a;
+}
+
+.painel-header-instituicao {
+  display: flex;
+  align-items: center;
+}
+
+.painel-header-instituicao .nome-principal {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5481;
+}
+
+.painel-header-instituicao .nome-separador {
+  margin: 0 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #8b95b5;
+}
+
+.painel-header-instituicao .nome-unidade {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #4b5481;
+}
+
+/* ── Data / Hora & Fullscreen ── */
+.painel-header-datahora {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.painel-datahora-textos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.btn-fullscreen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(16, 26, 74, 0.15);
+  background: #ffffff;
+  color: #101a4a;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(16, 26, 74, 0.05);
+  transition: all 0.2s var(--ease);
+}
+
+.btn-fullscreen:hover {
+  background: #ffffff;
+  color: var(--blue-pro);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-fullscreen svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Modo Kiosk: oculta cursor do mouse quando inativo */
+body.hide-cursor, body.hide-cursor * {
+  cursor: none !important;
+}
+
+.painel-header-data {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #4b5481;
+  text-transform: capitalize;
+}
+
+.painel-header-hora {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Classes legadas (usadas em versões antigas do HTML) */
+.colegio-identidade { display: flex; align-items: center; letter-spacing: -1px; }
+.nome-principal     { font-size: 40px; font-weight: 800; color: var(--text); }
+.nome-separador     { margin: 0 12px; font-size: 32px; font-weight: 300; color: #cbd5e1; }
+.nome-unidade {
+  font-size: 34px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--blue-pro), var(--blue-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* =========================================================
+   FAIXA DE CONTEXTO
+   dia da semana · horário · turno  │  legenda
+========================================================= */
+
+.painel-contexto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  padding: 12px 24px;
+  border-radius: var(--r-md);
+
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-white);
+  box-shadow: var(--shadow-xs);
+}
+
+.painel-contexto-esq {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.painel-contexto-dia {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: var(--text);
+
+  padding-right: 14px;
+  border-right: 1.5px solid rgba(15, 23, 42, 0.10);
+}
+
+.painel-chip {
+  padding: 6px 14px;
+  border-radius: 8px;
+
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--text-soft);
+}
+
+/* ── Legenda ── */
+.painel-legenda {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.legenda-cor {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legenda-cor.verde   { background: var(--green); }
+.legenda-cor.vermelho { background: var(--red); }
+.legenda-cor.cinza   { background: var(--gray); }
+
+/* =========================================================
+   CORPO PRINCIPAL  70% turmas │ 30% lateral
+========================================================= */
+
+.painel-corpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+}
+
+/* ── Grade de turmas ── */
+.painel-grade-wrap {
+  flex: 7 1 0%;
+
+  padding: 18px;
+  border-radius: var(--r-xl);
+
+  background: var(--surface-soft);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-white);
+  box-shadow: var(--shadow-sm);
+
+  overflow: hidden;
+}
+
+.painel-grade {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: minmax(130px, auto);
+  align-content: start;
+  gap: 14px;
+  overflow-y: auto;
+  padding-right: 4px;
+  transition: gap .3s var(--ease), opacity .2s ease;
+}
+
+.painel-grade.fade-transicao {
+  opacity: 0;
+}
+
+.painel-vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* =========================================================
+   CARDS DE TURMA
+========================================================= */
+
+.painel-quadro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 14px 14px 14px 18px;
+  border-radius: var(--r-md);
+
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-left: 5px solid var(--gray);
+
+  box-shadow:
+    0 2px 8px  rgba(15, 23, 42, 0.04),
+    0 1px 2px  rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90);
+
+  /* Transição suave de status — sem re-render flicker */
+  transition:
+    border-color .5s var(--ease),
+    background   .5s var(--ease),
+    box-shadow   .5s var(--ease);
+
+  overflow: hidden;
+}
+
+/* ── Presente ── */
+.painel-quadro.verde {
+  border-left-color: var(--green);
+  background: rgba(255, 255, 255, 0.92);
+
+  box-shadow:
+    0 2px 8px  rgba(15, 23, 42, 0.04),
+    0 1px 2px  rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90),
+    inset 0 0 0 1px rgba(13, 200, 107, 0.14);
+}
+
+/* Brilho verde suave no fundo — estático, sem pulsar */
+.painel-quadro.verde::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--green-tint);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ── Ausente ── */
+.painel-quadro.vermelho {
+  border-left-color: var(--red);
+}
+
+.painel-quadro.vermelho::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--red-tint);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ── Sem aula ── */
+.painel-quadro.cinza {
+  border-left-color: var(--gray);
+  background: rgba(248, 250, 252, 0.80);
+  opacity: 0.78;
+}
+
+/* ── Tipografia e Topo do Card ── */
+.painel-quadro-topo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.painel-sala-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.painel-sala-nome {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.painel-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.painel-status-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.painel-status-badge.presente {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.painel-status-badge.aguardando {
+  background: rgba(239, 68, 68, 0.10);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.painel-status-badge.intervalo {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.painel-status-badge.sem-aula {
+  background: rgba(100, 116, 139, 0.10);
+  color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.20);
+}
+
+.painel-turma {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--text);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.painel-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.painel-label-pequena {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.painel-valor {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   LATERAL  (Avisos da Gestão / Próximos Eventos — 30%)
+========================================================= */
+
+.painel-lateral {
+  flex: 3 1 0%;
+  min-width: 260px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.painel-lateral-bloco {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 18px 16px;
+  border-radius: var(--r-xl);
+
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.painel-lateral-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.painel-lateral-icone {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.painel-lateral-lista {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  overflow-y: auto;
+}
+
+.painel-lateral-vazio {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  padding: 16px;
+  border-radius: var(--r-sm);
+  border: 1.5px dashed rgba(148, 163, 184, 0.40);
+
+  background: #f8fafc;
+
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+/* =========================================================
+   AVISOS — itens da lateral
+========================================================= */
+
+.painel-aviso-item {
+  padding: 12px 12px 12px 14px;
+  border-radius: var(--r-sm);
+
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-left: 4px solid var(--gray);
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  box-shadow: var(--shadow-xs);
+  animation: itemEnter .3s var(--ease);
+}
+
+.painel-aviso-item.urgente     { border-left-color: var(--red);      background: rgba(248,76,96,.03); }
+.painel-aviso-item.normal      { border-left-color: var(--blue-pro); }
+.painel-aviso-item.informativo { border-left-color: var(--gray); }
+
+.painel-aviso-item-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.painel-aviso-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 2px 8px;
+  border-radius: 6px;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.painel-aviso-badge.urgente    { background: rgba(248,76,96,.12);  color: var(--red);      }
+.painel-aviso-badge.normal     { background: rgba(59,130,246,.11); color: var(--blue-pro); }
+.painel-aviso-badge.informativo { background: rgba(148,163,184,.14); color: var(--text-muted); }
+
+.painel-aviso-expira {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.painel-aviso-item-titulo {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.painel-aviso-item-msg {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-muted);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =========================================================
+   EVENTOS — itens da lateral
+========================================================= */
+
+.painel-evento-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  padding: 11px 12px;
+  border-radius: var(--r-sm);
+
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  box-shadow: var(--shadow-xs);
+  animation: itemEnter .3s var(--ease);
+}
+
+.painel-evento-data-bloco {
+  flex-shrink: 0;
+  width: 54px;
+  min-height: 54px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+
+  padding: 7px 4px;
+  border-radius: 10px;
+
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  text-align: center;
+  overflow: hidden;
+}
+
+.painel-evento-data {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--blue-dark);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.painel-evento-dias {
+  margin-top: 0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--blue-pro);
+}
+
+.painel-evento-corpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.painel-evento-titulo {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.painel-evento-desc {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-muted);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =========================================================
+   RODAPÉ
+========================================================= */
+
+.painel-rodape {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 2px 4px;
+
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--text-faint);
+}
+
+/* =========================================================
+   ANIMAÇÕES
+
+   NOTA: render() recria os cards a cada 1 segundo via
+   innerHTML, portanto NÃO usamos keyframe nos .painel-quadro
+   — qualquer animação reiniciaria continuamente.
+   Animações são reservadas para elementos de sidebar (que
+   só mudam quando o Firebase emite novo evento).
+========================================================= */
+
+@keyframes itemEnter {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   AVISO FLUTUANTE (overlay)
+========================================================= */
+
+.painel-aviso-flutuante {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 380px;
+
+  padding: 18px 20px;
+  border-radius: var(--r-lg);
+
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border-white);
+  box-shadow: var(--shadow-lg);
+
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  transform: translateX(120%);
+  opacity: 0;
+  transition:
+    transform .55s var(--ease-spring),
+    opacity .35s ease;
+}
+
+.painel-aviso-flutuante.active {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.painel-aviso-mini-tag {
+  display: inline-flex;
+  width: max-content;
+
+  padding: 4px 12px;
+  border-radius: 7px;
+
+  background: var(--blue-dark);
+  color: #fff;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.painel-aviso-mini-titulo {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.painel-aviso-mini-msg {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-top: 4px;
+}
+
+/* =========================================================
+   ESTILOS DE PAVILHÕES & SEGMENTAÇÃO
+========================================================= */
+
+.painel-pavilhao-seletor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8e4dc;
+  padding: 5px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 26, 74, 0.10);
+}
+
+/* DESTAQUE DO PAVILHÃO ATIVO (Fundo Azul Vibrante e Texto Branco) */
+.pavilhao-selecionado-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  padding: 7px 16px;
+  border-radius: 9px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.38);
+  border: none;
+  user-select: none;
+}
+
+.pavilhao-selecionado-chip svg,
+.pavilhao-selecionado-chip i {
+  color: #ffffff !important;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* BOTÃO TROCAR */
+.btn-trocar-pavilhao-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #101a4a;
+  background: #ffffff;
+  border: 1.5px solid rgba(16, 26, 74, 0.16);
+  padding: 6.5px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-trocar-pavilhao-header svg,
+.btn-trocar-pavilhao-header i {
+  color: #101a4a;
+  transition: color 0.18s ease;
+}
+
+.btn-trocar-pavilhao-header:hover {
+  background: #101a4a;
+  color: #ffffff;
+  border-color: #101a4a;
+}
+
+.btn-trocar-pavilhao-header:hover svg,
+.btn-trocar-pavilhao-header:hover i {
+  color: #ffffff;
+}
+
+/* Banner de Pavilhão Ativo */
+.pavilhao-banner {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border-white);
+  border-radius: var(--r-md);
+  padding: 14px 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-xs);
+  position: relative;
+  overflow: hidden;
+}
+
+.pavilhao-banner-conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* Bolinhas indicadoras de página das salas (só aparecem com >1 página) */
+.salas-paginas-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.salas-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.14);
+  transition: all 0.2s ease;
+}
+
+.salas-dot.ativo {
+  width: 20px;
+  height: 7px;
+  border-radius: 5px;
+  background: var(--blue-pro);
+}
+
+.pavilhao-banner-icone {
+  width: 32px;
+  height: 32px;
+  color: var(--blue-dark);
+}
+
+.pavilhao-banner-titulo {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.pavilhao-banner-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Barra de progresso suave do carrossel */
+.carrossel-progresso-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.carrossel-progresso-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blue-pro), var(--blue-dark));
+}
+.carrossel-progresso-bar.suave {
+  transition: width 0.12s linear;
+}
+
+/* Topo do card com Sala e Status */
+.painel-quadro-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.painel-sala-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  background: rgba(37, 99, 235, 0.08);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.painel-status-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.painel-status-tag.verde {
+  background: rgba(13, 200, 107, 0.12);
+  color: #059669;
+}
+
+.painel-status-tag.vermelho {
+  background: rgba(248, 76, 96, 0.12);
+  color: #dc2626;
+}
+
+.painel-status-tag.cinza {
+  background: rgba(148, 163, 184, 0.15);
+  color: #475569;
+}
+
+.painel-lateral-icone-svg {
+  width: 20px;
+  height: 20px;
+  color: var(--blue-dark);
+}
+
+/* =========================================================
+   UTILITÁRIO
+========================================================= */
+
+.hidden { display: none; }
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 1400px) {
+  .painel-header-hora   { font-size: 36px; }
+  .painel-header-titulo { font-size: 24px; }
+
+  .nome-principal { font-size: 32px; }
+  .nome-unidade   { font-size: 28px; }
+
+  .painel-turma  { font-size: 19px; }
+  .painel-valor  { font-size: 14px; }
+
+  .painel-grade  { gap: 12px; }
+  .painel-quadro { padding: 14px 14px 14px 18px; }
+}
+
+@media (max-width: 1280px) {
+  .painel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .painel-header-datahora { align-items: flex-start; }
+
+  .painel-contexto {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .painel-corpo { flex-direction: column; }
+
+  .painel-lateral {
+    flex-direction: row;
+    min-width: 0;
+  }
+
+  .painel-grade { gap: 14px; }
+}
+
+/* =========================================================
+   RODAPÉ DO PAINEL
+========================================================= */
+.painel-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.painel-rodape-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#painelPagina {
+  font-weight: 700;
+  color: var(--text-soft);
+  letter-spacing: 0.2px;
+}
+
+@media (max-width: 640px) {
+  html, body {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+    cursor: auto;
+  }
+
+  body { padding: 10px; }
+
+  .painel-root { gap: 10px; height: auto; }
+
+  .painel-header {
+    padding: 14px 16px;
+    border-radius: var(--r-md);
+  }
+
+  .painel-header-logo   { width: 46px; height: 46px; font-size: 9px; }
+  .painel-header-titulo { font-size: 20px; }
+  .painel-header-hora   { font-size: 28px; }
+
+  .painel-contexto-dia  { padding-right: 0; border-right: none; }
+  .painel-contexto-esq  { flex-wrap: wrap; }
+  .painel-legenda       { flex-wrap: wrap; gap: 10px; }
+
+  .painel-lateral       { flex-direction: column; }
+
+  .painel-grade-wrap {
+    padding: 12px;
+    height: auto;
+    overflow: auto;
+  }
+
+  .painel-grade  { gap: 10px; }
+  .painel-quadro { padding: 12px 12px 12px 16px; }
+  .painel-turma  { font-size: 16px; }
+}
+
+/* Respeita preferência por menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* =========================================================
+   STATUS DO LEITOR RFID NO RODAPÉ DO PAINEL
+========================================================= */
+.rodape-divisor {
+  color: var(--border-subtle);
+  margin: 0 4px;
+}
+
+.painel-leitor-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: all 0.3s ease;
+}
+
+.painel-leitor-tag.online {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.painel-leitor-tag.offline {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.ponto-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.painel-leitor-tag.online .ponto-status {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+  animation: pulseLeitor 2s infinite ease-in-out;
+}
+
+.painel-leitor-tag.offline .ponto-status {
+  background: #ef4444;
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.6);
+}
+
+@keyframes pulseLeitor {
+  0%   { transform: scale(0.9); opacity: 0.7; }
+  50%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+/* =========================================================
+   TELA INICIAL DE SELEÇÃO DE PAVILHÃO (FULLSCREEN DESIGN)
+========================================================= */
+
+.tela-selecao-pavilhao-overlay,
+.modal-pavilhao-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background-color: #f4f1ea;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 36px 48px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.tela-selecao-pavilhao-overlay.visivel,
+.tela-selecao-pavilhao-overlay.ativo,
+.modal-pavilhao-overlay.visivel,
+.modal-pavilhao-overlay.ativo {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+/* Barra superior: PresenX CETEP / LNAB */
+.tela-selecao-topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tela-selecao-marca {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tela-selecao-logo {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #101a4a;
+  letter-spacing: -0.5px;
+}
+
+.tela-selecao-instituicao {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #4b5481;
+  letter-spacing: 0.2px;
+}
+
+/* Área central */
+.tela-selecao-conteudo {
+  width: 100%;
+  max-width: 684px;
+  margin: auto auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px 0;
+}
+
+/* Título: Qual pavilhão? */
+.tela-selecao-titulo {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 46px;
+  font-weight: 800;
+  color: #101a4a;
+  letter-spacing: -1.2px;
+  line-height: 1.15;
+  margin: 0 0 26px 0;
+  text-align: left;
+}
+
+.tela-selecao-titulo .titulo-qual {
+  text-decoration: underline;
+  text-decoration-thickness: 3.5px;
+  text-underline-offset: 6px;
+  text-decoration-color: #101a4a;
+}
+
+/* Lista de botões */
+.tela-selecao-lista {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Botão individual */
+.btn-opcao-pavilhao {
+  width: 100%;
+  min-height: 64px;
+  padding: 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 14px;
+  cursor: pointer;
+  outline: none;
+  border: 2px solid #101a4a;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+  user-select: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+/* Cards brancos (Luís Viana e ACM) */
+.btn-opcao-pavilhao.card-luis-viana,
+.btn-opcao-pavilhao.card-acm {
+  background-color: #ffffff;
+  border-color: #101a4a;
+}
+
+.btn-opcao-pavilhao.card-luis-viana .nome-pavilhao,
+.btn-opcao-pavilhao.card-acm .nome-pavilhao {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #101a4a;
+  letter-spacing: -0.4px;
+}
+
+.btn-opcao-pavilhao.card-luis-viana .meta-pavilhao,
+.btn-opcao-pavilhao.card-acm .meta-pavilhao {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #101a4a;
+}
+
+.btn-opcao-pavilhao.card-luis-viana .seta-pavilhao,
+.btn-opcao-pavilhao.card-acm .seta-pavilhao {
+  font-size: 20px;
+  line-height: 1;
+  color: #101a4a;
+  transition: transform 0.16s ease;
+}
+
+.btn-opcao-pavilhao.card-luis-viana:hover,
+.btn-opcao-pavilhao.card-acm:hover,
+.btn-opcao-pavilhao.card-luis-viana:focus-visible,
+.btn-opcao-pavilhao.card-acm:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(16, 26, 74, 0.1);
+  background-color: #ffffff;
+}
+
+.btn-opcao-pavilhao:hover .seta-pavilhao,
+.btn-opcao-pavilhao:focus-visible .seta-pavilhao {
+  transform: translateX(4px);
+}
+
+/* Card azul (Todos os pavilhões) */
+.btn-opcao-pavilhao.card-todos {
+  background-color: #2d3e9c;
+  border-color: #2d3e9c;
+}
+
+.btn-opcao-pavilhao.card-todos .nome-pavilhao {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.4px;
+}
+
+.btn-opcao-pavilhao.card-todos .meta-pavilhao {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.btn-opcao-pavilhao.card-todos .seta-pavilhao {
+  font-size: 20px;
+  line-height: 1;
+  color: #ffffff;
+  transition: transform 0.16s ease;
+}
+
+.btn-opcao-pavilhao.card-todos:hover,
+.btn-opcao-pavilhao.card-todos:focus-visible {
+  background-color: #243280;
+  border-color: #243280;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(45, 62, 156, 0.32);
+}
+
+/* Rodapé / Nota inferior */
+.tela-selecao-rodape-nota {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #5d648b;
+  margin: 54px 0 0 0;
+  text-align: left;
+}
+
+/* Botão Trocar no Header do Painel */
+.btn-trocar-pavilhao-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #203ba2;
+  background: rgba(32, 59, 162, 0.08);
+  border: 1px solid rgba(32, 59, 162, 0.2);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 8px;
+}
+
+.btn-trocar-pavilhao-header:hover {
+  background: #203ba2;
+  color: #ffffff;
+}
+
+/* Badge indicativo de pavilhão no card da turma quando 'todos' estiver ativo */
+.painel-badge-pavilhao {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.painel-badge-pavilhao.acm {
+  background: rgba(32, 59, 162, 0.1);
+  color: #203ba2;
+  border: 1px solid rgba(32, 59, 162, 0.2);
+}
+
+.painel-badge-pavilhao.luis-viana {
+  background: rgba(13, 148, 136, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .tela-selecao-pavilhao-overlay,
+  .modal-pavilhao-overlay {
+    padding: 24px 20px;
+  }
+  .tela-selecao-titulo {
+    font-size: 34px;
+    margin-bottom: 22px;
+  }
+  .btn-opcao-pavilhao {
+    min-height: 58px;
+    padding: 0 18px;
+  }
+  .btn-opcao-pavilhao.card-luis-viana .nome-pavilhao,
+  .btn-opcao-pavilhao.card-acm .nome-pavilhao,
+  .btn-opcao-pavilhao.card-todos .nome-pavilhao {
+    font-size: 18px !important;
+  }
+  .btn-opcao-pavilhao.card-luis-viana .meta-pavilhao,
+  .btn-opcao-pavilhao.card-acm .meta-pavilhao,
+  .btn-opcao-pavilhao.card-todos .meta-pavilhao {
+    font-size: 12.5px !important;
+    gap: 8px;
+  }
+  .tela-selecao-rodape-nota {
+    margin-top: 36px;
+    font-size: 12.5px;
+  }
+}
+
+
+/* Logo PresenX (Opção 3 - Arcos Finos) */
+.logo-x-symbol {
+  width: 0.88em;
+  height: 0.88em;
+  vertical-align: -0.05em;
+  margin-left: 1px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   MELHORIAS DE DINAMISMO, FLUIDEZ E APRESENTAÇÃO (PAINEL PÚBLICO)
+========================================================= */
+
+/* Transição suave e elevação nos cards de turmas */
+.painel-card-turma {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease !important;
+}
+
+.painel-card-turma:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(16, 26, 74, 0.12) !important;
+}
+
+/* Indicador de status respirando no rodapé do painel */
+.painel-leitor-tag.online .ponto-status {
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  animation: pulseLeitorPonto 2.2s infinite ease-out !important;
+}
+
+@keyframes pulseLeitorPonto {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* Transições nos botões do cabeçalho */
+.btn-trocar-pavilhao-header,
+.btn-fullscreen {
+  transition: background-color 0.16s ease, transform 0.16s ease, color 0.16s ease !important;
+}
+
+.btn-trocar-pavilhao-header:hover,
+.btn-fullscreen:hover {
+  transform: translateY(-1px);
+}
+
+.btn-trocar-pavilhao-header:active,
+.btn-fullscreen:active {
+  transform: scale(0.96);
+}
+
+/* Barra de progresso do carrossel suave */
+.carrossel-progresso-bar {
+  transition: width 0.25s linear !important;
+}

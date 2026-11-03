@@ -1,0 +1,2 @@
+[functions.rfid-identification]
+verify_jwt = false

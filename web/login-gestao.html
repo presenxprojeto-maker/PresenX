@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PresenX | CETEP / LNAB</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
+  
+  <!-- Fontes Oficiais: Bricolage Grotesque (600, 700, 800) & Inter (400, 500, 600) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-page: #F3EFE9;
+      --card-blue: #203BA2;
+      --card-blue-hover: #1A318B;
+      --card-white: #FFFFFF;
+      --text-dark: #101828;
+      --text-muted: #667085;
+      --border-input: #D0D5DD;
+      
+      --status-green-bg: #22C55E;
+      --status-green-txt: #052E16;
+      --status-red-bg: #EF4444;
+      --status-red-txt: #450A0A;
+      --status-dark-bg: #0F172A;
+      --status-dark-txt: #FFFFFF;
+
+      --font-display: 'Bricolage Grotesque', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-page);
+      font-family: var(--font-body);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 48px;
+    }
+
+    /* ─── TOPO ─── */
+    .header-top {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 24px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      color: #101828;
+      letter-spacing: -0.6px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .logo-x-symbol {
+      width: 0.88em;
+      height: 0.88em;
+      vertical-align: -0.05em;
+      margin-left: 1px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    .header-link {
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #101828;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .header-link:hover {
+      opacity: 0.75;
+    }
+
+    /* ─── CONTAINER PRINCIPAL ─── */
+    .main-wrapper {
+      max-width: 1140px;
+      width: 100%;
+      margin: auto;
+      padding: 10px 0 24px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1.48fr 1fr;
+      gap: 28px;
+      align-items: flex-start;
+    }
+
+    /* ─── CARD AZUL (PAINEL PÚBLICO) ─── */
+    .card-panel-blue {
+      background-color: var(--card-blue);
+      border-radius: 16px;
+      padding: 36px 40px;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 12px 28px -10px rgba(32, 59, 162, 0.35);
+    }
+
+    .panel-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+      margin-bottom: 22px;
+    }
+
+    .panel-date {
+      font-family: var(--font-body);
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .panel-clock {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .panel-headline {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.14;
+      letter-spacing: -1.2px;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+
+    .panel-headline u {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .panel-subline {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.82);
+      margin-bottom: 26px;
+    }
+
+    /* Linhas das salas */
+    .rooms-list {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 34px;
+    }
+
+    .room-row {
+      display: grid;
+      grid-template-columns: 88px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .room-name {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      letter-spacing: -0.2px;
+    }
+
+    .room-subject {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.95);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-pill {
+      font-family: var(--font-body);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 999px;
+      text-align: center;
+      letter-spacing: 0.2px;
+      display: inline-block;
+    }
+
+    .pill-presente {
+      background-color: var(--status-green-bg);
+      color: var(--status-green-txt);
+    }
+
+    .pill-ausente {
+      background-color: var(--status-red-bg);
+      color: var(--status-red-txt);
+    }
+
+    .pill-sem-aula {
+      background-color: var(--status-dark-bg);
+      color: var(--status-dark-txt);
+    }
+
+    /* Rodapé do card azul */
+    .panel-footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-open-panel {
+      font-family: var(--font-body);
+      background-color: #ffffff;
+      color: var(--card-blue);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-open-panel:hover {
+      background-color: #F8FAFC;
+      transform: translateY(-1px);
+    }
+
+    .panel-updated-info {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 500;
+    }
+
+    /* ─── CARD BRANCO (GESTÃO ESCOLAR) ─── */
+    .card-login-white {
+      background-color: var(--card-white);
+      border-radius: 16px;
+      padding: 38px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 20px -2px rgba(16, 24, 40, 0.04);
+    }
+
+    .login-heading {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: #101828;
+      letter-spacing: -0.6px;
+      margin-bottom: 6px;
+    }
+
+    .login-subheading {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 26px;
+      line-height: 1.45;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .form-group label {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: #344054;
+    }
+
+    .form-input {
+      font-family: var(--font-body);
+      width: 100%;
+      height: 46px;
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-input);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14.5px;
+      color: #101828;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--card-blue);
+      box-shadow: 0 0 0 3px rgba(32, 59, 162, 0.12);
+    }
+
+    .form-input::placeholder {
+      color: #98A2B3;
+    }
+
+    .form-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .btn-submit-login {
+      font-family: var(--font-body);
+      background-color: var(--card-blue);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 11px 26px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-submit-login:hover:not(:disabled) {
+      background-color: var(--card-blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit-login:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .link-forgot {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: #101828;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .link-forgot:hover {
+      color: var(--card-blue);
+    }
+
+    .alert-error {
+      display: none;
+      padding: 10px 14px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      color: #DC2626;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: -4px;
+    }
+
+    /* ─── RODAPÉ DA PÁGINA ─── */
+    .footer-bottom {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-muted);
+      padding-top: 20px;
+    }
+
+    /* ─── RESPONSIVIDADE ─── */
+    @media (max-width: 960px) {
+      body {
+        padding: 24px 20px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .panel-headline {
+        font-size: 30px;
+      }
+
+      .card-panel-blue,
+      .card-login-white {
+        padding: 28px 24px;
+      }
+    }
+  
+    /* Password Toggle & Shake Effect */
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .password-wrapper .form-input {
+      padding-right: 44px;
+    }
+    .btn-toggle-senha {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #667085;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .btn-toggle-senha:hover {
+      color: #101828;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    @keyframes cardShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .card-login-white.shake {
+      animation: cardShake 0.4s ease;
+    }
+    @keyframes modalPopIn {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Topo -->
+  <header class="header-top">
+    <div class="brand-group">
+      <span class="brand-title"><span>Presen</span><svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X"><line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/><path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg></span>
+      <span class="brand-subtitle">CETEP / LNAB</span>
+    </div>
+
+    <a href="#cardLogin" class="header-link" id="linkSouCoordenador">Sou coordenador &darr;</a>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-wrapper">
+    <div class="cards-grid">
+
+      <!-- CARD AZUL (Painel das Salas) -->
+      <section class="card-panel-blue">
+        <div>
+          <!-- Data e Relógio Dinâmico -->
+          <div class="panel-header-line">
+            <span class="panel-date" id="txtDataCabecalho">SEGUNDA-FEIRA, 2 DE NOVEMBRO</span>
+            <span class="panel-clock" id="txtHoraCabecalho">hh:mm</span>
+          </div>
+
+          <!-- Pergunta Principal -->
+          <h2 class="panel-headline">
+            Onde está o professor? <u>Qual</u> sala está livre?
+          </h2>
+          <p class="panel-subline">
+            Veja agora, sem login.
+          </p>
+
+          <!-- Tabela de Salas -->
+          <div class="rooms-list">
+            <div class="room-row">
+              <span class="room-name">Sala 12</span>
+              <span class="room-subject">Matemática · [Turma]</span>
+              <span class="status-pill pill-presente">Presente</span>
+            </div>
+
+            <div class="room-row">
+              <span class="room-name">Sala 07</span>
+              <span class="room-subject">Física · [Turma]</span>
+              <span class="status-pill pill-ausente">Ausente</span>
+            </div>
+
+            <div class="room-row">
+              <span class="room-name">Sala 03</span>
+              <span class="room-subject">Sem aula neste horário</span>
+              <span class="status-pill pill-sem-aula">Sem aula</span>
+            </div>
+
+            <div class="room-row">
+              <span class="room-name">Sala 15</span>
+              <span class="room-subject">Língua Portuguesa · [Turma]</span>
+              <span class="status-pill pill-presente">Presente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rodapé do Card Azul -->
+        <div class="panel-footer-actions">
+          <a href="./painel.html" class="btn-open-panel" id="btnAbrirPainel">
+            <span>Abrir painel completo &rarr;</span>
+          </a>
+          <span class="panel-updated-info" id="txtAtualizado">
+            Atualizado há 1 min · Pavilhão ACM e Pavilhão Luís Viana
+          </span>
+        </div>
+      </section>
+
+      <!-- CARD BRANCO (Gestão Escolar) -->
+      <section class="card-login-white" id="cardLogin">
+        <div>
+          <h3 class="login-heading">Gestão escolar</h3>
+          <p class="login-subheading">Turmas, horários, docentes e cartões RFID.</p>
+
+          <form id="formLogin" class="login-form" onsubmit="event.preventDefault(); fazerLogin();">
+            <div class="form-group">
+              <label for="email">E-mail institucional</label>
+              <input 
+                id="email" 
+                type="email" 
+                class="form-input" 
+                placeholder="nome@cetep.edu.br" 
+                autocomplete="username" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="senha">Senha</label>
+              <div class="password-wrapper">
+                <input 
+                  id="senha" 
+                  type="password" 
+                  class="form-input" 
+                  autocomplete="current-password" 
+                  required 
+                />
+                <button type="button" id="btnToggleSenha" class="btn-toggle-senha" title="Mostrar/ocultar senha">
+                  <svg id="iconOlhoAberto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg id="iconOlhoFechado" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div id="boxErro" class="alert-error">
+              <span id="msgErro">E-mail ou senha incorretos.</span>
+            </div>
+
+            <div class="form-actions-row">
+              <button type="submit" id="btnEntrar" class="btn-submit-login">
+                Entrar
+              </button>
+
+              <span class="link-forgot" id="btnEsqueciSenha">
+                Esqueci minha senha
+              </span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="footer-bottom">
+    PresenX · Sistema Robótico de Controle de Presença · CETEP / LNAB
+  </footer>
+  <script>
+    // Relógio dinâmico no topo do card azul
+    function atualizarDataHora() {
+      const agora = new Date();
+      
+      const diasSemana = [
+        "DOMINGO", "SEGUNDA-FEIRA", "TERÇA-FEIRA", 
+        "QUARTA-FEIRA", "QUINTA-FEIRA", "SEXTA-FEIRA", "SÁBADO"
+      ];
+      const meses = [
+        "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", 
+        "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
+      ];
+
+      const diaNome = diasSemana[agora.getDay()];
+      const diaNum = agora.getDate();
+      const mesNome = meses[agora.getMonth()];
+
+      const txtData = document.getElementById("txtDataCabecalho");
+      const txtHora = document.getElementById("txtHoraCabecalho");
+
+      if (txtData) {
+        txtData.textContent = `${diaNome}, ${diaNum} DE ${mesNome}`;
+      }
+
+      if (txtHora) {
+        const hh = String(agora.getHours()).padStart(2, "0");
+        const mm = String(agora.getMinutes()).padStart(2, "0");
+        txtHora.textContent = `${hh}:${mm}`;
+      }
+    }
+
+    // Atualização dinâmica do tempo de sincronização com valor real
+    const tempoCarregamento = Date.now();
+    function atualizarTempoInfo() {
+      const minutos = Math.max(1, Math.floor((Date.now() - tempoCarregamento) / 60000));
+      const txtAtualizado = document.getElementById("txtAtualizado");
+      if (txtAtualizado) {
+        txtAtualizado.textContent = `Atualizado há ${minutos} min · Pavilhão ACM e Pavilhão Luís Viana`;
+      }
+    }
+
+    atualizarDataHora();
+    setInterval(atualizarDataHora, 1000);
+    setInterval(atualizarTempoInfo, 30000);
+
+    // Link "Sou coordenador" faz scroll e foca no e-mail
+    const linkCoord = document.getElementById("linkSouCoordenador");
+    if (linkCoord) {
+      linkCoord.addEventListener("click", (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById("email");
+        if (emailInput) {
+          emailInput.scrollIntoView({ behavior: "smooth", block: "center" });
+          emailInput.focus();
+        }
+      });
+    }
+
+    // Mostrar / Ocultar senha
+    const btnToggleSenha = document.getElementById("btnToggleSenha");
+    const iconOlhoAberto = document.getElementById("iconOlhoAberto");
+    const iconOlhoFechado = document.getElementById("iconOlhoFechado");
+    if (btnToggleSenha && senhaInput) {
+      btnToggleSenha.addEventListener("click", () => {
+        const isPassword = senhaInput.type === "password";
+        senhaInput.type = isPassword ? "text" : "password";
+        if (iconOlhoAberto) iconOlhoAberto.style.display = isPassword ? "none" : "block";
+        if (iconOlhoFechado) iconOlhoFechado.style.display = isPassword ? "block" : "none";
+      });
+    }
+
+    // Modal Esqueci minha senha
+    const btnEsqueci = document.getElementById("btnEsqueciSenha");
+    const modalEsqueci = document.getElementById("modalEsqueciSenha");
+    const btnFecharModal = document.getElementById("btnFecharModalEsqueci");
+
+    if (btnEsqueci && modalEsqueci) {
+      btnEsqueci.addEventListener("click", () => {
+        modalEsqueci.style.display = "flex";
+      });
+    }
+    if (btnFecharModal && modalEsqueci) {
+      btnFecharModal.addEventListener("click", () => {
+        modalEsqueci.style.display = "none";
+      });
+    }
+    if (modalEsqueci) {
+      modalEsqueci.addEventListener("click", (e) => {
+        if (e.target === modalEsqueci) modalEsqueci.style.display = "none";
+      });
+    }
+
+    // Login Administrativo
+    const btnEntrar = document.getElementById("btnEntrar");
+    const boxErro = document.getElementById("boxErro");
+    const msgErro = document.getElementById("msgErro");
+    const emailInput = document.getElementById("email");
+    const senhaInput = document.getElementById("senha");
+
+    async function fazerLogin() {
+      const email = emailInput.value.trim();
+      const senha = senhaInput.value.trim();
+
+      if (!email || !senha) {
+        mostrarErro("Preencha o e-mail e a senha.");
+        return;
+      }
+
+      boxErro.style.display = "none";
+      btnEntrar.disabled = true;
+      btnEntrar.textContent = "Entrando...";
+
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.ok) {
+          localStorage.setItem("px_admin_token", data.token || "session_active");
+          window.location.replace("./gestao.html");
+          return;
+        } else {
+          mostrarErro(data.erro || "E-mail ou senha incorretos.");
+        }
+      } catch (err) {
+        mostrarErro("Erro ao conectar com o servidor local.");
+      } finally {
+        btnEntrar.disabled = false;
+        btnEntrar.textContent = "Entrar";
+      }
+    }
+
+    function mostrarErro(texto) {
+      msgErro.textContent = texto;
+      boxErro.style.display = "block";
+      const card = document.getElementById("cardLogin");
+      if (card) {
+        card.classList.remove("shake");
+        void card.offsetWidth; // trigger reflow
+        card.classList.add("shake");
+      }
+    }
+
+    // Alerta de sessão expirada
+    const urlParamsLogin = new URLSearchParams(window.location.search);
+    if (urlParamsLogin.get("expirado")) {
+      mostrarErro("Sua sessão expirou por segurança. Faça login novamente.");
+    }
+  </script>
+
+  <!-- Modal Esqueci Minha Senha -->
+  <div id="modalEsqueciSenha" style="position:fixed; inset:0; background:rgba(16,26,74,0.48); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;">
+    <div style="background:#ffffff; border-radius:16px; padding:32px 36px; max-width:440px; width:100%; box-shadow:0 16px 40px -10px rgba(16,26,74,0.25); text-align:center; animation:modalPopIn 0.26s cubic-bezier(0.16,1,0.3,1) forwards;">
+      <div style="width:48px; height:48px; border-radius:50%; background:#eff6ff; color:#283e9b; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#283e9b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </div>
+      <h3 style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#101a4a; margin-bottom:8px;">Redefinição de Senha</h3>
+      <p style="font-family:var(--font-body); font-size:14px; color:#4b5481; line-height:1.5; margin-bottom:24px;">Para redefinir sua senha de acesso ao PresenX, solicite diretamente à coordenação ou à administração técnica do CETEP / LNAB.</p>
+      <button type="button" id="btnFecharModalEsqueci" style="font-family:var(--font-body); background:#283e9b; color:#ffffff; font-size:14px; font-weight:600; padding:11px 28px; border-radius:10px; border:none; cursor:pointer; width:100%; transition:background 0.15s ease;">Entendido</button>
+    </div>
+  </div>
+
+</body>
+</html>
