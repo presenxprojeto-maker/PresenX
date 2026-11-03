@@ -726,6 +726,7 @@ app.post("/api/grade/salvar-semanal", async (req, res) => {
       return fail(res, 400, "turma_id e grade (array) são obrigatórios");
     }
 
+    await runAsync("BEGIN TRANSACTION");
     await runAsync("DELETE FROM grade_horarios WHERE turma_id = ?", [turma_id]);
 
     for (const item of grade) {
@@ -738,8 +739,10 @@ app.post("/api/grade/salvar-semanal", async (req, res) => {
       }
     }
 
+    await runAsync("COMMIT");
     ok(res, { total_salvos: grade.length });
   } catch (err) {
+    try { await runAsync("ROLLBACK"); } catch (_) {}
     fail(res, 500, err.message);
   }
 });

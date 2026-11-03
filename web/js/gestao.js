@@ -839,11 +839,15 @@ function abrirModalVincularCartao() {
   }
 
   el.modalVincularCartao.classList.remove("hidden");
+  el.modalVincularCartao.classList.add("active");
   renderIcons();
 }
 
 function fecharModalVincularCartao() {
-  if (el.modalVincularCartao) el.modalVincularCartao.classList.add("hidden");
+  if (el.modalVincularCartao) {
+    el.modalVincularCartao.classList.remove("active");
+    el.modalVincularCartao.classList.add("hidden");
+  }
 }
 
 async function confirmarVinculoCartao() {
@@ -1699,8 +1703,16 @@ function abrirModalSlot(dia, horario) {
 
   const aula = gradeMatrizAtual[dia]?.[horario];
   if (aula && aula.disciplina && aula.disciplina !== "Sem aula") {
+    if (aula.disciplina && !disciplinasLista.some(d => d.nome === aula.disciplina)) {
+      selDisc.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(aula.disciplina)}">${escapeHtml(aula.disciplina)}</option>`);
+    }
     selDisc.value = aula.disciplina;
+
+    if (aula.professor && !profs.some(p => p.nome === aula.professor)) {
+      selProf.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(aula.professor)}">${escapeHtml(aula.professor)}</option>`);
+    }
     selProf.value = aula.professor || "";
+
     if (btnRemover) btnRemover.classList.remove("hidden");
   } else {
     selDisc.value = "";
@@ -1709,15 +1721,20 @@ function abrirModalSlot(dia, horario) {
   }
 
   modal.classList.remove("hidden");
+  modal.classList.add("active");
+  renderIcons();
 }
 
 function fecharModalSlot() {
   slotEditando = null;
   const modal = document.getElementById("modalEditarSlotGrade");
-  if (modal) modal.classList.add("hidden");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.classList.add("hidden");
+  }
 }
 
-function salvarSlotEditado() {
+async function salvarSlotEditado() {
   if (!slotEditando) return;
   const { dia, horario } = slotEditando;
   const selDisc = document.getElementById("selectSlotDisciplina");
@@ -1736,9 +1753,12 @@ function salvarSlotEditado() {
 
   fecharModalSlot();
   renderQuadroGradeSemanal();
+
+  // Salva no banco de dados automaticamente!
+  await salvarGradeSemanalCompleta();
 }
 
-function removerSlotEditado() {
+async function removerSlotEditado() {
   if (!slotEditando) return;
   const { dia, horario } = slotEditando;
   if (gradeMatrizAtual[dia]) {
@@ -1746,6 +1766,9 @@ function removerSlotEditado() {
   }
   fecharModalSlot();
   renderQuadroGradeSemanal();
+
+  // Salva no banco de dados automaticamente!
+  await salvarGradeSemanalCompleta();
 }
 
 async function salvarGradeSemanalCompleta() {
@@ -1777,11 +1800,13 @@ async function salvarGradeSemanalCompleta() {
       el.msgGrade.textContent = `Grade da turma ${turmaId} salva com sucesso (${grade.length} horários cadastrados)!`;
       setTimeout(() => { if (el.msgGrade) el.msgGrade.textContent = ""; }, 4000);
     }
+    toast.success(`Grade da turma ${turmaId} salva com sucesso (${grade.length} horários)!`);
   } catch (e) {
     if (el.msgGrade) {
       el.msgGrade.style.color = "var(--danger)";
       el.msgGrade.textContent = "Erro ao salvar grade: " + e.message;
     }
+    toast.error("Erro ao salvar grade: " + e.message);
   }
 }
 
@@ -1808,11 +1833,16 @@ function abrirModalCopiarGrade() {
     outrasTurmas.map(t => `<option value="${t.id}">${t.id} - ${escapeHtml(t.nome)}` + `</option>`).join("");
 
   modal.classList.remove("hidden");
+  modal.classList.add("active");
+  renderIcons();
 }
 
 function fecharModalCopiarGrade() {
   const modal = document.getElementById("modalCopiarGrade");
-  if (modal) modal.classList.add("hidden");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.classList.add("hidden");
+  }
 }
 
 async function confirmarCopiarGrade() {
@@ -3001,6 +3031,7 @@ window.sair = function () {
 // INICIALIZAÇÃO
 // ======================================================
 async function start() {
+  renderIcons();
   initNavegacao();
 
   if (el.filtroData) el.filtroData.value = todayKey();
@@ -3133,6 +3164,8 @@ async function start() {
   }
   const btnSalvarGradeH = document.getElementById("btnSalvarGradeHeader");
   if (btnSalvarGradeH) btnSalvarGradeH.addEventListener("click", salvarGradeSemanalCompleta);
+  const btnSalvarGradeDireto = document.getElementById("btnSalvarGradeDireto");
+  if (btnSalvarGradeDireto) btnSalvarGradeDireto.addEventListener("click", salvarGradeSemanalCompleta);
   if (el.btnCopiarGradeModal) el.btnCopiarGradeModal.addEventListener("click", abrirModalCopiarGrade);
 
   if (el.tbodyGradeSemanal) {

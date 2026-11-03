@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./css/cetep.css" />
+  <link rel="stylesheet" href="./css/cetep.css?v=20261103_2" />
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,7 +22,7 @@
   <!-- TOPBAR MOBILE (Visível apenas em dispositivos móveis) -->
   <header class="mobile-topbar" id="mobileTopbar">
     <button class="btn-mobile-menu" id="btnOpenMobileMenu" type="button" aria-label="Abrir menu de navegação">
-      <i data-lucide="menu"></i>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
     </button>
     <div class="mobile-topbar-brand">
       <span>Presen</span><svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X"><line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/><path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>
@@ -50,7 +50,7 @@
             <span>Presen</span><svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X"><line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/><path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>
           </div>
           <button class="btn-close-sidebar-mobile" id="btnCloseSidebarMobile" type="button" aria-label="Fechar menu">
-            <i data-lucide="x"></i>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         <div class="subtitle">Administrativo • CETEP / LNAB</div>
@@ -551,7 +551,11 @@
               <select id="gradeSeletorTurma" class="form-input"></select>
             </div>
 
-            <div class="grade-copiar-box">
+            <div class="grade-copiar-box" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <button id="btnSalvarGradeDireto" type="button" class="btn-form-salvar" style="display:inline-flex; align-items:center; gap:8px;">
+                <i data-lucide="save" style="width:16px; height:16px;"></i>
+                <span>Salvar grade</span>
+              </button>
               <button id="btnCopiarGradeModal" type="button" class="btn-form-cancelar">Copiar para outra turma</button>
             </div>
           </div>
@@ -986,10 +990,20 @@
         </select>
       </div>
 
-      <div class="form-actions-row" style="margin-top: 24px; justify-content: flex-end;">
-        <button id="btnSlotRemover" type="button" class="btn-action-delete" style="margin-right: auto; margin-left: 0;">Remover aula</button>
-        <button id="btnSlotCancelar" type="button" class="btn-form-cancelar">Cancelar</button>
-        <button id="btnSlotSalvar" type="button" class="btn-form-salvar">Confirmar</button>
+      <div class="modal-slot-actions" style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
+        <button id="btnSlotSalvar" type="button" class="btn-form-salvar" style="width: 100%; min-height: 44px; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+          <span>Confirmar e Salvar</span>
+        </button>
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button id="btnSlotRemover" type="button" class="btn-action-delete" style="flex: 1; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
+            <span>Remover aula</span>
+          </button>
+          <button id="btnSlotCancelar" type="button" class="btn-form-cancelar" style="flex: 1; min-height: 40px;">
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1007,9 +1021,9 @@
         </select>
       </div>
 
-      <div class="form-actions-row" style="margin-top: 24px; justify-content: flex-end;">
-        <button id="btnCopiarGradeCancelar" type="button" class="btn-form-cancelar">Cancelar</button>
-        <button id="btnCopiarGradeConfirmar" type="button" class="btn-form-salvar">Copiar grade</button>
+      <div class="modal-copiar-actions" style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
+        <button id="btnCopiarGradeConfirmar" type="button" class="btn-form-salvar" style="width: 100%; min-height: 44px; font-size: 15px; font-weight: 700;">Copiar grade</button>
+        <button id="btnCopiarGradeCancelar" type="button" class="btn-form-cancelar" style="width: 100%; min-height: 40px;">Cancelar</button>
       </div>
     </div>
   </div>
@@ -1020,7 +1034,7 @@
   <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
   <div id="toastContainer" class="presenx-toast-container" aria-live="polite"></div>
 
-  <script src="js/gestao.js"></script>
+  <script src="js/gestao.js?v=20261103_2"></script>
 
 </body>
 </html>
