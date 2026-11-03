@@ -91,6 +91,46 @@ const turnosPadrao = [
   { turno: "noturno", chave: "6", inicio: "23:05", fim: "23:50", ordem: 7 }
 ];
 
+// ======================================================
+// FIREBASE ADMIN (Persistência em Nuvem / Opcional)
+// ======================================================
+let firebaseDb = null;
+const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
+
+let serviceAccountData = null;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    serviceAccountData = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    try {
+      serviceAccountData = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, "base64").toString("utf-8"));
+    } catch (e2) {
+      console.warn("Aviso: falha ao interpretar FIREBASE_SERVICE_ACCOUNT da variável de ambiente.");
+    }
+  }
+} else if (fs.existsSync(serviceAccountPath)) {
+  try {
+    serviceAccountData = require(serviceAccountPath);
+  } catch (e) {
+    console.warn("Aviso ao carregar serviceAccountKey.json:", e.message);
+  }
+}
+
+if (serviceAccountData) {
+  try {
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccountData),
+        databaseURL: process.env.FIREBASE_DATABASE_URL || "https://controledepresenca-99c9d-default-rtdb.firebaseio.com/"
+      });
+    }
+    firebaseDb = admin.database();
+    console.log(">> Firebase Realtime Database conectado com sucesso (persistência ativa).");
+  } catch (err) {
+    console.warn("Aviso: Firebase Admin não pôde ser iniciado:", err.message);
+  }
+}
+
 // Inicialização e schema das tabelas
 db.serialize(async () => {
   db.run(`
@@ -279,28 +319,53 @@ db.serialize(async () => {
     const hash = hashPassword(adminRow.senha);
     await runAsync("UPDATE admin_usuarios SET senha = ? WHERE id = ?", [hash, adminRow.id]);
   }
-});
 
-// ======================================================
-// FIREBASE ADMIN (Híbrido / Opcional)
-// ======================================================
-let firebaseDb = null;
-const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
-
-if (fs.existsSync(serviceAccountPath)) {
-  try {
-    const serviceAccount = require(serviceAccountPath);
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://controledepresenca-99c9d-default-rtdb.firebaseio.com/"
-      });
+  // 1. Suporte a lista fixa de coordenadores adicionais via variável de ambiente (garante permanência no Render)
+  const envAdmins = process.env.ADMIN_COORDINATORS || process.env.ADMIN_EMAILS || "";
+  if (envAdmins) {
+    const lista = envAdmins.split(",").map(s => s.trim()).filter(Boolean);
+    for (const item of lista) {
+      let email = item;
+      let senha = senhaAdminInicial;
+      if (item.includes(":")) {
+        const partes = item.split(":");
+        email = partes[0].trim();
+        senha = partes.slice(1).join(":").trim();
+      }
+      email = email.toLowerCase();
+      if (email.includes("@")) {
+        const jaExiste = await getAsync("SELECT id FROM admin_usuarios WHERE email = ?", [email]);
+        if (!jaExiste) {
+          const hash = hashPassword(senha);
+          await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)", [email, hash]);
+          console.log(`>> Coordenador de ambiente inicializado: ${email}`);
+        }
+      }
     }
-    firebaseDb = admin.database();
-  } catch (err) {
-    console.warn("Erro ao inicializar Firebase Admin:", err.message);
   }
-}
+
+  // 2. Restaura coordenadores salvos no Firebase Realtime Database
+  if (firebaseDb) {
+    try {
+      const snap = await firebaseDb.ref("admin_usuarios").once("value");
+      const fbAdmins = snap.val();
+      if (fbAdmins && typeof fbAdmins === "object") {
+        for (const [k, v] of Object.entries(fbAdmins)) {
+          if (v && v.email && v.senha) {
+            const em = String(v.email).trim().toLowerCase();
+            const ex = await getAsync("SELECT id FROM admin_usuarios WHERE email = ?", [em]);
+            if (!ex) {
+              await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)", [em, v.senha]);
+              console.log(`>> Coordenador restaurado do Firebase: ${em}`);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar admins do Firebase:", e.message);
+    }
+  }
+});
 
 // ======================================================
 // MIDDLEWARES E CONFIGURAÇÕES
@@ -934,6 +999,18 @@ async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status }) {
        sincronizado = 0`,
     [uid, nome, curso || "", hora, data, status]
   );
+
+  if (firebaseDb) {
+    firebaseDb.ref("ultimo_acesso").set({
+      uid,
+      nome,
+      curso: curso || "",
+      hora,
+      data,
+      status,
+      timestamp: Date.now()
+    }).catch(e => console.warn("Aviso ao sincronizar ultimo_acesso com Firebase:", e.message));
+  }
 }
 
 app.get("/api/ultimo-acesso", async (req, res) => {
@@ -1079,7 +1156,7 @@ app.post("/api/presenca", async (req, res) => {
 
     const data = String(req.body.data || dataPadrao).trim();
     const hora = String(req.body.hora || horaPadrao).trim();
-    const uid = String(req.body.uid || "").trim().toUpperCase();
+    const uid = String(req.body.uid || req.body.identifier || "").trim().toUpperCase();
     const leitorId = String(req.body.leitor_id || req.body.leitor || "leitor_portaria").trim().toLowerCase();
     const leitorNome = String(req.body.leitor_nome || "Leitor Portaria").trim();
     const ipCliente = String(req.ip || "").replace(/^.*:/, "").trim();
@@ -1109,9 +1186,33 @@ app.post("/api/presenca", async (req, res) => {
         data,
         status: "Desconhecido"
       });
-      return fail(res, 404, "Usuário não cadastrado");
+      return res.status(200).json({
+        ok: false,
+        status: "fail",
+        allowed: false,
+        acao: "negado",
+        action: "negado",
+        nome: "Não cadastrado",
+        name: "Não cadastrado",
+        uid,
+        mensagem: "Cartão não cadastrado",
+        message: "Cartao nao cadastrado"
+      });
     }
-    if (usuario.ativo !== 1) return fail(res, 403, "Usuário inativo");
+
+    if (usuario.ativo !== 1) {
+      return res.status(200).json({
+        ok: false,
+        status: "fail",
+        allowed: false,
+        acao: "bloqueado",
+        action: "bloqueado",
+        nome: usuario.nome,
+        name: usuario.nome,
+        mensagem: "Usuário inativo",
+        message: "Usuario inativo"
+      });
+    }
 
     const presenca = await getAsync(
       "SELECT * FROM presencas WHERE data = ? AND uid = ?",
@@ -1134,11 +1235,32 @@ app.post("/api/presenca", async (req, res) => {
         status: "Presente"
       });
 
+      if (firebaseDb) {
+        const safeUid = uid.replace(/[.#$\[\]]/g, "_");
+        firebaseDb.ref(`presencas/${data}/${safeUid}`).set({
+          uid,
+          nome: usuario.nome,
+          curso: usuario.curso || "",
+          status: "Presente",
+          hora_entrada: hora,
+          hora_saida: "",
+          data,
+          timestamp: Date.now()
+        }).catch(e => console.warn("Aviso ao sincronizar presenca no Firebase:", e.message));
+      }
+
       return ok(res, {
+        ok: true,
+        allowed: true,
+        status: "success",
         acao: "entrada",
+        action: "entrada",
         nome: usuario.nome,
+        name: usuario.nome,
         curso: usuario.curso,
-        hora
+        hora,
+        mensagem: "Entrada liberada",
+        message: "Entrada liberada"
       });
     }
 
@@ -1162,11 +1284,32 @@ app.post("/api/presenca", async (req, res) => {
       status: novoStatus
     });
 
+    if (firebaseDb) {
+      const safeUid = uid.replace(/[.#$\[\]]/g, "_");
+      firebaseDb.ref(`presencas/${data}/${safeUid}`).set({
+        uid,
+        nome: usuario.nome,
+        curso: usuario.curso || "",
+        status: novoStatus,
+        hora_entrada: novaEntrada,
+        hora_saida: novaSaida,
+        data,
+        timestamp: Date.now()
+      }).catch(e => console.warn("Aviso ao sincronizar presenca no Firebase:", e.message));
+    }
+
     ok(res, {
+      ok: true,
+      allowed: true,
+      status: "success",
       acao: novoStatus === "Presente" ? "entrada" : "saida",
+      action: novoStatus === "Presente" ? "entrada" : "saida",
       nome: usuario.nome,
+      name: usuario.nome,
       curso: usuario.curso,
-      hora
+      hora,
+      mensagem: novoStatus === "Presente" ? "Entrada liberada" : "Saída liberada",
+      message: novoStatus === "Presente" ? "Entrada liberada" : "Saida liberada"
     });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1460,6 +1603,14 @@ app.post("/api/alterar-senha", async (req, res) => {
     const novoHash = hashPassword(nova_senha);
     await runAsync("UPDATE admin_usuarios SET senha = ? WHERE email = ?", [novoHash, email]);
 
+    if (firebaseDb) {
+      const safeKey = email.replace(/[.#$\[\]]/g, "_");
+      firebaseDb.ref(`admin_usuarios/${safeKey}`).update({
+        senha: novoHash,
+        atualizado_em: Date.now()
+      }).catch(e => console.warn("Aviso ao atualizar senha no Firebase:", e.message));
+    }
+
     ok(res, { msg: "Senha alterada com sucesso!" });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1501,6 +1652,15 @@ app.post("/api/admin-usuarios", authAdmin, async (req, res) => {
     const hash = hashPassword(senha);
     await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)", [email, hash]);
 
+    if (firebaseDb) {
+      const safeKey = email.replace(/[.#$\[\]]/g, "_");
+      firebaseDb.ref(`admin_usuarios/${safeKey}`).set({
+        email,
+        senha: hash,
+        criado_em: Date.now()
+      }).catch(e => console.warn("Aviso ao salvar admin no Firebase:", e.message));
+    }
+
     ok(res, { mensagem: "Coordenador cadastrado com sucesso!" });
   } catch (err) {
     fail(res, 500, "Erro ao cadastrar coordenador.");
@@ -1525,6 +1685,12 @@ app.delete("/api/admin-usuarios/:id", authAdmin, async (req, res) => {
 
     await runAsync("DELETE FROM admin_usuarios WHERE id = ?", [id]);
     await runAsync("DELETE FROM admin_sessoes WHERE email = ?", [row.email]);
+
+    if (firebaseDb) {
+      const safeKey = row.email.replace(/[.#$\[\]]/g, "_");
+      firebaseDb.ref(`admin_usuarios/${safeKey}`).remove()
+        .catch(e => console.warn("Aviso ao remover admin no Firebase:", e.message));
+    }
 
     ok(res, { mensagem: "Coordenador removido com sucesso." });
   } catch (err) {
