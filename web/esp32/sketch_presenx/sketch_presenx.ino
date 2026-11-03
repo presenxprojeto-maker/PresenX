@@ -21,7 +21,7 @@
 
 // Fallbacks de configuração caso não definidos no header
 #ifndef LCD_I2C_ADDR
-  #define LCD_I2C_ADDR 0x27
+  #define LCD_I2C_ADDR 0x3F
 #endif
 #ifndef BUZZER_PIN
   #define BUZZER_PIN -1
@@ -165,15 +165,15 @@ void enviarHeartbeatPing() {
                          "\",\"local\":\"" + String(PRESENX_LEITOR_LOCAL) + "\"}";
 
   HTTPClient http;
+  WiFiClientSecure secureClient;
+  WiFiClient regularClient;
   bool iniciou = false;
 
   if (urlServidor.startsWith("https://")) {
-    WiFiClientSecure secureClient;
     secureClient.setInsecure(); // Conecta TLS sem precisar de certificado CA fixo
     iniciou = http.begin(secureClient, urlServidor);
   } else {
-    WiFiClient client;
-    iniciou = http.begin(client, urlServidor);
+    iniciou = http.begin(regularClient, urlServidor);
   }
 
   if (iniciou) {
@@ -213,15 +213,15 @@ bool registrarPresenca(
   Serial.println("[PresenX] Enviando UID: " + uid + " para: " + urlPresenca);
 
   HTTPClient http;
+  WiFiClientSecure secureClient;
+  WiFiClient regularClient;
   bool iniciou = false;
 
   if (urlPresenca.startsWith("https://")) {
-    WiFiClientSecure secureClient;
     secureClient.setInsecure();
     iniciou = http.begin(secureClient, urlPresenca);
   } else {
-    WiFiClient client;
-    iniciou = http.begin(client, urlPresenca);
+    iniciou = http.begin(regularClient, urlPresenca);
   }
 
   if (!iniciou) {
