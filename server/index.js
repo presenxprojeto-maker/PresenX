@@ -266,11 +266,14 @@ db.serialize(async () => {
     }
   }
 
-  // Garante senha de admin com hash seguro
+  // Garante senha de admin com hash seguro (admin@presenx.com e fallback para qualquer e-mail admin)
+  const senhaAdminInicial = process.env.ADMIN_INITIAL_PASSWORD || "admin123";
+  const hashPadrao = hashPassword(senhaAdminInicial);
+
   const adminRow = await getAsync("SELECT * FROM admin_usuarios WHERE email = 'admin@presenx.com'");
   if (!adminRow) {
-    const hash = hashPassword("admin123");
-    await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES ('admin@presenx.com', ?)", [hash]);
+    await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES ('admin@presenx.com', ?)", [hashPadrao]);
+    console.log(">> Usuário inicial 'admin@presenx.com' configurado com sucesso.");
   } else if (!adminRow.senha.includes(":")) {
     // Migra senha antiga em texto puro para hash seguro
     const hash = hashPassword(adminRow.senha);
@@ -1340,7 +1343,17 @@ app.post("/api/login", rateLimitLogin, async (req, res) => {
 
     if (!email || !senha) return fail(res, 400, "Email e senha são obrigatórios");
 
-    const row = await getAsync("SELECT * FROM admin_usuarios WHERE email = ?", [email]);
+    let row = await getAsync("SELECT * FROM admin_usuarios WHERE email = ?", [email]);
+    
+    // Auto-criação do admin caso o banco tenha sido iniciado sem registro
+    if (!row && email === "admin@presenx.com") {
+      const senhaPadrao = process.env.ADMIN_INITIAL_PASSWORD || "admin123";
+      if (senha === senhaPadrao) {
+        const hash = hashPassword(senhaPadrao);
+        await runAsync("INSERT OR REPLACE INTO admin_usuarios (email, senha) VALUES ('admin@presenx.com', ?)", [hash]);
+        row = { email: "admin@presenx.com", senha: hash };
+      }
+    }
     if (row && verifyPassword(senha, row.senha)) {
       limparTentativasLogin(req.ip || "unknown");
 

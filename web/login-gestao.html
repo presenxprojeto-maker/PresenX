@@ -675,6 +675,13 @@
       });
     }
 
+    // Login Administrativo
+    const btnEntrar = document.getElementById("btnEntrar");
+    const boxErro = document.getElementById("boxErro");
+    const msgErro = document.getElementById("msgErro");
+    const emailInput = document.getElementById("email");
+    const senhaInput = document.getElementById("senha");
+
     // Mostrar / Ocultar senha
     const btnToggleSenha = document.getElementById("btnToggleSenha");
     const iconOlhoAberto = document.getElementById("iconOlhoAberto");
@@ -708,13 +715,6 @@
         if (e.target === modalEsqueci) modalEsqueci.style.display = "none";
       });
     }
-
-    // Login Administrativo
-    const btnEntrar = document.getElementById("btnEntrar");
-    const boxErro = document.getElementById("boxErro");
-    const msgErro = document.getElementById("msgErro");
-    const emailInput = document.getElementById("email");
-    const senhaInput = document.getElementById("senha");
 
     async function fazerLogin() {
       const email = emailInput.value.trim();
