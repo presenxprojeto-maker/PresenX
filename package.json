@@ -5,13 +5,13 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "postinstall": "npm --prefix server install"
+    "postinstall": "npm --prefix server install --build-from-source"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "firebase-admin": "^13.7.0",
-    "sqlite3": "^6.0.1"
+    "sqlite3": "^5.1.7"
   },
   "engines": {
     "node": ">=18"
