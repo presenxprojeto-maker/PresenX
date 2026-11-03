@@ -13,6 +13,8 @@
 
 #if __has_include("presenx_config.h")
   #include "presenx_config.h"
+#elif __has_include("../presenx_config.h")
+  #include "../presenx_config.h"
 #else
   #error "Copie presenx_config.example.h para presenx_config.h nesta pasta e configure a rede Wi-Fi."
 #endif
