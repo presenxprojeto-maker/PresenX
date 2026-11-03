@@ -865,6 +865,8 @@ body.hide-cursor, body.hide-cursor * {
   right: 22px;
   bottom: 22px;
   width: 380px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
 
   padding: 18px 20px;
   border-radius: var(--r-lg);
@@ -876,7 +878,7 @@ body.hide-cursor, body.hide-cursor * {
 
   z-index: 9999;
 
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 8px;
 
@@ -888,6 +890,7 @@ body.hide-cursor, body.hide-cursor * {
 }
 
 .painel-aviso-flutuante.active {
+  display: flex !important;
   transform: translateX(0);
   opacity: 1;
 }
@@ -1608,12 +1611,17 @@ body.hide-cursor, body.hide-cursor * {
     min-height: 100vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    overflow-x: clip !important;
     cursor: auto !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    position: relative !important;
     -webkit-overflow-scrolling: touch;
   }
 
   body {
     padding: 10px 10px 30px 10px !important;
+    box-sizing: border-box !important;
   }
 
   .painel-root {
@@ -1621,60 +1629,123 @@ body.hide-cursor, body.hide-cursor * {
     height: auto !important;
     min-height: 100vh !important;
     overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .painel-header {
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 12px !important;
-    padding: 14px 16px !important;
+    padding: 12px 14px !important;
     border-radius: var(--r-md) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .painel-header-marca {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
     width: 100% !important;
+    min-width: 0 !important;
   }
 
   .painel-header-logo {
-    width: 44px !important;
-    height: 44px !important;
+    width: 42px !important;
+    height: 42px !important;
     font-size: 9px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .painel-header-textos {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
   }
 
   .painel-header-titulo {
     font-size: 20px !important;
+    white-space: nowrap !important;
+  }
+
+  .painel-header-instituicao {
+    font-size: 12px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
   }
 
   .painel-pavilhao-seletor {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
+    gap: 8px !important;
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     background: #f8fafc;
     border: 1px solid rgba(16, 26, 74, 0.08);
-    padding: 6px 12px !important;
+    padding: 6px 10px !important;
     border-radius: 8px;
     margin: 0 !important;
+  }
+
+  .pavilhao-selecionado-chip {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+  }
+
+  #txtPavilhaoSelecionado {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+    display: inline-block !important;
+  }
+
+  .btn-trocar-pavilhao-header {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    margin-left: 0 !important;
+    padding: 6px 10px !important;
+    font-size: 11.5px !important;
   }
 
   .painel-header-datahora {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
+    gap: 10px !important;
     width: 100% !important;
-    padding-top: 6px;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 8px !important;
     border-top: 1px solid rgba(15, 23, 42, 0.06);
+    box-sizing: border-box !important;
   }
 
   .painel-header-hora {
-    font-size: 26px !important;
+    font-size: 24px !important;
   }
 
   .painel-header-data {
-    font-size: 13px !important;
+    font-size: 12px !important;
+  }
+
+  .btn-fullscreen {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
   }
 
   .painel-contexto {
@@ -1683,6 +1754,9 @@ body.hide-cursor, body.hide-cursor * {
     gap: 10px !important;
     padding: 12px 14px !important;
     border-radius: var(--r-md) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .painel-contexto-esq {
@@ -1691,30 +1765,32 @@ body.hide-cursor, body.hide-cursor * {
     align-items: center !important;
     gap: 8px !important;
     width: 100% !important;
+    min-width: 0 !important;
   }
 
   .painel-contexto-dia {
     padding-right: 0 !important;
     border-right: none !important;
-    font-size: 15px !important;
+    font-size: 14.5px !important;
   }
 
   .painel-chip {
-    padding: 5px 10px !important;
-    font-size: 11.5px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
   }
 
   .painel-legenda {
     display: flex !important;
     flex-wrap: wrap !important;
-    gap: 12px !important;
+    gap: 10px !important;
     width: 100% !important;
+    min-width: 0 !important;
     padding-top: 8px;
     border-top: 1px solid rgba(15, 23, 42, 0.06);
   }
 
   .legenda-item {
-    font-size: 12px !important;
+    font-size: 11.5px !important;
   }
 
   .painel-corpo {
@@ -1724,15 +1800,23 @@ body.hide-cursor, body.hide-cursor * {
     overflow: visible !important;
     flex: initial !important;
     gap: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .painel-grade-wrap {
-    padding: 14px 12px !important;
+    padding: 14px 10px !important;
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
     flex: initial !important;
-    border-radius: var(--r-lg) !important;
+    border-radius: var(--r-md) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .painel-grade {
@@ -1741,27 +1825,45 @@ body.hide-cursor, body.hide-cursor * {
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
-    gap: 12px !important;
+    gap: 10px !important;
     padding-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .painel-quadro {
-    padding: 14px 14px 14px 16px !important;
+    padding: 12px 14px !important;
     border-radius: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .painel-turma {
-    font-size: 18px !important;
+    font-size: 17px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    line-height: 1.25 !important;
   }
 
   .painel-valor {
-    font-size: 14.5px !important;
+    font-size: 13.5px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    line-height: 1.35 !important;
   }
 
   .painel-lateral {
     flex-direction: column !important;
     width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
     gap: 12px !important;
   }
 
@@ -1769,6 +1871,26 @@ body.hide-cursor, body.hide-cursor * {
     padding: 14px 12px !important;
     border-radius: var(--r-md) !important;
     max-height: 280px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .painel-evento-titulo,
+  .painel-aviso-item-titulo {
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  .painel-aviso-flutuante {
+    width: calc(100vw - 28px) !important;
+    max-width: 100% !important;
+    right: 14px !important;
+    left: 14px !important;
+    bottom: 14px !important;
+    box-sizing: border-box !important;
+  }
+  .painel-aviso-flutuante:not(.active) {
+    display: none !important;
   }
 
   .painel-rodape {
@@ -1777,40 +1899,54 @@ body.hide-cursor, body.hide-cursor * {
     gap: 8px !important;
     padding: 12px 0 6px 0 !important;
     text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .painel-rodape-info {
     flex-wrap: wrap !important;
     justify-content: center !important;
-    font-size: 12px !important;
+    font-size: 11.5px !important;
+    gap: 6px !important;
+    text-align: center !important;
+  }
+
+  .rodape-divisor {
+    display: none !important;
   }
 
   .tela-selecao-pavilhao-overlay,
   .modal-pavilhao-overlay {
-    padding: 24px 18px !important;
+    padding: 20px 14px !important;
   }
 
   .tela-selecao-titulo {
-    font-size: 30px !important;
-    margin-bottom: 20px !important;
+    font-size: 26px !important;
+    margin-bottom: 18px !important;
   }
 
   .btn-opcao-pavilhao {
-    min-height: 56px !important;
-    padding: 0 16px !important;
+    min-height: 52px !important;
+    padding: 12px 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .btn-opcao-pavilhao.card-luis-viana .nome-pavilhao,
   .btn-opcao-pavilhao.card-acm .nome-pavilhao,
   .btn-opcao-pavilhao.card-todos .nome-pavilhao {
-    font-size: 18px !important;
+    font-size: 16px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
   }
 
   .btn-opcao-pavilhao.card-luis-viana .meta-pavilhao,
   .btn-opcao-pavilhao.card-acm .meta-pavilhao,
   .btn-opcao-pavilhao.card-todos .meta-pavilhao {
-    font-size: 12.5px !important;
-    gap: 8px;
+    font-size: 12px !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
 }
 
@@ -1822,22 +1958,22 @@ body.hide-cursor, body.hide-cursor * {
 
 @media (max-width: 480px) {
   .painel-header-hora {
-    font-size: 22px !important;
+    font-size: 20px !important;
   }
   .painel-header-titulo {
-    font-size: 18px !important;
+    font-size: 17px !important;
   }
   .painel-turma {
-    font-size: 16px !important;
+    font-size: 15px !important;
   }
   .tela-selecao-titulo {
-    font-size: 26px !important;
+    font-size: 22px !important;
   }
   .tela-selecao-pavilhao-overlay,
   .modal-pavilhao-overlay {
-    padding: 18px 14px !important;
+    padding: 14px 10px !important;
   }
   .btn-opcao-pavilhao {
-    padding: 0 12px !important;
+    padding: 10px 12px !important;
   }
 }

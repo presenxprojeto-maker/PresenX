@@ -429,6 +429,12 @@ function render() {
             <span class="painel-label-pequena">DISCIPLINA:</span>
             <span class="painel-valor">${escapeHtml(item.disciplina)}</span>
           </div>
+          ${item.professor ? `
+          <div class="painel-linha">
+            <span class="painel-label-pequena">PROFESSOR:</span>
+            <span class="painel-valor">${escapeHtml(item.professor)}</span>
+          </div>
+          ` : ""}
         </div>
       </article>
     `;
