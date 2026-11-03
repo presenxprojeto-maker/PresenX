@@ -931,7 +931,7 @@ async function carregarMonitoramentoLeitores() {
         el.dotLeitorHeader.className = "telemetry-dot offline";
         const off = offlineLeitores[0];
         const tempo = off?.tempo_decorrido || "offline";
-        el.textLeitorHeader.textContent = tempo !== "offline" && tempo !== "nunca"
+        el.textLeitorHeader.textContent = tempo !== "offline" && tempo !== "nunca" && tempo !== "desconectado"
           ? `Leitor Portaria: sem sinal (${tempo})`
           : "Leitor Portaria: sem sinal";
       }
@@ -946,7 +946,7 @@ async function carregarMonitoramentoLeitores() {
         el.dotLeitorSidebar.className = "telemetry-dot offline";
         const off = offlineLeitores[0];
         const tempo = off?.tempo_decorrido || "offline";
-        el.textLeitorSidebar.textContent = tempo !== "offline" && tempo !== "nunca"
+        el.textLeitorSidebar.textContent = tempo !== "offline" && tempo !== "nunca" && tempo !== "desconectado"
           ? `Leitor: sem sinal (${tempo})`
           : "Leitor: sem sinal";
       }
@@ -955,7 +955,15 @@ async function carregarMonitoramentoLeitores() {
     // Atualiza Card de Monitoramento no Dashboard
     if (el.leitorNomeDash) el.leitorNomeDash.textContent = leitorPrincipal.nome;
     if (el.leitorIpDash) el.leitorIpDash.textContent = leitorPrincipal.ip ? `IP: ${leitorPrincipal.ip}` : "IP: Local";
-    if (el.leitorTempoDash) el.leitorTempoDash.textContent = `Sinal: ${leitorPrincipal.tempo_decorrido}`;
+    if (el.leitorTempoDash) {
+      if (leitorPrincipal.online) {
+        el.leitorTempoDash.textContent = `Sinal: ativo (${leitorPrincipal.tempo_decorrido})`;
+      } else {
+        el.leitorTempoDash.textContent = (leitorPrincipal.tempo_decorrido && leitorPrincipal.tempo_decorrido !== "nunca" && leitorPrincipal.tempo_decorrido !== "desconectado")
+          ? `Sem sinal (${leitorPrincipal.tempo_decorrido})`
+          : "Sem sinal";
+      }
+    }
     if (el.leitorBadgeDash) {
       if (leitorPrincipal.online) {
         el.leitorBadgeDash.className = "status-badge ativo";

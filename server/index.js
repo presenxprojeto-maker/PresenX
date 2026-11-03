@@ -632,6 +632,9 @@ async function inicializarBancoESincronizacao() {
     VALUES ('leitor_portaria', 'Leitor Portaria', 'Portaria Principal', '', 0, 0)
   `);
 
+  // Limpa pings legados/antigos no boot do servidor para evitar timestamps obsoletos
+  db.run("UPDATE leitores_rfid SET ultimo_ping = 0, ip = '' WHERE ultimo_ping < ?", [Date.now() - 3600 * 1000]);
+
   db.run(`
     INSERT OR IGNORE INTO pavilhoes (id, nome, ordem) VALUES
     ('acm', 'Pavilhão ACM', 1),
@@ -1563,7 +1566,8 @@ app.get("/api/leitores", async (req, res) => {
       if (r.ultimo_ping > 0) {
         if (diffSeg < 60) tempoTexto = `há ${diffSeg}s`;
         else if (diffSeg < 3600) tempoTexto = `há ${Math.floor(diffSeg / 60)}min`;
-        else tempoTexto = `há ${Math.floor(diffSeg / 3600)}h`;
+        else if (diffSeg < 86400) tempoTexto = `há ${Math.floor(diffSeg / 3600)}h`;
+        else tempoTexto = "desconectado";
       }
 
       return {
