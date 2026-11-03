@@ -131,6 +131,346 @@ if (serviceAccountData) {
   }
 }
 
+// ======================================================
+// HELPERS DE SINCRONIZAÇÃO EM NUVEM COM FIREBASE RTDB
+// ======================================================
+async function syncFirebaseSet(caminho, dados) {
+  if (!firebaseDb) return;
+  try {
+    await firebaseDb.ref(caminho).set(dados);
+  } catch (err) {
+    console.warn(`[Firebase Sync] Aviso ao definir ${caminho}:`, err.message);
+  }
+}
+
+async function syncFirebaseUpdate(caminho, dados) {
+  if (!firebaseDb) return;
+  try {
+    await firebaseDb.ref(caminho).update(dados);
+  } catch (err) {
+    console.warn(`[Firebase Sync] Aviso ao atualizar ${caminho}:`, err.message);
+  }
+}
+
+async function syncFirebaseRemove(caminho) {
+  if (!firebaseDb) return;
+  try {
+    await firebaseDb.ref(caminho).remove();
+  } catch (err) {
+    console.warn(`[Firebase Sync] Aviso ao remover ${caminho}:`, err.message);
+  }
+}
+
+async function sincronizarBancoComFirebase() {
+  if (!firebaseDb) return;
+  try {
+    console.log(">> [Sincronização Nuvem] Verificando integridade com Firebase RTDB...");
+
+    // 1. Pavilhões
+    try {
+      const snapPav = await firebaseDb.ref("pavilhoes").once("value");
+      const fbPav = snapPav.val();
+      if (!fbPav || Object.keys(fbPav).length === 0) {
+        const pavs = await allAsync("SELECT * FROM pavilhoes");
+        const fbPayload = {};
+        pavs.forEach(p => { fbPayload[p.id] = p; });
+        await firebaseDb.ref("pavilhoes").set(fbPayload);
+      } else {
+        for (const [id, p] of Object.entries(fbPav)) {
+          if (p && p.id && p.nome) {
+            await runAsync(
+              "INSERT INTO pavilhoes (id, nome, ordem) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, ordem = excluded.ordem",
+              [p.id, p.nome, Number(p.ordem) || 0]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar pavilhões:", e.message);
+    }
+
+    // 2. Turnos Horários
+    try {
+      const snapTurnos = await firebaseDb.ref("turnos_horarios").once("value");
+      const fbTurnos = snapTurnos.val();
+      if (!fbTurnos || Object.keys(fbTurnos).length === 0) {
+        const turnos = await allAsync("SELECT * FROM turnos_horarios");
+        const fbPayload = {};
+        turnos.forEach(t => {
+          const key = `${t.turno}__${t.chave}`;
+          fbPayload[key] = t;
+        });
+        await firebaseDb.ref("turnos_horarios").set(fbPayload);
+      } else {
+        for (const [k, t] of Object.entries(fbTurnos)) {
+          if (t && t.turno && t.chave && t.inicio && t.fim) {
+            await runAsync(
+              `INSERT INTO turnos_horarios (turno, chave, inicio, fim, ordem) VALUES (?, ?, ?, ?, ?)
+               ON CONFLICT(turno, chave) DO UPDATE SET inicio = excluded.inicio, fim = excluded.fim, ordem = excluded.ordem`,
+              [t.turno, t.chave, t.inicio, t.fim, Number(t.ordem) || 0]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar turnos:", e.message);
+    }
+
+    // 3. Disciplinas
+    try {
+      const snapDisc = await firebaseDb.ref("disciplinas").once("value");
+      const fbDisc = snapDisc.val();
+      if (!fbDisc || Object.keys(fbDisc).length === 0) {
+        const discs = await allAsync("SELECT * FROM disciplinas");
+        const fbPayload = {};
+        discs.forEach(d => { fbPayload[String(d.id)] = d; });
+        await firebaseDb.ref("disciplinas").set(fbPayload);
+      } else {
+        for (const [idStr, d] of Object.entries(fbDisc)) {
+          if (d && d.nome) {
+            const dId = Number(d.id || idStr);
+            await runAsync(
+              `INSERT INTO disciplinas (id, nome, codigo, cor_badge) VALUES (?, ?, ?, ?)
+               ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, codigo = excluded.codigo, cor_badge = excluded.cor_badge`,
+              [dId, d.nome, d.codigo || "", d.cor_badge || "#2563eb"]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar disciplinas:", e.message);
+    }
+
+    // 4. Turmas
+    try {
+      const snapTurmas = await firebaseDb.ref("turmas").once("value");
+      const fbTurmas = snapTurmas.val();
+      if (!fbTurmas || Object.keys(fbTurmas).length === 0) {
+        const turmas = await allAsync("SELECT * FROM turmas");
+        const fbPayload = {};
+        turmas.forEach(t => { fbPayload[t.id] = t; });
+        await firebaseDb.ref("turmas").set(fbPayload);
+      } else {
+        for (const [id, t] of Object.entries(fbTurmas)) {
+          if (t && t.id && t.nome) {
+            await runAsync(
+              `INSERT INTO turmas (id, nome, turno, pavilhao_id, sala_nome, ordem) VALUES (?, ?, ?, ?, ?, ?)
+               ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, turno = excluded.turno, pavilhao_id = excluded.pavilhao_id, sala_nome = excluded.sala_nome, ordem = excluded.ordem`,
+              [t.id, t.nome, t.turno || "matutino", t.pavilhao_id || "acm", t.sala_nome || t.nome, Number(t.ordem) || 0]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar turmas:", e.message);
+    }
+
+    // 5. Professores Disciplinas (Vínculos)
+    try {
+      const snapPD = await firebaseDb.ref("professores_disciplinas").once("value");
+      const fbPD = snapPD.val();
+      if (!fbPD || Object.keys(fbPD).length === 0) {
+        const pds = await allAsync("SELECT * FROM professores_disciplinas");
+        const fbPayload = {};
+        pds.forEach(pd => {
+          const key = `${pd.professor_uid}__${pd.disciplina_id}`;
+          fbPayload[key] = pd;
+        });
+        await firebaseDb.ref("professores_disciplinas").set(fbPayload);
+      } else {
+        for (const [k, pd] of Object.entries(fbPD)) {
+          if (pd && pd.professor_uid && pd.disciplina_id) {
+            await runAsync(
+              "INSERT OR IGNORE INTO professores_disciplinas (professor_uid, disciplina_id) VALUES (?, ?)",
+              [pd.professor_uid, Number(pd.disciplina_id)]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar vínculos professores-disciplinas:", e.message);
+    }
+
+    // 6. Grade de Horários
+    try {
+      const snapGrade = await firebaseDb.ref("grade_horarios").once("value");
+      const fbGrade = snapGrade.val();
+      if (!fbGrade || Object.keys(fbGrade).length === 0) {
+        const grades = await allAsync("SELECT * FROM grade_horarios");
+        const fbPayload = {};
+        grades.forEach(g => {
+          const key = `${g.turma_id}__${g.dia}__${g.horario}`;
+          fbPayload[key] = g;
+        });
+        await firebaseDb.ref("grade_horarios").set(fbPayload);
+      } else {
+        for (const [k, g] of Object.entries(fbGrade)) {
+          if (g && g.turma_id && g.dia && g.horario && g.disciplina) {
+            await runAsync(
+              `INSERT OR REPLACE INTO grade_horarios (id, turma_id, dia, horario, disciplina, professor)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              [g.id || null, g.turma_id, g.dia, Number(g.horario), g.disciplina, g.professor || ""]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar grade horários:", e.message);
+    }
+
+    // 7. Usuários (Professores) - Merge bidirecional
+    try {
+      const snapUsers = await firebaseDb.ref("usuarios").once("value");
+      const fbUsers = snapUsers.val() || {};
+      for (const [uid, u] of Object.entries(fbUsers)) {
+        if (u && u.nome) {
+          const ativo = (u.ativo === false || u.ativo === 0) ? 0 : 1;
+          await runAsync(
+            `INSERT INTO usuarios (uid, nome, curso, ativo, sincronizado) VALUES (?, ?, ?, ?, 1)
+             ON CONFLICT(uid) DO UPDATE SET nome = excluded.nome, curso = excluded.curso, ativo = excluded.ativo, sincronizado = 1`,
+            [uid, u.nome, u.curso || "", ativo]
+          );
+        }
+      }
+      const localUsers = await allAsync("SELECT * FROM usuarios");
+      for (const u of localUsers) {
+        if (!fbUsers[u.uid]) {
+          await firebaseDb.ref(`usuarios/${u.uid}`).set({
+            nome: u.nome,
+            curso: u.curso || "",
+            ativo: u.ativo === 1
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar usuários:", e.message);
+    }
+
+    // 8. Coordenadores (admin_usuarios) - Merge bidirecional
+    try {
+      const snapAdmins = await firebaseDb.ref("admin_usuarios").once("value");
+      const fbAdmins = snapAdmins.val() || {};
+      for (const [k, v] of Object.entries(fbAdmins)) {
+        if (v && v.email && v.senha) {
+          const em = String(v.email).trim().toLowerCase();
+          const ex = await getAsync("SELECT id FROM admin_usuarios WHERE email = ?", [em]);
+          if (!ex) {
+            await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)", [em, v.senha]);
+            console.log(`>> Coordenador restaurado do Firebase: ${em}`);
+          }
+        }
+      }
+      const localAdmins = await allAsync("SELECT * FROM admin_usuarios");
+      for (const a of localAdmins) {
+        const safeKey = a.email.replace(/[.#$\[\]]/g, "_");
+        if (!fbAdmins[safeKey]) {
+          await firebaseDb.ref(`admin_usuarios/${safeKey}`).set({
+            email: a.email,
+            senha: a.senha,
+            criado_em: Date.now()
+          });
+          console.log(`>> Coordenador local sincronizado para o Firebase: ${a.email}`);
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar coordenadores:", e.message);
+    }
+
+    // 9. Avisos
+    try {
+      const snapAvisos = await firebaseDb.ref("avisos").once("value");
+      const fbAvisos = snapAvisos.val() || {};
+      for (const [k, av] of Object.entries(fbAvisos)) {
+        if (av && av.titulo && av.mensagem) {
+          const ja = await getAsync("SELECT id FROM avisos WHERE titulo = ? AND mensagem = ?", [av.titulo, av.mensagem]);
+          if (!ja) {
+            await runAsync(
+              `INSERT INTO avisos (titulo, mensagem, prioridade, expiracao, ativo, criado_em, sincronizado)
+               VALUES (?, ?, ?, ?, ?, ?, 1)`,
+              [av.titulo, av.mensagem, av.prioridade || "normal", av.expiracao || "", av.ativo !== false ? 1 : 0, av.criado_em || av.criadoEm || Date.now()]
+            );
+          }
+        }
+      }
+      const localAvisos = await allAsync("SELECT * FROM avisos");
+      for (const av of localAvisos) {
+        if (!fbAvisos[String(av.id)]) {
+          await firebaseDb.ref(`avisos/${av.id}`).set({
+            id: av.id,
+            titulo: av.titulo,
+            mensagem: av.mensagem,
+            prioridade: av.prioridade,
+            expiracao: av.expiracao,
+            ativo: av.ativo === 1,
+            criado_em: av.criado_em
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar avisos:", e.message);
+    }
+
+    // 10. Eventos
+    try {
+      const snapEv = await firebaseDb.ref("eventos").once("value");
+      const fbEv = snapEv.val() || {};
+      for (const [k, ev] of Object.entries(fbEv)) {
+        if (ev && ev.titulo && ev.data) {
+          const ja = await getAsync("SELECT id FROM eventos WHERE titulo = ? AND data = ?", [ev.titulo, ev.data]);
+          if (!ja) {
+            await runAsync(
+              `INSERT INTO eventos (titulo, descricao, data, sincronizado)
+               VALUES (?, ?, ?, 1)`,
+              [ev.titulo, ev.descricao || "", ev.data]
+            );
+          }
+        }
+      }
+      const localEv = await allAsync("SELECT * FROM eventos");
+      for (const ev of localEv) {
+        if (!fbEv[String(ev.id)]) {
+          await firebaseDb.ref(`eventos/${ev.id}`).set({
+            id: ev.id,
+            titulo: ev.titulo,
+            descricao: ev.descricao,
+            data: ev.data
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar eventos:", e.message);
+    }
+
+    // 11. Presenças
+    try {
+      const snapPres = await firebaseDb.ref("presencas").once("value");
+      const fbPres = snapPres.val() || {};
+      for (const [data, registros] of Object.entries(fbPres)) {
+        if (registros && typeof registros === "object") {
+          for (const [uid, p] of Object.entries(registros)) {
+            if (p && uid) {
+              const ja = await getAsync("SELECT id FROM presencas WHERE data = ? AND uid = ?", [data, uid]);
+              if (!ja) {
+                await runAsync(
+                  `INSERT INTO presencas (data, uid, nome, curso, status, hora_entrada, hora_saida, sincronizado)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+                  [data, uid, p.nome || "", p.curso || "", p.status || "Presente", p.hora_entrada || null, p.hora_saida || null]
+                );
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar presenças:", e.message);
+    }
+
+    console.log(">> [Sincronização Nuvem] Banco de dados totalmente sincronizado com Firebase Realtime Database!");
+  } catch (err) {
+    console.warn("Aviso na sincronização Firebase:", err.message);
+  }
+}
+
 // Inicialização e schema das tabelas
 db.serialize(async () => {
   db.run(`
@@ -344,26 +684,9 @@ db.serialize(async () => {
     }
   }
 
-  // 2. Restaura coordenadores salvos no Firebase Realtime Database
+  // 2. Executa sincronização completa bidirecional com Firebase Realtime Database
   if (firebaseDb) {
-    try {
-      const snap = await firebaseDb.ref("admin_usuarios").once("value");
-      const fbAdmins = snap.val();
-      if (fbAdmins && typeof fbAdmins === "object") {
-        for (const [k, v] of Object.entries(fbAdmins)) {
-          if (v && v.email && v.senha) {
-            const em = String(v.email).trim().toLowerCase();
-            const ex = await getAsync("SELECT id FROM admin_usuarios WHERE email = ?", [em]);
-            if (!ex) {
-              await runAsync("INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)", [em, v.senha]);
-              console.log(`>> Coordenador restaurado do Firebase: ${em}`);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Aviso ao sincronizar admins do Firebase:", e.message);
-    }
+    await sincronizarBancoComFirebase();
   }
 });
 
@@ -371,7 +694,8 @@ db.serialize(async () => {
 // MIDDLEWARES E CONFIGURAÇÕES
 // ======================================================
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // ======================================================
 // CABEÇALHOS DE SEGURANÇA & PROTEÇÃO CONTRA VAZAMENTO
@@ -454,6 +778,8 @@ async function authAdmin(req, res, next) {
       token = authHeader.substring(7).trim();
     } else if (req.headers["x-admin-token"]) {
       token = String(req.headers["x-admin-token"]).trim();
+    } else if (req.query && req.query.token) {
+      token = String(req.query.token).trim();
     }
 
     if (!token) {
@@ -558,6 +884,13 @@ app.post("/api/turnos/salvar", authAdmin, async (req, res) => {
              ordem = excluded.ordem`,
           [f.turno, f.chave, f.inicio, f.fim, Number(f.ordem) || 0]
         );
+        syncFirebaseSet(`turnos_horarios/${f.turno}__${f.chave}`, {
+          turno: f.turno,
+          chave: f.chave,
+          inicio: f.inicio,
+          fim: f.fim,
+          ordem: Number(f.ordem) || 0
+        });
       }
     }
 
@@ -592,6 +925,8 @@ app.post("/api/pavilhoes", authAdmin, async (req, res) => {
        ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, ordem = excluded.ordem`,
       [id, nome, ordem]
     );
+
+    syncFirebaseSet(`pavilhoes/${id}`, { id, nome, ordem });
 
     ok(res);
   } catch (err) {
@@ -664,6 +999,32 @@ app.post("/api/disciplinas", authAdmin, async (req, res) => {
       }
     }
 
+    // Sincroniza disciplina e vínculos no Firebase
+    syncFirebaseSet(`disciplinas/${disciplinaId}`, {
+      id: disciplinaId,
+      nome,
+      codigo,
+      cor_badge
+    });
+    if (firebaseDb) {
+      firebaseDb.ref("professores_disciplinas").once("value").then(snap => {
+        const todosPD = snap.val() || {};
+        for (const [k, v] of Object.entries(todosPD)) {
+          if (v && Number(v.disciplina_id) === Number(disciplinaId)) {
+            firebaseDb.ref(`professores_disciplinas/${k}`).remove().catch(() => {});
+          }
+        }
+        for (const pUid of professores_uids) {
+          if (pUid) {
+            firebaseDb.ref(`professores_disciplinas/${pUid}__${disciplinaId}`).set({
+              professor_uid: pUid,
+              disciplina_id: Number(disciplinaId)
+            }).catch(() => {});
+          }
+        }
+      }).catch(e => console.warn("Aviso ao sincronizar vinculos disciplina:", e.message));
+    }
+
     ok(res, { id: disciplinaId });
   } catch (err) {
     fail(res, 500, err.message);
@@ -675,6 +1036,19 @@ app.delete("/api/disciplinas/:id", authAdmin, async (req, res) => {
     const id = req.params.id;
     await runAsync("DELETE FROM professores_disciplinas WHERE disciplina_id = ?", [id]);
     const result = await runAsync("DELETE FROM disciplinas WHERE id = ?", [id]);
+
+    syncFirebaseRemove(`disciplinas/${id}`);
+    if (firebaseDb) {
+      firebaseDb.ref("professores_disciplinas").once("value").then(snap => {
+        const todosPD = snap.val() || {};
+        for (const [k, v] of Object.entries(todosPD)) {
+          if (v && Number(v.disciplina_id) === Number(id)) {
+            firebaseDb.ref(`professores_disciplinas/${k}`).remove().catch(() => {});
+          }
+        }
+      }).catch(e => console.warn("Aviso ao remover vinculos disciplina Firebase:", e.message));
+    }
+
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -739,6 +1113,15 @@ app.post("/api/turmas", authAdmin, async (req, res) => {
       [id, nome, turno, pavilhao_id, sala_nome]
     );
 
+    syncFirebaseSet(`turmas/${id}`, {
+      id,
+      nome,
+      turno,
+      pavilhao_id,
+      sala_nome,
+      ordem: Number(req.body.ordem) || 0
+    });
+
     ok(res);
   } catch (err) {
     fail(res, 500, err.message);
@@ -750,6 +1133,19 @@ app.delete("/api/turmas/:id", authAdmin, async (req, res) => {
     const id = req.params.id;
     await runAsync("DELETE FROM grade_horarios WHERE turma_id = ?", [id]);
     const result = await runAsync("DELETE FROM turmas WHERE id = ?", [id]);
+
+    syncFirebaseRemove(`turmas/${id}`);
+    if (firebaseDb) {
+      firebaseDb.ref("grade_horarios").once("value").then(snap => {
+        const todasGrades = snap.val() || {};
+        for (const [k, v] of Object.entries(todasGrades)) {
+          if (v && v.turma_id === id) {
+            firebaseDb.ref(`grade_horarios/${k}`).remove().catch(() => {});
+          }
+        }
+      }).catch(e => console.warn("Aviso ao remover grade da turma no Firebase:", e.message));
+    }
+
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -805,6 +1201,30 @@ app.post("/api/grade/salvar-semanal", async (req, res) => {
     }
 
     await runAsync("COMMIT");
+
+    if (firebaseDb) {
+      firebaseDb.ref("grade_horarios").once("value").then(snap => {
+        const todasGrades = snap.val() || {};
+        for (const [k, v] of Object.entries(todasGrades)) {
+          if (v && v.turma_id === turma_id) {
+            firebaseDb.ref(`grade_horarios/${k}`).remove().catch(() => {});
+          }
+        }
+        for (const item of grade) {
+          if (item.dia && item.horario && item.disciplina) {
+            const key = `${turma_id}__${item.dia}__${item.horario}`;
+            firebaseDb.ref(`grade_horarios/${key}`).set({
+              turma_id,
+              dia: item.dia,
+              horario: Number(item.horario),
+              disciplina: String(item.disciplina).trim(),
+              professor: String(item.professor || "").trim()
+            }).catch(() => {});
+          }
+        }
+      }).catch(e => console.warn("Aviso ao sincronizar grade no Firebase:", e.message));
+    }
+
     ok(res, { total_salvos: grade.length });
   } catch (err) {
     try { await runAsync("ROLLBACK"); } catch (_) {}
@@ -828,6 +1248,27 @@ app.post("/api/grade/copiar", authAdmin, async (req, res) => {
          VALUES (?, ?, ?, ?, ?)`,
         [turma_destino, item.dia, item.horario, item.disciplina, item.professor]
       );
+    }
+
+    if (firebaseDb) {
+      firebaseDb.ref("grade_horarios").once("value").then(snap => {
+        const todasGrades = snap.val() || {};
+        for (const [k, v] of Object.entries(todasGrades)) {
+          if (v && v.turma_id === turma_destino) {
+            firebaseDb.ref(`grade_horarios/${k}`).remove().catch(() => {});
+          }
+        }
+        for (const item of gradeOrigem) {
+          const key = `${turma_destino}__${item.dia}__${item.horario}`;
+          firebaseDb.ref(`grade_horarios/${key}`).set({
+            turma_id: turma_destino,
+            dia: item.dia,
+            horario: item.horario,
+            disciplina: item.disciplina,
+            professor: item.professor
+          }).catch(() => {});
+        }
+      }).catch(e => console.warn("Aviso ao copiar grade no Firebase:", e.message));
     }
 
     ok(res, { copiados: gradeOrigem.length });
@@ -965,6 +1406,32 @@ app.post("/api/usuarios", authAdmin, async (req, res) => {
       }
     }
 
+    // Sincroniza professor no Firebase
+    syncFirebaseSet(`usuarios/${uid}`, {
+      nome,
+      curso,
+      ativo: ativo === 1
+    });
+
+    if (firebaseDb && req.body.disciplinas_ids !== undefined) {
+      firebaseDb.ref("professores_disciplinas").once("value").then(snap => {
+        const todosPD = snap.val() || {};
+        for (const [k, v] of Object.entries(todosPD)) {
+          if (v && v.professor_uid === uid) {
+            firebaseDb.ref(`professores_disciplinas/${k}`).remove().catch(() => {});
+          }
+        }
+        for (const dId of disciplinas_ids) {
+          if (dId) {
+            firebaseDb.ref(`professores_disciplinas/${uid}__${dId}`).set({
+              professor_uid: uid,
+              disciplina_id: Number(dId)
+            }).catch(() => {});
+          }
+        }
+      }).catch(e => console.warn("Aviso ao sincronizar vinculos professor Firebase:", e.message));
+    }
+
     ok(res);
   } catch (err) {
     fail(res, 500, err.message);
@@ -976,6 +1443,19 @@ app.delete("/api/usuarios/:uid", authAdmin, async (req, res) => {
     const uid = String(req.params.uid || "").trim().toUpperCase();
     await runAsync("DELETE FROM professores_disciplinas WHERE professor_uid = ?", [uid]);
     const result = await runAsync("DELETE FROM usuarios WHERE uid = ?", [uid]);
+
+    syncFirebaseRemove(`usuarios/${uid}`);
+    if (firebaseDb) {
+      firebaseDb.ref("professores_disciplinas").once("value").then(snap => {
+        const todosPD = snap.val() || {};
+        for (const [k, v] of Object.entries(todosPD)) {
+          if (v && v.professor_uid === uid) {
+            firebaseDb.ref(`professores_disciplinas/${k}`).remove().catch(() => {});
+          }
+        }
+      }).catch(e => console.warn("Aviso ao remover vinculos professor Firebase:", e.message));
+    }
+
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1372,6 +1852,16 @@ app.post("/api/avisos", authAdmin, async (req, res) => {
       [titulo, mensagem, prioridade, expiracao, ativo, criado_em]
     );
 
+    syncFirebaseSet(`avisos/${result.lastID}`, {
+      id: result.lastID,
+      titulo,
+      mensagem,
+      prioridade,
+      expiracao,
+      ativo: ativo === 1,
+      criado_em
+    });
+
     ok(res, { id: result.lastID });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1398,6 +1888,14 @@ app.put("/api/avisos/:id", authAdmin, async (req, res) => {
       [titulo, mensagem, prioridade, expiracao, ativo, id]
     );
 
+    syncFirebaseUpdate(`avisos/${id}`, {
+      titulo,
+      mensagem,
+      prioridade,
+      expiracao,
+      ativo: ativo === 1
+    });
+
     ok(res, { atualizados: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1408,6 +1906,7 @@ app.delete("/api/avisos/:id", authAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     const result = await runAsync("DELETE FROM avisos WHERE id = ?", [id]);
+    syncFirebaseRemove(`avisos/${id}`);
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1439,6 +1938,13 @@ app.post("/api/eventos", authAdmin, async (req, res) => {
       [titulo, descricao, data]
     );
 
+    syncFirebaseSet(`eventos/${result.lastID}`, {
+      id: result.lastID,
+      titulo,
+      descricao,
+      data
+    });
+
     ok(res, { id: result.lastID });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1463,6 +1969,12 @@ app.put("/api/eventos/:id", authAdmin, async (req, res) => {
       [titulo, descricao, data, id]
     );
 
+    syncFirebaseUpdate(`eventos/${id}`, {
+      titulo,
+      descricao,
+      data
+    });
+
     ok(res, { atualizados: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1473,6 +1985,7 @@ app.delete("/api/eventos/:id", authAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     const result = await runAsync("DELETE FROM eventos WHERE id = ?", [id]);
+    syncFirebaseRemove(`eventos/${id}`);
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1695,6 +2208,233 @@ app.delete("/api/admin-usuarios/:id", authAdmin, async (req, res) => {
     ok(res, { mensagem: "Coordenador removido com sucesso." });
   } catch (err) {
     fail(res, 500, "Erro ao remover coordenador.");
+  }
+});
+
+// ======================================================
+// ROTAS DE BACKUP & PERSISTÊNCIA COMPLETA (NUVEM + LOCAL)
+// ======================================================
+app.get("/api/backup/status", authAdmin, async (req, res) => {
+  try {
+    const tabelas = [
+      'admin_usuarios', 'usuarios', 'disciplinas', 'turmas',
+      'professores_disciplinas', 'grade_horarios', 'turnos_horarios',
+      'avisos', 'eventos', 'presencas', 'pavilhoes'
+    ];
+    const totais = {};
+    for (const t of tabelas) {
+      const r = await getAsync(`SELECT COUNT(*) as c FROM ${t}`);
+      totais[t] = r ? r.c : 0;
+    }
+
+    ok(res, {
+      firebaseConectado: Boolean(firebaseDb),
+      bancoNuvem: "Firebase Realtime Database",
+      totais
+    });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get("/api/backup/export", authAdmin, async (req, res) => {
+  try {
+    const tabelas = {
+      admin_usuarios: await allAsync("SELECT id, email, senha FROM admin_usuarios"),
+      usuarios: await allAsync("SELECT uid, nome, curso, ativo FROM usuarios"),
+      pavilhoes: await allAsync("SELECT * FROM pavilhoes"),
+      turnos_horarios: await allAsync("SELECT * FROM turnos_horarios"),
+      turmas: await allAsync("SELECT * FROM turmas"),
+      disciplinas: await allAsync("SELECT * FROM disciplinas"),
+      professores_disciplinas: await allAsync("SELECT * FROM professores_disciplinas"),
+      grade_horarios: await allAsync("SELECT * FROM grade_horarios"),
+      avisos: await allAsync("SELECT * FROM avisos"),
+      eventos: await allAsync("SELECT * FROM eventos"),
+      presencas: await allAsync("SELECT * FROM presencas")
+    };
+
+    const totais = {};
+    for (const [k, arr] of Object.entries(tabelas)) {
+      totais[k] = arr.length;
+    }
+
+    const backupData = {
+      sistema: "PresenX",
+      versao: "2.0",
+      exportado_em: new Date().toISOString(),
+      totais,
+      tabelas
+    };
+
+    const dataHoje = new Date().toISOString().slice(0, 10);
+    const nomeArquivo = `backup-presenx-${dataHoje}.json`;
+
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${nomeArquivo}"`);
+    res.send(JSON.stringify(backupData, null, 2));
+  } catch (err) {
+    fail(res, 500, "Erro ao exportar backup: " + err.message);
+  }
+});
+
+app.post("/api/backup/import", authAdmin, async (req, res) => {
+  try {
+    const { tabelas } = req.body;
+    if (!tabelas || typeof tabelas !== "object") {
+      return fail(res, 400, "Arquivo de backup inválido: bloco 'tabelas' ausente.");
+    }
+
+    await runAsync("BEGIN TRANSACTION");
+
+    // 1. Pavilhões
+    if (Array.isArray(tabelas.pavilhoes)) {
+      for (const p of tabelas.pavilhoes) {
+        if (p.id && p.nome) {
+          await runAsync(
+            "INSERT INTO pavilhoes (id, nome, ordem) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, ordem = excluded.ordem",
+            [p.id, p.nome, Number(p.ordem) || 0]
+          );
+        }
+      }
+    }
+
+    // 2. Turnos
+    if (Array.isArray(tabelas.turnos_horarios)) {
+      for (const t of tabelas.turnos_horarios) {
+        if (t.turno && t.chave && t.inicio && t.fim) {
+          await runAsync(
+            `INSERT INTO turnos_horarios (turno, chave, inicio, fim, ordem) VALUES (?, ?, ?, ?, ?)
+             ON CONFLICT(turno, chave) DO UPDATE SET inicio = excluded.inicio, fim = excluded.fim, ordem = excluded.ordem`,
+            [t.turno, t.chave, t.inicio, t.fim, Number(t.ordem) || 0]
+          );
+        }
+      }
+    }
+
+    // 3. Disciplinas
+    if (Array.isArray(tabelas.disciplinas)) {
+      for (const d of tabelas.disciplinas) {
+        if (d.nome) {
+          await runAsync(
+            `INSERT INTO disciplinas (id, nome, codigo, cor_badge) VALUES (?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, codigo = excluded.codigo, cor_badge = excluded.cor_badge`,
+            [d.id || null, d.nome, d.codigo || "", d.cor_badge || "#2563eb"]
+          );
+        }
+      }
+    }
+
+    // 4. Turmas
+    if (Array.isArray(tabelas.turmas)) {
+      for (const t of tabelas.turmas) {
+        if (t.id && t.nome) {
+          await runAsync(
+            `INSERT INTO turmas (id, nome, turno, pavilhao_id, sala_nome, ordem) VALUES (?, ?, ?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, turno = excluded.turno, pavilhao_id = excluded.pavilhao_id, sala_nome = excluded.sala_nome, ordem = excluded.ordem`,
+            [t.id, t.nome, t.turno || "matutino", t.pavilhao_id || "acm", t.sala_nome || t.nome, Number(t.ordem) || 0]
+          );
+        }
+      }
+    }
+
+    // 5. Usuários
+    if (Array.isArray(tabelas.usuarios)) {
+      for (const u of tabelas.usuarios) {
+        if (u.uid && u.nome) {
+          await runAsync(
+            `INSERT INTO usuarios (uid, nome, curso, ativo, sincronizado) VALUES (?, ?, ?, ?, 1)
+             ON CONFLICT(uid) DO UPDATE SET nome = excluded.nome, curso = excluded.curso, ativo = excluded.ativo, sincronizado = 1`,
+            [u.uid, u.nome, u.curso || "", u.ativo !== 0 && u.ativo !== false ? 1 : 0]
+          );
+        }
+      }
+    }
+
+    // 6. Vínculos professores_disciplinas
+    if (Array.isArray(tabelas.professores_disciplinas)) {
+      for (const pd of tabelas.professores_disciplinas) {
+        if (pd.professor_uid && pd.disciplina_id) {
+          await runAsync(
+            "INSERT OR IGNORE INTO professores_disciplinas (professor_uid, disciplina_id) VALUES (?, ?)",
+            [pd.professor_uid, Number(pd.disciplina_id)]
+          );
+        }
+      }
+    }
+
+    // 7. Grade horários
+    if (Array.isArray(tabelas.grade_horarios)) {
+      for (const g of tabelas.grade_horarios) {
+        if (g.turma_id && g.dia && g.horario && g.disciplina) {
+          await runAsync(
+            `INSERT OR REPLACE INTO grade_horarios (id, turma_id, dia, horario, disciplina, professor)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [g.id || null, g.turma_id, g.dia, Number(g.horario), g.disciplina, g.professor || ""]
+          );
+        }
+      }
+    }
+
+    // 8. Avisos
+    if (Array.isArray(tabelas.avisos)) {
+      for (const av of tabelas.avisos) {
+        if (av.titulo && av.mensagem) {
+          await runAsync(
+            `INSERT OR REPLACE INTO avisos (id, titulo, mensagem, prioridade, expiracao, ativo, criado_em, sincronizado)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+            [av.id || null, av.titulo, av.mensagem, av.prioridade || "normal", av.expiracao || "", av.ativo !== 0 ? 1 : 0, av.criado_em || Date.now()]
+          );
+        }
+      }
+    }
+
+    // 9. Eventos
+    if (Array.isArray(tabelas.eventos)) {
+      for (const ev of tabelas.eventos) {
+        if (ev.titulo && ev.data) {
+          await runAsync(
+            `INSERT OR REPLACE INTO eventos (id, titulo, descricao, data, sincronizado)
+             VALUES (?, ?, ?, ?, 1)`,
+            [ev.id || null, ev.titulo, ev.descricao || "", ev.data]
+          );
+        }
+      }
+    }
+
+    // 10. Coordenadores
+    if (Array.isArray(tabelas.admin_usuarios)) {
+      for (const a of tabelas.admin_usuarios) {
+        if (a.email && a.senha) {
+          await runAsync(
+            `INSERT INTO admin_usuarios (email, senha) VALUES (?, ?)
+             ON CONFLICT(email) DO UPDATE SET senha = excluded.senha`,
+            [a.email.toLowerCase(), a.senha]
+          );
+        }
+      }
+    }
+
+    await runAsync("COMMIT");
+
+    // Sincroniza imediatamente com Firebase
+    sincronizarBancoComFirebase().catch(e => console.warn("Aviso pós importação:", e.message));
+
+    ok(res, { mensagem: "Backup restaurado com sucesso no banco de dados e nuvem!" });
+  } catch (err) {
+    try { await runAsync("ROLLBACK"); } catch (_) {}
+    fail(res, 500, "Erro ao restaurar backup: " + err.message);
+  }
+});
+
+app.post("/api/backup/sincronizar-nuvem", authAdmin, async (req, res) => {
+  try {
+    if (!firebaseDb) {
+      return fail(res, 400, "Firebase RTDB não está configurado neste ambiente.");
+    }
+    await sincronizarBancoComFirebase();
+    ok(res, { mensagem: "Sincronização com a nuvem executada com sucesso!" });
+  } catch (err) {
+    fail(res, 500, err.message);
   }
 });
 

@@ -96,10 +96,17 @@
         <button class="nav-btn" data-section="usuarios" id="navBtnUsuarios">
           <span>Coordenadores</span>
         </button>
+
+        <button class="nav-btn" data-section="backup" id="navBtnBackup">
+          <span>Backup & Nuvem</span>
+        </button>
       </nav>
     </div>
 
     <div class="sidebar-footer">
+      <button id="btnBaixarBackupRapido" type="button" class="sidebar-footer-link" style="background:none; border:none; width:100%; text-align:left; cursor:pointer; color:inherit; font-family:inherit; padding:8px 12px; display:flex; align-items:center; gap:8px;">
+        <span>📥 Baixar Backup (.json)</span>
+      </button>
       <div id="sidebarTelemetry" class="sidebar-telemetry hidden">
         <div class="sidebar-telemetry-item">
           <span class="telemetry-dot online" id="dot-status-sidebar"></span>
@@ -920,6 +927,99 @@
           </div>
         </div>
 
+      </section>
+
+      <!-- 10. BACKUP & NUVEM SECTION -->
+      <section id="backupSection" class="page-section">
+        <div class="professores-grid-two-cols">
+          <!-- CARD ESQUERDA: STATUS DA NUVEM & EXPORTAÇÃO -->
+          <div class="dash-card">
+            <div class="dash-card-header" style="margin-bottom:16px;">
+              <div>
+                <h2 class="dash-card-title">Persistência em Nuvem & Backup</h2>
+                <p class="dash-card-subtitle" style="margin-top:4px;">Proteção total contra perda de dados em reinicializações e novos deploys</p>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-subtle, rgba(37,99,235,0.06)); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="telemetry-dot online" id="bkpDotStatus"></span>
+                  <strong style="font-size:15px;" id="bkpStatusTexto">Firebase RTDB: Conectado e Sincronizado</strong>
+                </div>
+                <span class="badge" style="background:#10b981; color:#fff; font-size:12px; padding:4px 10px; border-radius:20px;">Ativo</span>
+              </div>
+              <p style="font-size:13px; color:var(--text-muted); margin:0; line-height:1.5;">
+                Todas as alterações feitas no painel ou registradas pelo leitor RFID são salvas simultaneamente no SQLite e no Firebase Realtime Database na nuvem. Mesmo que o Render destrua e recrie o container, nenhum dado é perdido.
+              </p>
+            </div>
+
+            <h3 style="font-size:14px; font-weight:600; margin-bottom:12px; color:var(--text);">Registros Atuais Protegidos:</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:24px;">
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:20px; font-weight:700; color:var(--primary);" id="bkpCountProf">--</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Professores</div>
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:20px; font-weight:700; color:var(--primary);" id="bkpCountDisc">--</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Disciplinas</div>
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:20px; font-weight:700; color:var(--primary);" id="bkpCountTurmas">--</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Turmas</div>
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:20px; font-weight:700; color:var(--primary);" id="bkpCountGrade">--</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Horários da Grade</div>
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:20px; font-weight:700; color:var(--primary);" id="bkpCountTurnos">--</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Faixas de Turnos</div>
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:20px; font-weight:700; color:var(--primary);" id="bkpCountAdmins">--</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Coordenadores</div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <button id="btnBaixarBackupCompleto" type="button" class="btn-form-salvar" style="display:inline-flex; align-items:center; gap:8px;">
+                <span>📥 Baixar Backup Completo (.json)</span>
+              </button>
+              <button id="btnForcarSincronizacao" type="button" class="btn-filter-outline" style="display:inline-flex; align-items:center; gap:8px;">
+                <span>🔄 Sincronizar com Nuvem</span>
+              </button>
+            </div>
+            <div id="msgBackupStatus" class="msg-box" style="margin-top:14px;"></div>
+          </div>
+
+          <!-- CARD DIREITA: RESTAURAR BACKUP -->
+          <div class="dash-card">
+            <div class="dash-card-header" style="margin-bottom:16px;">
+              <div>
+                <h2 class="dash-card-title">Restaurar Backup</h2>
+                <p class="dash-card-subtitle" style="margin-top:4px;">Carregue um arquivo .json exportado anteriormente</p>
+              </div>
+            </div>
+
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+              Caso precise restaurar dados antigos ou transferir a base inteira, selecione o arquivo <code>backup-presenx-*.json</code>. Os registros serão mesclados com segurança no banco de dados e sincronizados na nuvem.
+            </p>
+
+            <div class="form-field" style="margin-bottom:16px;">
+              <label for="inputArquivoBackup" class="form-label">Arquivo de Backup (.json)</label>
+              <input id="inputArquivoBackup" type="file" accept=".json,application/json" class="form-input" style="padding:10px;" />
+            </div>
+
+            <div class="form-actions-row">
+              <button id="btnExecutarRestauracao" type="button" class="btn-danger" style="display:inline-flex; align-items:center; gap:8px;">
+                <span>📤 Restaurar Dados</span>
+              </button>
+            </div>
+
+            <div id="msgRestauracao" class="msg-box" style="margin-top:14px;"></div>
+          </div>
+        </div>
       </section>
 
       <!-- FOOTER -->

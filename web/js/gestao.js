@@ -631,6 +631,19 @@ function aplicarNavegacao(secaoAlvo) {
     if (btnNovoEvento) btnNovoEvento.classList.add("hidden");
     if (pageSubtitle) pageSubtitle.classList.add("hidden");
     carregarCoordenadores();
+  } else if (secaoAlvo === "backup") {
+    if (el.pageTitle) el.pageTitle.textContent = "Backup & Nuvem";
+    if (telemetryHeader) telemetryHeader.classList.add("hidden");
+    if (sidebarTelemetry) sidebarTelemetry.classList.remove("hidden");
+    if (btnNovoProf) btnNovoProf.classList.add("hidden");
+    if (btnNovaDisc) btnNovaDisc.classList.add("hidden");
+    if (btnNovaTurma) btnNovaTurma.classList.add("hidden");
+    if (btnSalvarGrade) btnSalvarGrade.classList.add("hidden");
+    if (btnSalvarTurnos) btnSalvarTurnos.classList.add("hidden");
+    if (btnNovoAviso) btnNovoAviso.classList.add("hidden");
+    if (btnNovoEvento) btnNovoEvento.classList.add("hidden");
+    if (pageSubtitle) pageSubtitle.classList.add("hidden");
+    carregarStatusBackup();
   } else {
     if (telemetryHeader) telemetryHeader.classList.add("hidden");
     if (sidebarTelemetry) sidebarTelemetry.classList.remove("hidden");
@@ -3022,6 +3035,201 @@ async function excluirCoordenador(id, email) {
   }
 }
 
+// ======================================================
+// GESTÃO DE BACKUP & NUVEM (FIREBASE)
+// ======================================================
+async function carregarStatusBackup() {
+  const dot = document.getElementById("bkpDotStatus");
+  const txt = document.getElementById("bkpStatusTexto");
+  const msg = document.getElementById("msgBackupStatus");
+
+  try {
+    const res = await apiGet("/api/backup/status");
+    if (!res || !res.ok) {
+      if (txt) txt.textContent = "Não foi possível consultar status da nuvem";
+      if (dot) dot.className = "telemetry-dot offline";
+      return;
+    }
+
+    if (dot) dot.className = res.firebaseConectado ? "telemetry-dot online" : "telemetry-dot offline";
+    if (txt) {
+      txt.textContent = res.firebaseConectado
+        ? "Firebase RTDB: Conectado e Sincronizado"
+        : "Firebase RTDB: Desconectado (Configurar FIREBASE_SERVICE_ACCOUNT no Render)";
+    }
+
+    const t = res.totais || {};
+    const countProf = document.getElementById("bkpCountProf");
+    const countDisc = document.getElementById("bkpCountDisc");
+    const countTurmas = document.getElementById("bkpCountTurmas");
+    const countGrade = document.getElementById("bkpCountGrade");
+    const countTurnos = document.getElementById("bkpCountTurnos");
+    const countAdmins = document.getElementById("bkpCountAdmins");
+
+    if (countProf) countProf.textContent = t.usuarios || 0;
+    if (countDisc) countDisc.textContent = t.disciplinas || 0;
+    if (countTurmas) countTurmas.textContent = t.turmas || 0;
+    if (countGrade) countGrade.textContent = t.grade_horarios || 0;
+    if (countTurnos) countTurnos.textContent = t.turnos_horarios || 0;
+    if (countAdmins) countAdmins.textContent = t.admin_usuarios || 0;
+
+  } catch (err) {
+    if (dot) dot.className = "telemetry-dot offline";
+    if (txt) txt.textContent = "Erro ao conectar com a API";
+  }
+}
+
+function baixarBackupJson() {
+  const token = localStorage.getItem("px_admin_token");
+  if (!token) {
+    toast.error("Sessão expirada. Faça login novamente.");
+    return;
+  }
+  // Abre o download direto com token na URL
+  window.location.href = `/api/backup/export?token=${encodeURIComponent(token)}`;
+}
+
+async function forcarSincronizacaoNuvem() {
+  const btn = document.getElementById("btnForcarSincronizacao");
+  const msg = document.getElementById("msgBackupStatus");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Sincronizando...";
+  }
+  if (msg) {
+    msg.className = "msg-box";
+    msg.textContent = "";
+  }
+
+  try {
+    const res = await apiSend("/api/backup/sincronizar-nuvem", "POST", {});
+    if (res && res.ok) {
+      if (msg) {
+        msg.className = "msg-box msg-ok";
+        msg.textContent = "✓ Nuvem sincronizada com sucesso!";
+      }
+      toast.success("Nuvem sincronizada!");
+      await carregarStatusBackup();
+    } else {
+      if (msg) {
+        msg.className = "msg-box msg-err";
+        msg.textContent = (res && res.erro) || "Erro ao sincronizar com Firebase.";
+      }
+      toast.error((res && res.erro) || "Erro na sincronização.");
+    }
+  } catch (err) {
+    if (msg) {
+      msg.className = "msg-box msg-err";
+      msg.textContent = "Falha de rede ao sincronizar.";
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "🔄 Sincronizar com Nuvem";
+    }
+  }
+}
+
+async function restaurarBackupJson() {
+  const fileInput = document.getElementById("inputArquivoBackup");
+  const msg = document.getElementById("msgRestauracao");
+  const btn = document.getElementById("btnExecutarRestauracao");
+
+  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+    if (msg) {
+      msg.className = "msg-box msg-err";
+      msg.textContent = "Por favor, selecione um arquivo .json de backup.";
+    }
+    toast.error("Selecione um arquivo .json.");
+    return;
+  }
+
+  const arquivo = fileInput.files[0];
+  if (!arquivo.name.endsWith(".json")) {
+    if (msg) {
+      msg.className = "msg-box msg-err";
+      msg.textContent = "O arquivo precisa ter extensão .json.";
+    }
+    toast.error("Arquivo inválido (necessário .json).");
+    return;
+  }
+
+  const ok = await confirmarAcao({
+    titulo: "Restaurar Backup Completo",
+    mensagem: `Tem certeza que deseja restaurar os dados do arquivo "${arquivo.name}"?\nTodos os registros serão importados para o banco local e salvos na nuvem.`,
+    textoConfirmar: "Restaurar Dados",
+    tipo: "danger"
+  });
+  if (!ok) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Restaurando dados...";
+  }
+  if (msg) {
+    msg.className = "msg-box";
+    msg.textContent = "Lendo arquivo...";
+  }
+
+  try {
+    const leitor = new FileReader();
+    leitor.onload = async function (e) {
+      try {
+        const conteudoJson = JSON.parse(e.target.result);
+        if (!conteudoJson || !conteudoJson.tabelas) {
+          throw new Error("Formato inválido: propriedade 'tabelas' não encontrada.");
+        }
+
+        const res = await apiSend("/api/backup/import", "POST", { tabelas: conteudoJson.tabelas });
+        if (res && res.ok) {
+          if (msg) {
+            msg.className = "msg-box msg-ok";
+            msg.textContent = "✓ Backup restaurado com sucesso no banco de dados e nuvem!";
+          }
+          toast.success("Backup restaurado com sucesso!");
+          fileInput.value = "";
+          await carregarStatusBackup();
+          // Recarrega todos os módulos da interface
+          await carregarDisciplinas();
+          await carregarUsuariosLocais();
+          await carregarTurmas();
+          await carregarPainelDadosGrade();
+          await carregarAvisos();
+          await carregarEventos();
+          await carregarCoordenadores();
+        } else {
+          if (msg) {
+            msg.className = "msg-box msg-err";
+            msg.textContent = (res && res.erro) || "Erro ao processar restauração.";
+          }
+          toast.error((res && res.erro) || "Erro ao restaurar.");
+        }
+      } catch (errJson) {
+        if (msg) {
+          msg.className = "msg-box msg-err";
+          msg.textContent = "Erro ao interpretar JSON: " + errJson.message;
+        }
+        toast.error("JSON inválido.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "📤 Restaurar Dados";
+        }
+      }
+    };
+    leitor.readAsText(arquivo, "UTF-8");
+  } catch (err) {
+    if (msg) {
+      msg.className = "msg-box msg-err";
+      msg.textContent = "Falha ao ler o arquivo selecionado.";
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "📤 Restaurar Dados";
+    }
+  }
+}
+
 window.sair = function () {
   localStorage.removeItem("px_admin_token");
   window.location.href = "./login-gestao.html";
@@ -3321,6 +3529,19 @@ async function start() {
   document.querySelectorAll(".input-hora-turno").forEach(inp => {
     aplicarMascaraHora(inp);
   });
+
+  // Listeners de Backup & Nuvem
+  const btnBkpRapido = document.getElementById("btnBaixarBackupRapido");
+  if (btnBkpRapido) btnBkpRapido.addEventListener("click", baixarBackupJson);
+
+  const btnBkpCompleto = document.getElementById("btnBaixarBackupCompleto");
+  if (btnBkpCompleto) btnBkpCompleto.addEventListener("click", baixarBackupJson);
+
+  const btnForcarSinc = document.getElementById("btnForcarSincronizacao");
+  if (btnForcarSinc) btnForcarSinc.addEventListener("click", forcarSincronizacaoNuvem);
+
+  const btnRestaurar = document.getElementById("btnExecutarRestauracao");
+  if (btnRestaurar) btnRestaurar.addEventListener("click", restaurarBackupJson);
 
   // Carregamento de dados
   await carregarDisciplinas();
