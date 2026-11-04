@@ -403,7 +403,8 @@ async function apiGet(url) {
   const headers = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const resposta = await fetch(url, { headers });
+  const sep = url.includes("?") ? "&" : "?";
+  const resposta = await fetch(`${url}${sep}_t=${Date.now()}`, { headers, cache: "no-store" });
   if (resposta.status === 401) {
     localStorage.removeItem("px_admin_token");
     window.location.replace("./login-gestao.html?expirado=1");
@@ -2760,6 +2761,7 @@ async function excluirAviso(id) {
     if (el.avisoIdEditando && el.avisoIdEditando.value === String(id)) {
       cancelarEdicaoAviso();
     }
+    toast.success("Aviso excluído com sucesso!");
     await carregarAvisos();
   } catch (e) {
     toast.error("Erro ao excluir aviso: " + e.message);

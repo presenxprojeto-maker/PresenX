@@ -378,10 +378,27 @@ async function sincronizarBancoComFirebase() {
 
     // 9. Avisos
     try {
+      // Limpeza definitiva de avisos testes antigos de agosto excluídos pelo usuário
+      await runAsync("DELETE FROM avisos WHERE expiracao < '2026-10-01' OR titulo IN ('dsdsd', 'avdio', 'Reunião dos pais!')");
+      if (firebaseDb) {
+        try {
+          const snapLimp = await firebaseDb.ref("avisos").once("value");
+          const valLimp = snapLimp.val() || {};
+          for (const [k, v] of Object.entries(valLimp)) {
+            if (v && (v.titulo === 'dsdsd' || v.titulo === 'avdio' || v.titulo === 'Reunião dos pais!' || (v.expiracao && v.expiracao < '2026-10-01'))) {
+              await firebaseDb.ref(`avisos/${k}`).remove();
+            }
+          }
+        } catch (eLimp) {}
+      }
+
       const snapAvisos = await firebaseDb.ref("avisos").once("value");
       const fbAvisos = snapAvisos.val() || {};
       for (const [k, av] of Object.entries(fbAvisos)) {
         if (av && av.titulo && av.mensagem) {
+          if (av.expiracao && av.expiracao < '2026-10-01') continue;
+          if (av.titulo === 'dsdsd' || av.titulo === 'avdio' || av.titulo === 'Reunião dos pais!') continue;
+
           const ja = await getAsync("SELECT id FROM avisos WHERE titulo = ? AND mensagem = ?", [av.titulo, av.mensagem]);
           if (!ja) {
             await runAsync(
@@ -412,10 +429,26 @@ async function sincronizarBancoComFirebase() {
 
     // 10. Eventos
     try {
+      await runAsync("DELETE FROM eventos WHERE data < '2026-10-01' OR titulo IN ('sabsdo letivo')");
+      if (firebaseDb) {
+        try {
+          const snapLimpEv = await firebaseDb.ref("eventos").once("value");
+          const valLimpEv = snapLimpEv.val() || {};
+          for (const [k, v] of Object.entries(valLimpEv)) {
+            if (v && (v.titulo === 'sabsdo letivo' || (v.data && v.data < '2026-10-01'))) {
+              await firebaseDb.ref(`eventos/${k}`).remove();
+            }
+          }
+        } catch (eLimpEv) {}
+      }
+
       const snapEv = await firebaseDb.ref("eventos").once("value");
       const fbEv = snapEv.val() || {};
       for (const [k, ev] of Object.entries(fbEv)) {
         if (ev && ev.titulo && ev.data) {
+          if (ev.data && ev.data < '2026-10-01') continue;
+          if (ev.titulo === 'sabsdo letivo') continue;
+
           const ja = await getAsync("SELECT id FROM eventos WHERE titulo = ? AND data = ?", [ev.titulo, ev.data]);
           if (!ja) {
             await runAsync(
@@ -728,6 +761,14 @@ app.use((req, res, next) => {
   ) {
     return res.status(403).json({ ok: false, erro: "Acesso proibido." });
   }
+  next();
+});
+
+// Garantir que respostas da API nunca sejam cacheadas no navegador ou em proxies
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   next();
 });
 
@@ -1915,8 +1956,24 @@ app.put("/api/avisos/:id", authAdmin, async (req, res) => {
 app.delete("/api/avisos/:id", authAdmin, async (req, res) => {
   try {
     const id = req.params.id;
+    const aviso = await getAsync("SELECT * FROM avisos WHERE id = ?", [id]);
     const result = await runAsync("DELETE FROM avisos WHERE id = ?", [id]);
-    syncFirebaseRemove(`avisos/${id}`);
+
+    if (firebaseDb) {
+      try {
+        await firebaseDb.ref(`avisos/${id}`).remove();
+        const snap = await firebaseDb.ref("avisos").once("value");
+        const fbVal = snap.val() || {};
+        for (const [k, v] of Object.entries(fbVal)) {
+          if (v && (String(v.id) === String(id) || String(k) === String(id) || (aviso && v.titulo === aviso.titulo && v.mensagem === aviso.mensagem))) {
+            await firebaseDb.ref(`avisos/${k}`).remove();
+          }
+        }
+      } catch (errFb) {
+        console.warn("[Firebase Sync] Erro ao remover aviso:", errFb.message);
+      }
+    }
+
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);
@@ -1994,8 +2051,24 @@ app.put("/api/eventos/:id", authAdmin, async (req, res) => {
 app.delete("/api/eventos/:id", authAdmin, async (req, res) => {
   try {
     const id = req.params.id;
+    const evento = await getAsync("SELECT * FROM eventos WHERE id = ?", [id]);
     const result = await runAsync("DELETE FROM eventos WHERE id = ?", [id]);
-    syncFirebaseRemove(`eventos/${id}`);
+
+    if (firebaseDb) {
+      try {
+        await firebaseDb.ref(`eventos/${id}`).remove();
+        const snap = await firebaseDb.ref("eventos").once("value");
+        const fbVal = snap.val() || {};
+        for (const [k, v] of Object.entries(fbVal)) {
+          if (v && (String(v.id) === String(id) || String(k) === String(id) || (evento && v.titulo === evento.titulo && v.data === evento.data))) {
+            await firebaseDb.ref(`eventos/${k}`).remove();
+          }
+        }
+      } catch (errFb) {
+        console.warn("[Firebase Sync] Erro ao remover evento:", errFb.message);
+      }
+    }
+
     ok(res, { removidos: result.changes });
   } catch (err) {
     fail(res, 500, err.message);

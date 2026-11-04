@@ -580,7 +580,7 @@
       return "";
     }
 
-    // Atualização dinâmica do relógio do cabeçalho: "Quarta-feira, 4 de novembro · 13:35"
+    // Atualização dinâmica do relógio do cabeçalho em tempo real com segundos
     function atualizarCabecalhoDataHora() {
       const agora = new Date();
       const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
@@ -591,35 +591,49 @@
       const mesNome = meses[agora.getMonth()];
       const horas = String(agora.getHours()).padStart(2, "0");
       const minutos = String(agora.getMinutes()).padStart(2, "0");
+      const segundos = String(agora.getSeconds()).padStart(2, "0");
 
       if (el.txtDataHoraCabecalho) {
-        el.txtDataHoraCabecalho.textContent = `${diaSemana}, ${diaNum} de ${mesNome} · ${horas}:${minutos}`;
+        el.txtDataHoraCabecalho.textContent = `${diaSemana}, ${diaNum} de ${mesNome} · ${horas}:${minutos}:${segundos}`;
       }
     }
     setInterval(atualizarCabecalhoDataHora, 1000);
     atualizarCabecalhoDataHora();
 
-    // Carregar Avisos da API
+    let ultimoJsonAvisos = "";
+    let ultimoJsonEventos = "";
+
+    // Carregar Avisos da API sem cache
     async function carregarAvisos() {
       try {
-        const res = await fetch("/api/avisos");
+        const res = await fetch(`/api/avisos?_t=${Date.now()}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
-        avisos = Array.isArray(data.avisos) ? data.avisos : [];
-        renderizarAvisos();
+        const novosAvisos = Array.isArray(data.avisos) ? data.avisos : [];
+        const jsonAtual = JSON.stringify(novosAvisos);
+        if (jsonAtual !== ultimoJsonAvisos) {
+          ultimoJsonAvisos = jsonAtual;
+          avisos = novosAvisos;
+          renderizarAvisos();
+        }
       } catch (err) {
         console.error("Falha ao carregar avisos:", err);
       }
     }
 
-    // Carregar Eventos da API
+    // Carregar Eventos da API sem cache
     async function carregarEventos() {
       try {
-        const res = await fetch("/api/eventos");
+        const res = await fetch(`/api/eventos?_t=${Date.now()}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
-        eventos = Array.isArray(data.eventos) ? data.eventos : [];
-        renderizarEventos();
+        const novosEventos = Array.isArray(data.eventos) ? data.eventos : [];
+        const jsonAtual = JSON.stringify(novosEventos);
+        if (jsonAtual !== ultimoJsonEventos) {
+          ultimoJsonEventos = jsonAtual;
+          eventos = novosEventos;
+          renderizarEventos();
+        }
       } catch (err) {
         console.error("Falha ao carregar eventos:", err);
       }
@@ -796,11 +810,25 @@
     }
     inicializar();
 
-    // Auto-atualização periódica a cada 20 segundos
+    // Auto-atualização periódica em tempo real a cada 3 segundos
     setInterval(async () => {
       await Promise.all([carregarAvisos(), carregarEventos()]);
       registrarAtualizacao();
-    }, 20000);
+    }, 3000);
+
+    // Atualização instantânea ao focar ou retornar para a aba
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        carregarAvisos();
+        carregarEventos();
+        registrarAtualizacao();
+      }
+    });
+    window.addEventListener("focus", () => {
+      carregarAvisos();
+      carregarEventos();
+      registrarAtualizacao();
+    });
   </script>
 </body>
 </html>
