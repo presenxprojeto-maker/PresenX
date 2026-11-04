@@ -58,6 +58,9 @@
                 <button type="button" id="btnFullscreen" class="btn-fullscreen" title="Alternar Tela Cheia (F11)">
                     <i data-lucide="maximize-2"></i>
                 </button>
+                <a href="./mural.html" class="btn-fullscreen" title="Mural de Avisos da Escola" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="bell"></i>
+                </a>
                 <a href="./login-gestao.html" class="btn-fullscreen" title="Acesso Administrativo / Portal" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
                     <i data-lucide="shield"></i>
                 </a>
@@ -123,8 +126,11 @@
             <aside class="painel-lateral">
 
                 <section class="painel-lateral-bloco">
-                    <div class="painel-lateral-titulo">
+                    <div class="painel-lateral-titulo" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>AVISOS DA GESTÃO</span>
+                        <a href="./mural.html" style="font-size:11px; text-decoration:none; color:inherit; opacity:0.85; display:inline-flex; align-items:center; gap:3px; font-weight:600;" title="Abrir mural completo">
+                            <span>Ver mural</span> &rarr;
+                        </a>
                     </div>
 
                     <div id="painelAvisos" class="painel-lateral-lista">

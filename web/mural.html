@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PresenX | Mural de Avisos da Escola</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
+
+  <!-- Google Fonts: Bricolage Grotesque & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      --bg-page: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #24344d;
+      --brand-blue: #203BA2;
+      --brand-blue-glow: rgba(32, 59, 162, 0.35);
+
+      --prio-urgente: #ef4444;
+      --prio-urgente-bg: rgba(239, 68, 68, 0.12);
+      --prio-urgente-border: rgba(239, 68, 68, 0.35);
+
+      --prio-alta: #f59e0b;
+      --prio-alta-bg: rgba(245, 158, 11, 0.12);
+      --prio-alta-border: rgba(245, 158, 11, 0.35);
+
+      --prio-info: #3b82f6;
+      --prio-info-bg: rgba(59, 130, 246, 0.12);
+      --prio-info-border: rgba(59, 130, 246, 0.35);
+
+      --prio-normal: #94a3b8;
+      --prio-normal-bg: rgba(148, 163, 184, 0.1);
+      --prio-normal-border: rgba(148, 163, 184, 0.25);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-soft: #cbd5e1;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ─── TOPO INSTITUCIONAL ─── */
+    .top-navbar {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 28px;
+    }
+
+    .top-navbar-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo-text {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .logo-x-symbol {
+      width: 22px;
+      height: 22px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 1px;
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border-subtle);
+    }
+
+    .school-tag {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      color: #cbd5e1;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-mural {
+      background: rgba(32, 59, 162, 0.45);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .clock-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    .clock-chip strong {
+      color: #ffffff;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-nav-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-nav-primary {
+      background: #203BA2;
+      border-color: #2b4cd6;
+      box-shadow: 0 4px 12px rgba(32, 59, 162, 0.35);
+    }
+
+    .btn-nav-primary:hover {
+      background: #2847c2;
+    }
+
+    /* ─── HERO BANNER ─── */
+    .hero-banner {
+      background: radial-gradient(circle at 50% 0%, rgba(32, 59, 162, 0.28) 0%, rgba(15, 23, 42, 0) 70%),
+                  linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 44px 28px 36px 28px;
+      text-align: center;
+    }
+
+    .hero-container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .hero-pretitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #60a5fa;
+      background: rgba(37, 99, 235, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #ffffff;
+      margin-bottom: 12px;
+      line-height: 1.15;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(14.5px, 2vw, 16.5px);
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 26px auto;
+      line-height: 1.5;
+    }
+
+    /* Stats bar no Hero */
+    .hero-stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      backdrop-filter: blur(8px);
+    }
+
+    .stat-pill .num {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .stat-pill.urgente .num {
+      color: #f87171;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulseGreen 2s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+
+    @keyframes pulseGreen {
+      to {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+      }
+    }
+
+    /* ─── BARRA DE CONTROLE & FILTROS ─── */
+    .controls-wrapper {
+      max-width: 1360px;
+      margin: -20px auto 28px auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 20;
+    }
+
+    .controls-card {
+      background: #1e293b;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Busca */
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 44px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 8px 38px 8px 42px;
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn-clear-search {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-clear-search:hover {
+      color: #ffffff;
+    }
+
+    /* Chips de Filtro */
+    .filter-chips {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-soft);
+      padding: 7px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .filter-chip:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .filter-chip.active {
+      background: #203BA2;
+      border-color: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(32, 59, 162, 0.4);
+    }
+
+    .chip-badge {
+      background: rgba(0, 0, 0, 0.25);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    .filter-chip.active .chip-badge {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Ações extras */
+    .controls-extras {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-refresh {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-soft);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-refresh:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .btn-refresh.spinning svg {
+      animation: spinIcon 0.8s linear infinite;
+    }
+
+    @keyframes spinIcon {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* ─── GRID DE AVISOS ─── */
+    .mural-content-area {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 0 24px 60px 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .mural-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 22px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .mural-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ─── CARD DE AVISO ─── */
+    .aviso-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .aviso-card:hover {
+      transform: translateY(-2px);
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Variações por prioridade */
+    .aviso-card.urgente {
+      border-left: 5px solid var(--prio-urgente);
+      background: linear-gradient(145deg, rgba(239, 68, 68, 0.08) 0%, var(--bg-card) 60%);
+    }
+
+    .aviso-card.alta {
+      border-left: 5px solid var(--prio-alta);
+      background: linear-gradient(145deg, rgba(245, 158, 11, 0.07) 0%, var(--bg-card) 60%);
+    }
+
+    .aviso-card.informativo {
+      border-left: 5px solid var(--prio-info);
+      background: linear-gradient(145deg, rgba(59, 130, 246, 0.07) 0%, var(--bg-card) 60%);
+    }
+
+    .aviso-card.normal {
+      border-left: 5px solid var(--prio-normal);
+    }
+
+    /* Topo do Card */
+    .card-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .prio-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .prio-badge.urgente {
+      background: var(--prio-urgente-bg);
+      border: 1px solid var(--prio-urgente-border);
+      color: #fca5a5;
+    }
+
+    .prio-badge.alta {
+      background: var(--prio-alta-bg);
+      border: 1px solid var(--prio-alta-border);
+      color: #fde68a;
+    }
+
+    .prio-badge.informativo {
+      background: var(--prio-info-bg);
+      border: 1px solid var(--prio-info-border);
+      color: #93c5fd;
+    }
+
+    .prio-badge.normal {
+      background: var(--prio-normal-bg);
+      border: 1px solid var(--prio-normal-border);
+      color: #cbd5e1;
+    }
+
+    .validade-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .validade-indicator.expira-hoje {
+      color: #f87171;
+      font-weight: 700;
+    }
+
+    /* Conteúdo do Card */
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.35;
+      letter-spacing: -0.3px;
+    }
+
+    .card-message {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      white-space: pre-line;
+      word-break: break-word;
+    }
+
+    /* Rodapé do Card */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 6px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .card-meta-emissor {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .card-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .card-action-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    /* ─── ESTADO VAZIO ─── */
+    .empty-state-box {
+      text-align: center;
+      padding: 80px 20px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 20px;
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .empty-state-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .empty-state-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 440px;
+      line-height: 1.5;
+    }
+
+    .btn-reset-filters {
+      margin-top: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-reset-filters:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* ─── MODAL DE LEITURA COMPLETA ─── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeInModal 0.2s ease-out;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 20px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      animation: popModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popModal {
+      from { transform: scale(0.95) translateY(12px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 24px 28px 18px 28px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .modal-body {
+      padding: 28px;
+      overflow-y: auto;
+      line-height: 1.7;
+      font-size: 15.5px;
+      color: #e2e8f0;
+      white-space: pre-line;
+    }
+
+    .modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    /* ─── TOAST NOTIFICATION ─── */
+    .toast-pill {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #203BA2;
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast-pill.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ─── RODAPÉ DO MURAL ─── */
+    .mural-footer {
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 24px 28px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .mural-footer-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .mural-footer-links {
+      display: flex;
+      gap: 18px;
+    }
+
+    .mural-footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .mural-footer-links a:hover {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
+  <header class="top-navbar">
+    <div class="top-navbar-inner">
+
+      <!-- Marca e Instituição -->
+      <a href="./login-gestao.html" class="brand-section" title="Ir para a página inicial">
+        <span class="brand-logo-text">
+          <span>Presen</span>
+          <svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X">
+            <line x1="12" y1="28" x2="49" y2="65" stroke="#ffffff" stroke-width="8.8" stroke-linecap="round"/>
+            <path d="M 6 58 L 20 72 L 48 31" stroke="#38bdf8" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+            <path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          </svg>
+        </span>
+        <div class="brand-divider"></div>
+        <span class="school-tag">CETEP / LNAB</span>
+        <span class="badge-mural">Mural Digital</span>
+      </a>
+
+      <!-- Ações do Cabeçalho -->
+      <div class="nav-actions">
+        <!-- Relógio & Data -->
+        <div class="clock-chip">
+          <i data-lucide="clock" style="width:14px; height:14px; color:#60a5fa;"></i>
+          <span id="txtDataCabecalho">--</span>
+          <span>•</span>
+          <strong id="txtHoraCabecalho">--:--</strong>
+        </div>
+
+        <!-- Links de Navegação -->
+        <a href="./login-gestao.html" class="btn-nav-outline" title="Voltar para a página de entrada">
+          <i data-lucide="arrow-left" style="width:14px; height:14px;"></i>
+          <span>Início</span>
+        </a>
+
+        <a href="./painel.html" class="btn-nav-outline" title="Acessar o painel público das salas de aula">
+          <i data-lucide="layout-grid" style="width:14px; height:14px; color:#38bdf8;"></i>
+          <span>Painel de Salas</span>
+        </a>
+
+        <a href="./login-gestao.html#cardLogin" class="btn-nav-outline btn-nav-primary" title="Acesso restrito para coordenação e professores">
+          <i data-lucide="lock" style="width:14px; height:14px;"></i>
+          <span>Área de Gestão</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- BANNER HERO -->
+  <section class="hero-banner">
+    <div class="hero-container">
+      <div class="hero-pretitle">
+        <i data-lucide="megaphone" style="width:13px; height:13px;"></i>
+        <span>Canal Oficial de Comunicação Escolar</span>
+      </div>
+
+      <h1 class="hero-title">Mural de Avisos & Comunicados</h1>
+      <p class="hero-subtitle">
+        Acompanhe informativos importantes, alterações de horários, convocações, eventos e avisos oficiais da equipe gestora e coordenação pedagógica.
+      </p>
+
+      <!-- KPIs rápidos -->
+      <div class="hero-stats-row">
+        <div class="stat-pill">
+          <span class="pulse-dot"></span>
+          <span class="num" id="kpiTotalAtivos">0</span>
+          <span>comunicados ativos</span>
+        </div>
+
+        <div class="stat-pill urgente" id="boxKpiUrgentes" style="display:none;">
+          <i data-lucide="alert-triangle" style="width:16px; height:16px; color:#f87171;"></i>
+          <span class="num" id="kpiTotalUrgentes">0</span>
+          <span>em atenção urgente</span>
+        </div>
+
+        <div class="stat-pill">
+          <i data-lucide="shield-check" style="width:16px; height:16px; color:#38bdf8;"></i>
+          <span>CETEP Litoral Norte e Agreste Baiano</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTROLES, PESQUISA E FILTROS -->
+  <section class="controls-wrapper">
+    <div class="controls-card">
+
+      <!-- Campo de Busca em Tempo Real -->
+      <div class="search-box">
+        <i data-lucide="search" class="search-icon" style="width:16px; height:16px;"></i>
+        <input 
+          type="text" 
+          id="inputBusca" 
+          class="search-input" 
+          placeholder="Pesquisar por título, assunto ou palavra-chave..." 
+          autocomplete="off"
+        />
+        <button type="button" id="btnLimparBusca" class="btn-clear-search" title="Limpar pesquisa">
+          <i data-lucide="x" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+
+      <!-- Filtros por Prioridade -->
+      <div class="filter-chips" id="filterChipsContainer">
+        <button type="button" class="filter-chip active" data-filtro="todos">
+          <span>Todos</span>
+          <span class="chip-badge" id="badgeContagemTodos">0</span>
+        </button>
+
+        <button type="button" class="filter-chip" data-filtro="urgente">
+          <span>🔴 Urgentes</span>
+          <span class="chip-badge" id="badgeContagemUrgentes">0</span>
+        </button>
+
+        <button type="button" class="filter-chip" data-filtro="alta">
+          <span>🟡 Atenção</span>
+          <span class="chip-badge" id="badgeContagemAlta">0</span>
+        </button>
+
+        <button type="button" class="filter-chip" data-filtro="informativo">
+          <span>🔵 Informativos</span>
+          <span class="chip-badge" id="badgeContagemInfo">0</span>
+        </button>
+
+        <button type="button" class="filter-chip" data-filtro="normal">
+          <span>📢 Gerais</span>
+          <span class="chip-badge" id="badgeContagemNormal">0</span>
+        </button>
+      </div>
+
+      <!-- Botão Atualizar Manualmente -->
+      <div class="controls-extras">
+        <button type="button" id="btnRecarregar" class="btn-refresh" title="Atualizar avisos agora">
+          <i data-lucide="rotate-cw" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ÁREA PRINCIPAL DO MURAL -->
+  <main class="mural-content-area">
+    <div id="muralGrid" class="mural-grid">
+      <!-- Cards serão inseridos dinamicamente aqui -->
+    </div>
+  </main>
+
+  <!-- MODAL DE LEITURA COMPLETA -->
+  <div id="modalAviso" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div id="modalPrioBadge" class="prio-badge normal" style="margin-bottom:8px;">COMUNICADO</div>
+          <h2 id="modalTitulo" class="card-title" style="font-size:22px;">Título do Comunicado</h2>
+          <span id="modalValidade" class="validade-indicator" style="margin-top:4px;"></span>
+        </div>
+        <button type="button" id="btnFecharModal" class="card-action-btn" style="padding:6px; border-radius:8px;">
+          <i data-lucide="x" style="width:20px; height:20px;"></i>
+        </button>
+      </div>
+
+      <div id="modalCorpo" class="modal-body"></div>
+
+      <div class="modal-footer">
+        <div class="card-meta-emissor">
+          <i data-lucide="building" style="width:14px; height:14px;"></i>
+          <span>Publicação Oficial CETEP / LNAB</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" id="btnCopiarTextoModal" class="btn-nav-outline" style="padding:6px 12px; font-size:12px;">
+            <i data-lucide="copy" style="width:14px; height:14px;"></i>
+            <span>Copiar aviso</span>
+          </button>
+          <button type="button" id="btnFecharModalAcao" class="btn-nav-outline btn-nav-primary" style="padding:6px 14px; font-size:12px;">
+            <span>Fechar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST FEEDBACK -->
+  <div id="toastPill" class="toast-pill">
+    <i data-lucide="check-circle" style="width:16px; height:16px;"></i>
+    <span id="toastMsg">Mensagem</span>
+  </div>
+
+  <!-- RODAPÉ -->
+  <footer class="mural-footer">
+    <div class="mural-footer-inner">
+      <div>
+        <span>PresenX • Sistema Integrado de Presença e Comunicação Escolar</span>
+        <span style="margin: 0 8px; opacity:0.4;">|</span>
+        <span id="txtUltimaAtualizacao">Sincronizado</span>
+      </div>
+
+      <div class="mural-footer-links">
+        <a href="./login-gestao.html">Página Inicial</a>
+        <a href="./painel.html">Painel de Salas</a>
+        <a href="./login-gestao.html#cardLogin">Gestão Administrativa</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT DO MURAL -->
+  <script>
+    // Estado local da aplicação
+    let listaAvisos = [];
+    let filtroAtual = "todos";
+    let termoBusca = "";
+
+    // Elementos da interface
+    const el = {
+      muralGrid: document.getElementById("muralGrid"),
+      inputBusca: document.getElementById("inputBusca"),
+      btnLimparBusca: document.getElementById("btnLimparBusca"),
+      filterChips: document.querySelectorAll(".filter-chip"),
+      btnRecarregar: document.getElementById("btnRecarregar"),
+      kpiTotalAtivos: document.getElementById("kpiTotalAtivos"),
+      kpiTotalUrgentes: document.getElementById("kpiTotalUrgentes"),
+      boxKpiUrgentes: document.getElementById("boxKpiUrgentes"),
+      badgeContagemTodos: document.getElementById("badgeContagemTodos"),
+      badgeContagemUrgentes: document.getElementById("badgeContagemUrgentes"),
+      badgeContagemAlta: document.getElementById("badgeContagemAlta"),
+      badgeContagemInfo: document.getElementById("badgeContagemInfo"),
+      badgeContagemNormal: document.getElementById("badgeContagemNormal"),
+      txtDataCabecalho: document.getElementById("txtDataCabecalho"),
+      txtHoraCabecalho: document.getElementById("txtHoraCabecalho"),
+      txtUltimaAtualizacao: document.getElementById("txtUltimaAtualizacao"),
+      modalAviso: document.getElementById("modalAviso"),
+      modalTitulo: document.getElementById("modalTitulo"),
+      modalCorpo: document.getElementById("modalCorpo"),
+      modalPrioBadge: document.getElementById("modalPrioBadge"),
+      modalValidade: document.getElementById("modalValidade"),
+      btnFecharModal: document.getElementById("btnFecharModal"),
+      btnFecharModalAcao: document.getElementById("btnFecharModalAcao"),
+      btnCopiarTextoModal: document.getElementById("btnCopiarTextoModal"),
+      toastPill: document.getElementById("toastPill"),
+      toastMsg: document.getElementById("toastMsg")
+    };
+
+    let avisoAbertoNoModal = null;
+
+    // Utilitário para escapar HTML contra XSS
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Exibir notificação toast
+    function mostrarToast(mensagem) {
+      el.toastMsg.textContent = mensagem;
+      el.toastPill.classList.add("show");
+      setTimeout(() => {
+        el.toastPill.classList.remove("show");
+      }, 2600);
+    }
+
+    // Atualização do relógio e data
+    function atualizarRelogio() {
+      const agora = new Date();
+      
+      const opcoesData = { weekday: 'long', day: 'numeric', month: 'short' };
+      const dataStr = agora.toLocaleDateString('pt-BR', opcoesData);
+      
+      const horas = String(agora.getHours()).padStart(2, '0');
+      const minutos = String(agora.getMinutes()).padStart(2, '0');
+      
+      if (el.txtDataCabecalho) {
+        el.txtDataCabecalho.textContent = dataStr.charAt(0).toUpperCase() + dataStr.slice(1);
+      }
+      if (el.txtHoraCabecalho) {
+        el.txtHoraCabecalho.textContent = `${horas}:${minutos}`;
+      }
+    }
+    setInterval(atualizarRelogio, 1000);
+    atualizarRelogio();
+
+    // Buscar avisos do backend
+    async function carregarAvisos(comAnimacao = false) {
+      if (comAnimacao && el.btnRecarregar) {
+        el.btnRecarregar.classList.add("spinning");
+      }
+
+      try {
+        const res = await fetch("/api/avisos");
+        if (!res.ok) throw new Error("Erro na resposta da API");
+        const data = await res.json();
+        
+        listaAvisos = Array.isArray(data.avisos) ? data.avisos : [];
+        atualizarContadores();
+        renderizarMural();
+
+        const agora = new Date();
+        const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (el.txtUltimaAtualizacao) {
+          el.txtUltimaAtualizacao.textContent = `Atualizado às ${horaStr}`;
+        }
+      } catch (err) {
+        console.error("Falha ao carregar avisos:", err);
+        if (el.txtUltimaAtualizacao) {
+          el.txtUltimaAtualizacao.textContent = "Falha temporária ao sincronizar";
+        }
+      } finally {
+        if (comAnimacao && el.btnRecarregar) {
+          setTimeout(() => el.btnRecarregar.classList.remove("spinning"), 400);
+        }
+      }
+    }
+
+    // Atualizar badges e contadores dos filtros
+    function atualizarContadores() {
+      const hoje = new Date().toISOString().split("T")[0];
+      const ativos = listaAvisos.filter(a => a.ativo !== 0 && (!a.expiracao || a.expiracao >= hoje));
+
+      const totalTodos = ativos.length;
+      const totalUrgentes = ativos.filter(a => String(a.prioridade || "").toLowerCase() === "urgente").length;
+      const totalAlta = ativos.filter(a => String(a.prioridade || "").toLowerCase() === "alta").length;
+      const totalInfo = ativos.filter(a => String(a.prioridade || "").toLowerCase() === "informativo").length;
+      const totalNormal = ativos.filter(a => {
+        const p = String(a.prioridade || "").toLowerCase();
+        return p !== "urgente" && p !== "alta" && p !== "informativo";
+      }).length;
+
+      if (el.kpiTotalAtivos) el.kpiTotalAtivos.textContent = totalTodos;
+      if (el.badgeContagemTodos) el.badgeContagemTodos.textContent = totalTodos;
+      if (el.badgeContagemUrgentes) el.badgeContagemUrgentes.textContent = totalUrgentes;
+      if (el.badgeContagemAlta) el.badgeContagemAlta.textContent = totalAlta;
+      if (el.badgeContagemInfo) el.badgeContagemInfo.textContent = totalInfo;
+      if (el.badgeContagemNormal) el.badgeContagemNormal.textContent = totalNormal;
+
+      const urgentesTotais = totalUrgentes + totalAlta;
+      if (el.kpiTotalUrgentes) el.kpiTotalUrgentes.textContent = urgentesTotais;
+      if (el.boxKpiUrgentes) {
+        el.boxKpiUrgentes.style.display = urgentesTotais > 0 ? "inline-flex" : "none";
+      }
+    }
+
+    // Filtragem e renderização dos cards
+    function renderizarMural() {
+      if (!el.muralGrid) return;
+
+      const hoje = new Date().toISOString().split("T")[0];
+      let filtrados = listaAvisos.filter(a => a.ativo !== 0 && (!a.expiracao || a.expiracao >= hoje));
+
+      // Filtro de prioridade
+      if (filtroAtual === "urgente") {
+        filtrados = filtrados.filter(a => String(a.prioridade || "").toLowerCase() === "urgente");
+      } else if (filtroAtual === "alta") {
+        filtrados = filtrados.filter(a => String(a.prioridade || "").toLowerCase() === "alta");
+      } else if (filtroAtual === "informativo") {
+        filtrados = filtrados.filter(a => String(a.prioridade || "").toLowerCase() === "informativo");
+      } else if (filtroAtual === "normal") {
+        filtrados = filtrados.filter(a => {
+          const p = String(a.prioridade || "").toLowerCase();
+          return p !== "urgente" && p !== "alta" && p !== "informativo";
+        });
+      }
+
+      // Filtro de busca por texto
+      if (termoBusca) {
+        const buscaNorm = termoBusca.toLowerCase();
+        filtrados = filtrados.filter(a => {
+          const tit = (a.titulo || "").toLowerCase();
+          const msg = (a.mensagem || "").toLowerCase();
+          return tit.includes(buscaNorm) || msg.includes(buscaNorm);
+        });
+      }
+
+      // Ordenação: Urgentes primeiro, seguidos de Alta, depois por expiração mais próxima
+      const prioridadePeso = { urgente: 1, alta: 2, informativo: 3, normal: 4 };
+      filtrados.sort((a, b) => {
+        const pA = prioridadePeso[String(a.prioridade || "normal").toLowerCase()] || 4;
+        const pB = prioridadePeso[String(b.prioridade || "normal").toLowerCase()] || 4;
+        if (pA !== pB) return pA - pB;
+        if (a.expiracao && b.expiracao) return a.expiracao.localeCompare(b.expiracao);
+        return (b.id || 0) - (a.id || 0);
+      });
+
+      // Se não houver nenhum resultado
+      if (filtrados.length === 0) {
+        if (termoBusca || filtroAtual !== "todos") {
+          el.muralGrid.innerHTML = `
+            <div class="empty-state-box">
+              <div class="empty-state-icon">
+                <i data-lucide="search-x" style="width:28px; height:28px;"></i>
+              </div>
+              <h3 class="empty-state-title">Nenhum aviso encontrado</h3>
+              <p class="empty-state-text">
+                Não encontramos nenhum comunicado ativo correspondente ao filtro ou termo buscado.
+              </p>
+              <button type="button" class="btn-reset-filters" onclick="limparFiltrosEBusca()">
+                Limpar filtros e busca
+              </button>
+            </div>
+          `;
+        } else {
+          el.muralGrid.innerHTML = `
+            <div class="empty-state-box">
+              <div class="empty-state-icon">
+                <i data-lucide="bell-off" style="width:28px; height:28px;"></i>
+              </div>
+              <h3 class="empty-state-title">Mural atualizado e limpo</h3>
+              <p class="empty-state-text">
+                Não há avisos ou comunicados ativos no momento. Quando a direção ou coordenação publicar novos comunicados, eles aparecerão aqui em tempo real.
+              </p>
+            </div>
+          `;
+        }
+        lucide.createIcons();
+        return;
+      }
+
+      // Renderiza os cards
+      el.muralGrid.innerHTML = filtrados.map(a => {
+        const p = String(a.prioridade || "normal").toLowerCase();
+        let prioClasse = "normal";
+        let prioRotulo = "COMUNICADO";
+        let iconePrio = "bell";
+
+        if (p === "urgente") {
+          prioClasse = "urgente";
+          prioRotulo = "URGENTE";
+          iconePrio = "alert-triangle";
+        } else if (p === "alta") {
+          prioClasse = "alta";
+          prioRotulo = "ATENÇÃO";
+          iconePrio = "alert-circle";
+        } else if (p === "informativo") {
+          prioClasse = "informativo";
+          prioRotulo = "INFORMATIVO";
+          iconePrio = "info";
+        }
+
+        // Formatação de expiração
+        let expiraHtml = "";
+        if (a.expiracao) {
+          const partes = a.expiracao.split("-");
+          if (partes.length === 3) {
+            const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            const ehHoje = a.expiracao === hoje;
+            if (ehHoje) {
+              expiraHtml = `
+                <span class="validade-indicator expira-hoje" title="Expira ao final do dia">
+                  <i data-lucide="clock" style="width:13px; height:13px;"></i>
+                  <span>Expira hoje!</span>
+                </span>`;
+            } else {
+              expiraHtml = `
+                <span class="validade-indicator" title="Data limite do comunicado">
+                  <i data-lucide="calendar" style="width:13px; height:13px;"></i>
+                  <span>Válido até ${dataFormatada}</span>
+                </span>`;
+            }
+          }
+        } else {
+          expiraHtml = `
+            <span class="validade-indicator">
+              <i data-lucide="pin" style="width:13px; height:13px;"></i>
+              <span>Fixado</span>
+            </span>`;
+        }
+
+        // Formatação de data de criação
+        let dataCriacaoStr = "";
+        if (a.criado_em) {
+          try {
+            const dt = new Date(Number(a.criado_em));
+            dataCriacaoStr = `Publicado em ${dt.toLocaleDateString('pt-BR')}`;
+          } catch(e) {}
+        }
+
+        const safeTitulo = escapeHtml(a.titulo);
+        const safeMsg = escapeHtml(a.mensagem);
+        const jsonAviso = encodeURIComponent(JSON.stringify(a));
+
+        return `
+          <article class="aviso-card ${prioClasse}" data-id="${a.id}">
+            <!-- Linha superior com prioridade e validade -->
+            <div class="card-topbar">
+              <span class="prio-badge ${prioClasse}">
+                <i data-lucide="${iconePrio}" style="width:12px; height:12px;"></i>
+                <span>${prioRotulo}</span>
+              </span>
+              ${expiraHtml}
+            </div>
+
+            <!-- Título do aviso -->
+            <h2 class="card-title">${safeTitulo}</h2>
+
+            <!-- Texto completo do aviso -->
+            <div class="card-message">${safeMsg}</div>
+
+            <!-- Rodapé com emissor e botão copiar -->
+            <div class="card-footer">
+              <div class="card-meta-emissor">
+                <i data-lucide="building" style="width:13px; height:13px;"></i>
+                <span>${dataCriacaoStr || "Coordenação CETEP/LNAB"}</span>
+              </div>
+              <button 
+                type="button" 
+                class="card-action-btn" 
+                onclick="copiarAviso(${a.id})" 
+                title="Copiar texto deste comunicado"
+              >
+                <i data-lucide="copy" style="width:13px; height:13px;"></i>
+                <span>Copiar</span>
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      lucide.createIcons();
+    }
+
+    // Copiar conteúdo do aviso para a área de transferência
+    function copiarAviso(id) {
+      const aviso = listaAvisos.find(a => Number(a.id) === Number(id));
+      if (!aviso) return;
+
+      const texto = `📢 *COMUNICADO CETEP/LNAB*\n*${aviso.titulo}*\n\n${aviso.mensagem}\n\n🗓️ Válido até: ${aviso.expiracao ? aviso.expiracao.split('-').reverse().join('/') : 'Permanente'}\n🔗 Acompanhe no Mural: ${window.location.origin}/web/mural.html`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+          mostrarToast("Comunicado copiado com sucesso!");
+        }).catch(() => {
+          mostrarToast("Não foi possível copiar.");
+        });
+      } else {
+        // Fallback
+        const textarea = document.createElement("textarea");
+        textarea.value = texto;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        mostrarToast("Comunicado copiado!");
+      }
+    }
+
+    // Limpar filtros e pesquisa
+    function limparFiltrosEBusca() {
+      termoBusca = "";
+      if (el.inputBusca) el.inputBusca.value = "";
+      if (el.btnLimparBusca) el.btnLimparBusca.style.display = "none";
+
+      filtroAtual = "todos";
+      el.filterChips.forEach(chip => {
+        if (chip.getAttribute("data-filtro") === "todos") {
+          chip.classList.add("active");
+        } else {
+          chip.classList.remove("active");
+        }
+      });
+
+      renderizarMural();
+    }
+
+    // Listeners dos chips de filtros
+    el.filterChips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        el.filterChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        filtroAtual = chip.getAttribute("data-filtro") || "todos";
+        renderizarMural();
+      });
+    });
+
+    // Listeners do campo de busca
+    if (el.inputBusca) {
+      el.inputBusca.addEventListener("input", (e) => {
+        termoBusca = e.target.value.trim();
+        if (el.btnLimparBusca) {
+          el.btnLimparBusca.style.display = termoBusca ? "flex" : "none";
+        }
+        renderizarMural();
+      });
+    }
+
+    if (el.btnLimparBusca) {
+      el.btnLimparBusca.addEventListener("click", () => {
+        el.inputBusca.value = "";
+        termoBusca = "";
+        el.btnLimparBusca.style.display = "none";
+        el.inputBusca.focus();
+        renderizarMural();
+      });
+    }
+
+    // Botão de recarregar manual
+    if (el.btnRecarregar) {
+      el.btnRecarregar.addEventListener("click", () => {
+        carregarAvisos(true);
+      });
+    }
+
+    // Fechar modal
+    function fecharModal() {
+      if (el.modalAviso) el.modalAviso.style.display = "none";
+      avisoAbertoNoModal = null;
+    }
+
+    if (el.btnFecharModal) el.btnFecharModal.addEventListener("click", fecharModal);
+    if (el.btnFecharModalAcao) el.btnFecharModalAcao.addEventListener("click", fecharModal);
+    if (el.modalAviso) {
+      el.modalAviso.addEventListener("click", (e) => {
+        if (e.target === el.modalAviso) fecharModal();
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") fecharModal();
+    });
+
+    // Inicialização da página
+    carregarAvisos(false);
+
+    // Auto-atualização periódica a cada 25 segundos
+    setInterval(() => {
+      carregarAvisos(false);
+    }, 25000);
+  </script>
+</body>
+</html>
