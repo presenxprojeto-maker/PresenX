@@ -3555,9 +3555,6 @@ async function start() {
   });
 
   // Listeners de Backup & Nuvem
-  const btnBkpRapido = document.getElementById("btnBaixarBackupRapido");
-  if (btnBkpRapido) btnBkpRapido.addEventListener("click", baixarBackupJson);
-
   const btnBkpCompleto = document.getElementById("btnBaixarBackupCompleto");
   if (btnBkpCompleto) btnBkpCompleto.addEventListener("click", baixarBackupJson);
 
