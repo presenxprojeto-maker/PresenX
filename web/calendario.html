@@ -756,6 +756,10 @@
           <span class="cat-dot" style="background:var(--cat-evento);"></span>
           <span>Eventos & Reuniões</span>
         </button>
+        <button type="button" class="filter-chip" data-cat="academico">
+          <span class="cat-dot" style="background:var(--cat-academico);"></span>
+          <span>Acadêmico</span>
+        </button>
       </div>
     </section>
 
@@ -854,6 +858,14 @@
 
     // Identificar categoria a partir de palavras-chave no título/descrição
     function identificarCategoria(ev) {
+      const cat = String(ev.categoria || "").toLowerCase();
+      if (cat === "avaliacao") return { slug: "avaliacao", rotulo: "Avaliação", cor: "cat-avaliacao" };
+      if (cat === "feriado") return { slug: "feriado", rotulo: "Feriado", cor: "cat-feriado" };
+      if (cat === "sabado") return { slug: "sabado", rotulo: "Sábado Letivo", cor: "cat-sabado" };
+      if (cat === "academico") return { slug: "academico", rotulo: "Acadêmico", cor: "cat-academico" };
+      if (cat === "evento") return { slug: "evento", rotulo: "Evento / Reunião", cor: "cat-evento" };
+
+      // Fallback inteligente por palavras-chave se não tiver categoria explícita
       const texto = `${ev.titulo || ""} ${ev.descricao || ""}`.toLowerCase();
       if (texto.includes("prova") || texto.includes("avalia") || texto.includes("simulado") || texto.includes("recupera")) {
         return { slug: "avaliacao", rotulo: "Avaliação", cor: "cat-avaliacao" };
@@ -1164,3 +1176,4 @@
   </script>
 </body>
 </html>
+

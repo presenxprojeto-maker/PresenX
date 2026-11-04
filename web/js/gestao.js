@@ -111,6 +111,7 @@ const el = {
 
   // Eventos
   eventoTitulo: document.getElementById("eventoTitulo"),
+  eventoCategoria: document.getElementById("eventoCategoria"),
   eventoDescricao: document.getElementById("eventoDescricao"),
   eventoData: document.getElementById("eventoData"),
   btnSalvarEvento: document.getElementById("btnSalvarEvento"),
@@ -2829,9 +2830,19 @@ function renderListaEventos() {
       ? '<span class="status-pill ativo">Próximo</span>'
       : '<span class="status-pill inativo">Encerrado</span>';
 
+    const catMap = {
+      avaliacao: { rotulo: "Avaliação", cor: "pill-ausente" },
+      feriado: { rotulo: "Feriado", cor: "pill-presente" },
+      sabado: { rotulo: "Sábado Letivo", cor: "pill-sem-aula" },
+      academico: { rotulo: "Acadêmico", cor: "pill-sem-aula" },
+      evento: { rotulo: "Evento", cor: "status-pill" }
+    };
+    const catInfo = catMap[e.categoria] || catMap.evento;
+
     return `
       <tr>
         <td><strong>${escapeHtml(e.titulo)}</strong></td>
+        <td><span class="status-pill ${catInfo.cor}">${catInfo.rotulo}</span></td>
         <td class="mono">${dataFmt}</td>
         <td>${statusHtml}</td>
         <td class="col-acoes-prof">
@@ -2852,6 +2863,7 @@ function iniciarEdicaoEvento(id) {
   if (el.eventoIdEditando) el.eventoIdEditando.value = evento.id;
   if (el.eventoTitulo) el.eventoTitulo.value = evento.titulo || "";
   if (el.eventoDescricao) el.eventoDescricao.value = evento.descricao || "";
+  if (el.eventoCategoria) el.eventoCategoria.value = evento.categoria || "evento";
   if (el.eventoData) el.eventoData.value = evento.data || "";
 
   if (el.formEventoTitulo) el.formEventoTitulo.textContent = "Editar evento";
@@ -2865,6 +2877,7 @@ function cancelarEdicaoEvento() {
   if (el.eventoIdEditando) el.eventoIdEditando.value = "";
   if (el.eventoTitulo) el.eventoTitulo.value = "";
   if (el.eventoDescricao) el.eventoDescricao.value = "";
+  if (el.eventoCategoria) el.eventoCategoria.value = "evento";
   if (el.eventoData) el.eventoData.value = "";
 
   if (el.formEventoTitulo) el.formEventoTitulo.textContent = "Novo evento";
@@ -2876,6 +2889,7 @@ async function salvarEvento() {
   const idEditando = el.eventoIdEditando ? el.eventoIdEditando.value.trim() : "";
   const titulo = (el.eventoTitulo ? el.eventoTitulo.value : "").trim();
   const descricao = (el.eventoDescricao ? el.eventoDescricao.value : "").trim();
+  const categoria = el.eventoCategoria ? el.eventoCategoria.value : "evento";
   const data = el.eventoData ? el.eventoData.value : "";
 
   if (!titulo || !data) {
@@ -2889,9 +2903,9 @@ async function salvarEvento() {
   await executarComLoading(el.btnSalvarEvento, async () => {
     try {
       if (idEditando) {
-        await apiSend(`/api/eventos/${idEditando}`, "PUT", { titulo, descricao, data });
+        await apiSend(`/api/eventos/${idEditando}`, "PUT", { titulo, descricao, data, categoria });
       } else {
-        await apiSend("/api/eventos", "POST", { titulo, descricao, data });
+        await apiSend("/api/eventos", "POST", { titulo, descricao, data, categoria });
       }
 
       cancelarEdicaoEvento();

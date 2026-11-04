@@ -819,6 +819,7 @@
                 <thead>
                   <tr>
                     <th>Título</th>
+                    <th>Tipo</th>
                     <th>Data</th>
                     <th>Status</th>
                     <th class="col-acoes-prof"></th>
@@ -851,6 +852,17 @@
             <div class="form-field">
               <label for="eventoDescricao" class="form-label">Descrição</label>
               <textarea id="eventoDescricao" class="form-input form-textarea" rows="4" placeholder="Detalhes do evento" style="resize:vertical; min-height:90px;"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label for="eventoCategoria" class="form-label">Tipo / Categoria do evento</label>
+              <select id="eventoCategoria" class="form-input">
+                <option value="evento">🔵 Evento / Reunião</option>
+                <option value="avaliacao">🔴 Avaliação / Prova</option>
+                <option value="feriado">🟢 Feriado / Recesso</option>
+                <option value="sabado">🟡 Sábado Letivo</option>
+                <option value="academico">🟣 Acadêmico / Conselho</option>
+              </select>
             </div>
 
             <div class="form-field">

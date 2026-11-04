@@ -452,9 +452,9 @@ async function sincronizarBancoComFirebase() {
           const ja = await getAsync("SELECT id FROM eventos WHERE titulo = ? AND data = ?", [ev.titulo, ev.data]);
           if (!ja) {
             await runAsync(
-              `INSERT INTO eventos (titulo, descricao, data, sincronizado)
-               VALUES (?, ?, ?, 1)`,
-              [ev.titulo, ev.descricao || "", ev.data]
+              `INSERT INTO eventos (titulo, descricao, data, categoria, sincronizado)
+               VALUES (?, ?, ?, ?, 1)`,
+              [ev.titulo, ev.descricao || "", ev.data, ev.categoria || "evento"]
             );
           }
         }
@@ -466,7 +466,8 @@ async function sincronizarBancoComFirebase() {
             id: ev.id,
             titulo: ev.titulo,
             descricao: ev.descricao,
-            data: ev.data
+            data: ev.data,
+            categoria: ev.categoria || "evento"
           });
         }
       }
@@ -615,9 +616,11 @@ async function inicializarBancoESincronizacao() {
       titulo TEXT NOT NULL,
       descricao TEXT,
       data TEXT NOT NULL,
+      categoria TEXT DEFAULT 'evento',
       sincronizado INTEGER NOT NULL DEFAULT 0
     )
   `);
+  db.run("ALTER TABLE eventos ADD COLUMN categoria TEXT DEFAULT 'evento'", () => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS admin_usuarios (
@@ -1994,22 +1997,24 @@ app.post("/api/eventos", authAdmin, async (req, res) => {
     const titulo = String(req.body.titulo || "").trim();
     const descricao = String(req.body.descricao || "").trim();
     const data = String(req.body.data || "").trim();
+    const categoria = String(req.body.categoria || "evento").trim().toLowerCase();
 
     if (!titulo || !data) {
       return fail(res, 400, "Título e data são obrigatórios");
     }
 
     const result = await runAsync(
-      `INSERT INTO eventos (titulo, descricao, data, sincronizado)
-       VALUES (?, ?, ?, 0)`,
-      [titulo, descricao, data]
+      `INSERT INTO eventos (titulo, descricao, data, categoria, sincronizado)
+       VALUES (?, ?, ?, ?, 0)`,
+      [titulo, descricao, data, categoria]
     );
 
     syncFirebaseSet(`eventos/${result.lastID}`, {
       id: result.lastID,
       titulo,
       descricao,
-      data
+      data,
+      categoria
     });
 
     ok(res, { id: result.lastID });
@@ -2024,6 +2029,7 @@ app.put("/api/eventos/:id", authAdmin, async (req, res) => {
     const titulo = String(req.body.titulo || "").trim();
     const descricao = String(req.body.descricao || "").trim();
     const data = String(req.body.data || "").trim();
+    const categoria = String(req.body.categoria || "evento").trim().toLowerCase();
 
     if (!titulo || !data) {
       return fail(res, 400, "Título e data são obrigatórios");
@@ -2031,15 +2037,16 @@ app.put("/api/eventos/:id", authAdmin, async (req, res) => {
 
     const result = await runAsync(
       `UPDATE eventos
-       SET titulo = ?, descricao = ?, data = ?, sincronizado = 0
+       SET titulo = ?, descricao = ?, data = ?, categoria = ?, sincronizado = 0
        WHERE id = ?`,
-      [titulo, descricao, data, id]
+      [titulo, descricao, data, categoria, id]
     );
 
     syncFirebaseUpdate(`eventos/${id}`, {
       titulo,
       descricao,
-      data
+      data,
+      categoria
     });
 
     ok(res, { atualizados: result.changes });

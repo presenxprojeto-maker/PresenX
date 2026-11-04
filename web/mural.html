@@ -749,12 +749,18 @@
       }).join("");
     }
 
-    // Renderizar próximos eventos
+    // Renderizar próximos eventos (apenas eventos próximos: até 14 dias / 2 semanas)
     function renderizarEventos() {
-      const hoje = new Date().toISOString().split("T")[0];
-      // Filtrar apenas eventos de hoje em diante e ordenar
+      const agora = new Date();
+      const hoje = agora.toISOString().split("T")[0];
+
+      const limite = new Date(agora);
+      limite.setDate(limite.getDate() + 14); // Janela máxima de 14 dias (2 semanas)
+      const dataLimiteIso = limite.toISOString().split("T")[0];
+
+      // Filtrar apenas eventos de hoje até 14 dias para frente
       const futuros = eventos
-        .filter(ev => !ev.data || ev.data >= hoje)
+        .filter(ev => ev.data && ev.data >= hoje && ev.data <= dataLimiteIso)
         .sort((a, b) => (a.data || "").localeCompare(b.data || ""));
 
       // Se não houver nenhum evento futuro, oculta a coluna lateral e expande os avisos!
