@@ -282,6 +282,229 @@
       font-weight: 500;
     }
 
+    /* ─── TABS INTERNAS DO CARD PÚBLICO ─── */
+    .panel-nav-tabs {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 6px;
+      margin-bottom: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      max-width: 100%;
+    }
+
+    .panel-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.8);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .panel-tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-tab-btn.active {
+      background: #ffffff;
+      color: var(--card-blue);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .tab-badge-counter {
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 2px;
+      animation: pulseBadge 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseBadge {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+
+    /* Views de conteúdo das abas */
+    .tab-view-content {
+      animation: tabFadeIn 0.22s ease-out forwards;
+    }
+
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── MURAL DE AVISOS ─── */
+    .mural-filtros-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .mural-filtro-chip {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.88);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .mural-filtro-chip:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .mural-filtro-chip.ativo {
+      background: #ffffff;
+      color: var(--card-blue);
+      border-color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .mural-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 24px;
+    }
+
+    .mural-cards-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .mural-cards-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+    .mural-cards-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.28);
+      border-radius: 10px;
+    }
+
+    .mural-card-item {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: all 0.18s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .mural-card-item:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.32);
+      transform: translateY(-1px);
+    }
+
+    .mural-card-item.urgente {
+      border-left: 4px solid #ef4444;
+      background: rgba(239, 68, 68, 0.16);
+    }
+
+    .mural-card-item.alta {
+      border-left: 4px solid #f59e0b;
+      background: rgba(245, 158, 11, 0.14);
+    }
+
+    .mural-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .mural-tag-prio {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .mural-tag-prio.urgente {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .mural-tag-prio.alta {
+      background: #f59e0b;
+      color: #78350f;
+    }
+
+    .mural-tag-prio.normal {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .mural-tag-prio.informativo {
+      background: #0ea5e9;
+      color: #ffffff;
+    }
+
+    .mural-card-data {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 500;
+    }
+
+    .mural-card-titulo {
+      font-family: var(--font-display);
+      font-size: 16.5px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .mural-card-corpo {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.92);
+      white-space: pre-line;
+      word-break: break-word;
+    }
+
+    .mural-vazio-box {
+      text-align: center;
+      padding: 32px 18px;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 13.5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+    }
+
     /* ─── CARD BRANCO (GESTÃO ESCOLAR) ─── */
     .card-login-white {
       background-color: var(--card-white);
@@ -439,6 +662,21 @@
       .card-login-white {
         padding: 28px 24px;
       }
+
+      .panel-nav-tabs {
+        width: 100%;
+      }
+
+      .panel-tab-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 12.5px;
+      }
+
+      .mural-cards-container {
+        max-height: 320px;
+      }
     }
   
     /* Password Toggle & Shake Effect */
@@ -500,7 +738,7 @@
   <main class="main-wrapper">
     <div class="cards-grid">
 
-      <!-- CARD AZUL (Painel das Salas) -->
+      <!-- CARD AZUL (Painel das Salas & Mural de Avisos) -->
       <section class="card-panel-blue">
         <div>
           <!-- Data e Relógio Dinâmico -->
@@ -509,50 +747,98 @@
             <span class="panel-clock" id="txtHoraCabecalho">hh:mm</span>
           </div>
 
-          <!-- Pergunta Principal -->
-          <h2 class="panel-headline">
-            Onde está o professor? <u>Qual</u> sala está livre?
-          </h2>
-          <p class="panel-subline">
-            Veja agora, sem login.
-          </p>
+          <!-- NAVEGAÇÃO POR ABAS: SALAS & AULAS / MURAL DE AVISOS -->
+          <div class="panel-nav-tabs" role="tablist">
+            <button type="button" class="panel-tab-btn active" id="btnTabSalas" onclick="alternarAbaPublica('salas')" role="tab" aria-selected="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              <span>Salas & Aulas</span>
+            </button>
+            <button type="button" class="panel-tab-btn" id="btnTabMural" onclick="alternarAbaPublica('mural')" role="tab" aria-selected="false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span>Mural de Avisos</span>
+              <span class="tab-badge-counter" id="tagAvisosUrgentes" style="display:none;">0</span>
+            </button>
+          </div>
 
-          <!-- Tabela de Salas -->
-          <div class="rooms-list">
-            <div class="room-row">
-              <span class="room-name">Sala 12</span>
-              <span class="room-subject">Matemática · 3º Ano A</span>
-              <span class="status-pill pill-presente">Presente</span>
+          <!-- ABA 1: SALAS & AULAS -->
+          <div id="viewSalas" class="tab-view-content active">
+            <h2 class="panel-headline">
+              Onde está o professor? <u>Qual</u> sala está livre?
+            </h2>
+            <p class="panel-subline">
+              Veja agora, sem login.
+            </p>
+
+            <!-- Tabela de Salas -->
+            <div class="rooms-list">
+              <div class="room-row">
+                <span class="room-name">Sala 12</span>
+                <span class="room-subject">Matemática · 3º Ano A</span>
+                <span class="status-pill pill-presente">Presente</span>
+              </div>
+
+              <div class="room-row">
+                <span class="room-name">Sala 07</span>
+                <span class="room-subject">Física · 2º Ano B</span>
+                <span class="status-pill pill-ausente">Ausente</span>
+              </div>
+
+              <div class="room-row">
+                <span class="room-name">Sala 03</span>
+                <span class="room-subject">Sem aula neste horário</span>
+                <span class="status-pill pill-sem-aula">Sem aula</span>
+              </div>
+
+              <div class="room-row">
+                <span class="room-name">Sala 15</span>
+                <span class="room-subject">Língua Portuguesa · 1º Ano C</span>
+                <span class="status-pill pill-presente">Presente</span>
+              </div>
             </div>
 
-            <div class="room-row">
-              <span class="room-name">Sala 07</span>
-              <span class="room-subject">Física · 2º Ano B</span>
-              <span class="status-pill pill-ausente">Ausente</span>
-            </div>
-
-            <div class="room-row">
-              <span class="room-name">Sala 03</span>
-              <span class="room-subject">Sem aula neste horário</span>
-              <span class="status-pill pill-sem-aula">Sem aula</span>
-            </div>
-
-            <div class="room-row">
-              <span class="room-name">Sala 15</span>
-              <span class="room-subject">Língua Portuguesa · 1º Ano C</span>
-              <span class="status-pill pill-presente">Presente</span>
+            <!-- Rodapé do Card Azul -->
+            <div class="panel-footer-actions">
+              <a href="./painel.html" class="btn-open-panel" id="btnAbrirPainel">
+                <span>Abrir painel completo &rarr;</span>
+              </a>
+              <span class="panel-updated-info" id="txtAtualizado">
+                Atualizado há 1 min · Pavilhão ACM e Pavilhão Luís Viana
+              </span>
             </div>
           </div>
-        </div>
 
-        <!-- Rodapé do Card Azul -->
-        <div class="panel-footer-actions">
-          <a href="./painel.html" class="btn-open-panel" id="btnAbrirPainel">
-            <span>Abrir painel completo &rarr;</span>
-          </a>
-          <span class="panel-updated-info" id="txtAtualizado">
-            Atualizado há 1 min · Pavilhão ACM e Pavilhão Luís Viana
-          </span>
+          <!-- ABA 2: MURAL DE AVISOS -->
+          <div id="viewMural" class="tab-view-content" style="display:none;">
+            <h2 class="panel-headline">
+              Mural de Avisos <u>Oficiais</u>
+            </h2>
+            <p class="panel-subline">
+              Comunicados da direção e coordenação em tempo real.
+            </p>
+
+            <!-- Filtros Rápidos -->
+            <div class="mural-filtros-bar">
+              <button type="button" class="mural-filtro-chip ativo" data-filtro="todos" onclick="filtrarMural('todos')">Todos</button>
+              <button type="button" class="mural-filtro-chip" data-filtro="urgente" onclick="filtrarMural('urgente')">Urgentes</button>
+              <button type="button" class="mural-filtro-chip" data-filtro="informativo" onclick="filtrarMural('informativo')">Informativos</button>
+            </div>
+
+            <!-- Lista de Cards de Avisos -->
+            <div class="mural-cards-container" id="muralCardsContainer">
+              <div class="mural-vazio-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <span>Carregando comunicados da escola...</span>
+              </div>
+            </div>
+
+            <!-- Rodapé do Mural -->
+            <div class="panel-footer-actions">
+              <span class="panel-updated-info" id="muralTotalInfo">
+                Sincronizado com a coordenação em tempo real
+              </span>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -617,6 +903,177 @@
     PresenX · Sistema Robótico de Controle de Presença · CETEP / LNAB
   </footer>
   <script>
+    // ======================================================
+    // ABAS DO CARD PÚBLICO (SALAS / MURAL DE AVISOS)
+    // ======================================================
+    let avisosPublicos = [];
+    let filtroMuralAtual = "todos";
+
+    function alternarAbaPublica(aba) {
+      const btnSalas = document.getElementById("btnTabSalas");
+      const btnMural = document.getElementById("btnTabMural");
+      const viewSalas = document.getElementById("viewSalas");
+      const viewMural = document.getElementById("viewMural");
+
+      if (aba === "salas") {
+        if (btnSalas) {
+          btnSalas.classList.add("active");
+          btnSalas.setAttribute("aria-selected", "true");
+        }
+        if (btnMural) {
+          btnMural.classList.remove("active");
+          btnMural.setAttribute("aria-selected", "false");
+        }
+        if (viewSalas) {
+          viewSalas.style.display = "block";
+          viewSalas.classList.add("active");
+        }
+        if (viewMural) {
+          viewMural.style.display = "none";
+          viewMural.classList.remove("active");
+        }
+      } else {
+        if (btnMural) {
+          btnMural.classList.add("active");
+          btnMural.setAttribute("aria-selected", "true");
+        }
+        if (btnSalas) {
+          btnSalas.classList.remove("active");
+          btnSalas.setAttribute("aria-selected", "false");
+        }
+        if (viewMural) {
+          viewMural.style.display = "block";
+          viewMural.classList.add("active");
+        }
+        if (viewSalas) {
+          viewSalas.style.display = "none";
+          viewSalas.classList.remove("active");
+        }
+        renderizarMuralCards();
+      }
+    }
+
+    function filtrarMural(categoria) {
+      filtroMuralAtual = categoria;
+      document.querySelectorAll(".mural-filtro-chip").forEach(btn => {
+        if (btn.getAttribute("data-filtro") === categoria) {
+          btn.classList.add("ativo");
+        } else {
+          btn.classList.remove("ativo");
+        }
+      });
+      renderizarMuralCards();
+    }
+
+    function escapeHtmlPublico(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderizarMuralCards() {
+      const container = document.getElementById("muralCardsContainer");
+      const totalInfo = document.getElementById("muralTotalInfo");
+      if (!container) return;
+
+      const hoje = new Date().toISOString().split("T")[0];
+      let filtrados = avisosPublicos.filter(a => a.ativo !== 0 && (!a.expiracao || a.expiracao >= hoje));
+
+      if (filtroMuralAtual === "urgente") {
+        filtrados = filtrados.filter(a => {
+          const p = String(a.prioridade || "").toLowerCase();
+          return p === "urgente" || p === "alta";
+        });
+      } else if (filtroMuralAtual === "informativo") {
+        filtrados = filtrados.filter(a => {
+          const p = String(a.prioridade || "").toLowerCase();
+          return p === "informativo" || p === "normal";
+        });
+      }
+
+      const totalValidos = avisosPublicos.filter(a => a.ativo !== 0 && (!a.expiracao || a.expiracao >= hoje)).length;
+      if (totalInfo) {
+        totalInfo.textContent = totalValidos > 0 
+          ? `${totalValidos} comunicado${totalValidos > 1 ? "s" : ""} oficial${totalValidos > 1 ? "is" : ""} em vigor`
+          : "Nenhum comunicado ativo no momento";
+      }
+
+      if (filtrados.length === 0) {
+        container.innerHTML = `
+          <div class="mural-vazio-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span>Nenhum comunicado ativo nesta categoria.</span>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtrados.map(a => {
+        const p = String(a.prioridade || "normal").toLowerCase();
+        let prioClasse = "normal";
+        let prioRotulo = "Aviso";
+        if (p === "urgente") { prioClasse = "urgente"; prioRotulo = "Urgente"; }
+        else if (p === "alta") { prioClasse = "alta"; prioRotulo = "Atenção"; }
+        else if (p === "informativo") { prioClasse = "informativo"; prioRotulo = "Informativo"; }
+
+        let dataTexto = "";
+        if (a.expiracao) {
+          const parts = a.expiracao.split("-");
+          if (parts.length === 3) {
+            dataTexto = `Válido até ${parts[2]}/${parts[1]}`;
+          }
+        }
+
+        return `
+          <div class="mural-card-item ${prioClasse}">
+            <div class="mural-card-header">
+              <span class="mural-tag-prio ${prioClasse}">
+                ${prioRotulo}
+              </span>
+              ${dataTexto ? `<span class="mural-card-data">${dataTexto}</span>` : ""}
+            </div>
+            <div class="mural-card-titulo">${escapeHtmlPublico(a.titulo)}</div>
+            <div class="mural-card-corpo">${escapeHtmlPublico(a.mensagem)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function carregarAvisosPublicos() {
+      try {
+        const res = await fetch("/api/avisos");
+        if (!res.ok) return;
+        const data = await res.json();
+        avisosPublicos = data.avisos || [];
+
+        const hoje = new Date().toISOString().split("T")[0];
+        const urgentes = avisosPublicos.filter(a => {
+          const p = String(a.prioridade || "").toLowerCase();
+          return a.ativo !== 0 && (!a.expiracao || a.expiracao >= hoje) && (p === "urgente" || p === "alta");
+        });
+
+        const tagUrgente = document.getElementById("tagAvisosUrgentes");
+        if (tagUrgente) {
+          if (urgentes.length > 0) {
+            tagUrgente.textContent = urgentes.length;
+            tagUrgente.style.display = "inline-block";
+          } else {
+            tagUrgente.style.display = "none";
+          }
+        }
+
+        renderizarMuralCards();
+      } catch (err) {
+        console.warn("Falha ao carregar mural de avisos:", err);
+      }
+    }
+
+    carregarAvisosPublicos();
+    setInterval(carregarAvisosPublicos, 30000);
+
     // Relógio dinâmico no topo do card azul
     function atualizarDataHora() {
       const agora = new Date();
