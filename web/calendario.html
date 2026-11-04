@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendário Escolar | PresenX - CETEP / LNAB</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
+
+  <!-- Google Fonts: Bricolage Grotesque & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-page: #F4F0EA;
+      --card-white: #FFFFFF;
+      --brand-navy: #101a4a;
+      --brand-blue: #203BA2;
+      --text-dark: #101828;
+      --text-body: #374151;
+      --text-muted: #64748B;
+      --border-line: #E5E1D8;
+      --border-input: #D1D5DB;
+
+      --cat-avaliacao: #DC2626;
+      --cat-avaliacao-bg: #FEE2E2;
+      --cat-feriado: #16A34A;
+      --cat-feriado-bg: #DCFCE7;
+      --cat-sabado: #D97706;
+      --cat-sabado-bg: #FEF3C7;
+      --cat-evento: #2563EB;
+      --cat-evento-bg: #DBEAFE;
+      --cat-academico: #7C3AED;
+      --cat-academico-bg: #EDE9FE;
+
+      --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      font-family: var(--font-body);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 32px 48px 32px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── TOPO / CABEÇALHO ─── */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 0 32px 0;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--brand-navy);
+      letter-spacing: -0.6px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .logo-x-symbol {
+      width: 24px;
+      height: 24px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #334155;
+      text-decoration: none;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      color: var(--brand-blue);
+    }
+
+    .nav-pill-active {
+      background-color: var(--brand-blue);
+      color: #FFFFFF !important;
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .header-datetime {
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    /* ─── TÍTULO & CONTROLES DO MÊS ─── */
+    .title-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: clamp(38px, 5vw, 48px);
+      font-weight: 800;
+      color: var(--brand-navy);
+      line-height: 1.05;
+      letter-spacing: -1.2px;
+    }
+
+    .page-subtitle {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    /* Controles de Navegação de Mês */
+    .month-nav-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-input);
+      border-radius: 10px;
+      padding: 4px 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-month-nav {
+      background: transparent;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #334155;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-month-nav:hover {
+      background: #F1EFEA;
+      color: var(--brand-blue);
+    }
+
+    .txt-month-label {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--brand-navy);
+      min-width: 170px;
+      text-align: center;
+      text-transform: capitalize;
+      letter-spacing: -0.3px;
+    }
+
+    .btn-today {
+      background: #F1EFEA;
+      border: 1px solid var(--border-line);
+      color: var(--brand-navy);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-today:hover {
+      background: #E5E1D8;
+    }
+
+    /* ─── BARRA DE FERRAMENTAS: VISÃO & FILTROS ─── */
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    /* Alternador de Visão (Grade / Lista) */
+    .view-toggle-group {
+      display: inline-flex;
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-input);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .view-btn {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .view-btn.active {
+      background: var(--brand-navy);
+      color: #FFFFFF;
+    }
+
+    /* Chips de Categorias */
+    .filter-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-input);
+      color: #374151;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-chip:hover {
+      background: #FAF8F5;
+      border-color: #9CA3AF;
+    }
+
+    .filter-chip.active {
+      background: var(--brand-navy);
+      border-color: var(--brand-navy);
+      color: #FFFFFF;
+    }
+
+    .cat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .divider-line {
+      width: 100%;
+      height: 1px;
+      background-color: var(--border-line);
+      margin-bottom: 28px;
+    }
+
+    /* ─── VISÃO 1: GRADE MENSAL DO CALENDÁRIO ─── */
+    .calendar-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      margin-bottom: 24px;
+    }
+
+    .calendar-weekdays-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: #FAF8F5;
+      border-bottom: 1.5px solid var(--border-line);
+      text-align: center;
+      padding: 12px 0;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .calendar-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .day-cell {
+      min-height: 110px;
+      border-right: 1px solid var(--border-line);
+      border-bottom: 1px solid var(--border-line);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      background: #FFFFFF;
+    }
+
+    .day-cell:nth-child(7n) {
+      border-right: none;
+    }
+
+    .day-cell:hover {
+      background: #FAF8F5;
+    }
+
+    .day-cell.other-month {
+      background: #FDFBF8;
+      opacity: 0.45;
+    }
+
+    .day-cell.today {
+      background: rgba(32, 59, 162, 0.03);
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .day-num {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: #334155;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .day-cell.today .day-num {
+      background: var(--brand-blue);
+      color: #FFFFFF;
+      font-weight: 800;
+    }
+
+    .events-pill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .event-pill {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+      display: block;
+      transition: transform 0.1s ease;
+    }
+
+    .event-pill:hover {
+      transform: translateY(-1px);
+    }
+
+    .event-pill.cat-avaliacao {
+      background: var(--cat-avaliacao-bg);
+      color: #991B1B;
+      border-left: 3px solid var(--cat-avaliacao);
+    }
+
+    .event-pill.cat-feriado {
+      background: var(--cat-feriado-bg);
+      color: #166534;
+      border-left: 3px solid var(--cat-feriado);
+    }
+
+    .event-pill.cat-sabado {
+      background: var(--cat-sabado-bg);
+      color: #92400E;
+      border-left: 3px solid var(--cat-sabado);
+    }
+
+    .event-pill.cat-evento {
+      background: var(--cat-evento-bg);
+      color: #1E40AF;
+      border-left: 3px solid var(--cat-evento);
+    }
+
+    .event-pill.cat-academico {
+      background: var(--cat-academico-bg);
+      color: #5B21B6;
+      border-left: 3px solid var(--cat-academico);
+    }
+
+    .more-events-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--brand-blue);
+      margin-top: 2px;
+    }
+
+    /* ─── VISÃO 2: AGENDA / LISTA ─── */
+    .agenda-view-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .agenda-item-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-line);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all 0.15s ease;
+    }
+
+    .agenda-item-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .agenda-date-box {
+      background: #FAF8F5;
+      border: 1.5px solid var(--border-line);
+      border-radius: 10px;
+      padding: 8px 14px;
+      min-width: 78px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .agenda-date-day {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--brand-navy);
+      line-height: 1;
+    }
+
+    .agenda-date-month {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .agenda-date-weekday {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .agenda-info {
+      flex: 1;
+    }
+
+    .agenda-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .agenda-cat-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    .agenda-titulo {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--brand-navy);
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .agenda-descricao {
+      font-size: 14.5px;
+      color: var(--text-body);
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    /* Estado Vazio */
+    .empty-calendar-box {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1.5px dashed var(--border-line);
+      border-radius: 16px;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    /* ─── MODAL DETALHES DO DIA ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-line);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 26px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.5px solid var(--border-line);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+
+    .modal-title-date {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--brand-navy);
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .btn-close-modal:hover {
+      background: #F1EFEA;
+      color: var(--text-dark);
+    }
+
+    /* ─── RODAPÉ INFERIOR ─── */
+    .page-footer {
+      margin-top: auto;
+      padding-top: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      flex-wrap: wrap;
+    }
+
+    /* ─── RESPONSIVIDADE ─── */
+    @media (max-width: 860px) {
+      .main-container {
+        padding: 20px 16px 40px 16px;
+      }
+
+      .title-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .month-nav-box {
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .txt-month-label {
+        min-width: unset;
+      }
+
+      .day-cell {
+        min-height: 80px;
+        padding: 4px 6px;
+      }
+
+      .event-pill {
+        font-size: 10px;
+        padding: 2px 4px;
+      }
+
+      .agenda-item-card {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .header-nav {
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="main-container">
+
+    <!-- CABEÇALHO SUPERIOR -->
+    <header class="site-header">
+      <a href="./login-gestao.html" class="brand-group" title="Ir para a página inicial">
+        <span class="brand-title">
+          <span>Presen</span>
+          <svg class="logo-x-symbol" viewBox="0 0 84 84" fill="none" aria-label="X">
+            <line x1="12" y1="28" x2="49" y2="65" stroke="#101a4a" stroke-width="8.8" stroke-linecap="round"/>
+            <path d="M 6 58 L 20 72 L 48 31" stroke="#283e9b" stroke-width="8.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 50 18 A 14.5 14.5 0 0 1 61 29" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+            <path d="M 54 8 A 26.5 26.5 0 0 1 74 28" stroke="#283e9b" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          </svg>
+        </span>
+        <span class="brand-subtitle">CETEP / LNAB</span>
+      </a>
+
+      <nav class="header-nav">
+        <a href="./login-gestao.html" class="nav-link">Início</a>
+        <a href="./painel.html" class="nav-link">Painel de salas</a>
+        <a href="./mural.html" class="nav-link">Avisos</a>
+        <a href="./calendario.html" class="nav-link nav-pill-active">Calendário</a>
+        <a href="./login-gestao.html#cardLogin" class="nav-link">Gestão</a>
+        <span class="header-datetime" id="txtDataCabecalho">Quarta-feira, 4 de novembro</span>
+      </nav>
+    </header>
+
+    <!-- TÍTULO E NAVEGAÇÃO DE MÊS -->
+    <section class="title-row">
+      <div>
+        <h1 class="page-title">Calendário Escolar</h1>
+        <p class="page-subtitle" id="txtSubtituloContagem">Ano Letivo 2026 · CETEP / LNAB</p>
+      </div>
+
+      <!-- Navegação de Mês -->
+      <div class="month-nav-box">
+        <button type="button" id="btnMesAnterior" class="btn-month-nav" title="Mês anterior">&larr;</button>
+        <span id="txtMesAno" class="txt-month-label">Novembro 2026</span>
+        <button type="button" id="btnMesProximo" class="btn-month-nav" title="Próximo mês">&rarr;</button>
+        <button type="button" id="btnHoje" class="btn-today">Hoje</button>
+      </div>
+    </section>
+
+    <!-- BARRA DE FERRAMENTAS: VISÃO & FILTROS -->
+    <section class="toolbar-row">
+      <!-- Alternador Grade x Lista -->
+      <div class="view-toggle-group">
+        <button type="button" id="btnVisaoGrade" class="view-btn active">Grade Mensal</button>
+        <button type="button" id="btnVisaoAgenda" class="view-btn">Lista / Agenda</button>
+      </div>
+
+      <!-- Filtros por Categoria -->
+      <div class="filter-chips-row">
+        <button type="button" class="filter-chip active" data-cat="todas">Todos</button>
+        <button type="button" class="filter-chip" data-cat="avaliacao">
+          <span class="cat-dot" style="background:var(--cat-avaliacao);"></span>
+          <span>Avaliações</span>
+        </button>
+        <button type="button" class="filter-chip" data-cat="feriado">
+          <span class="cat-dot" style="background:var(--cat-feriado);"></span>
+          <span>Feriados & Recessos</span>
+        </button>
+        <button type="button" class="filter-chip" data-cat="sabado">
+          <span class="cat-dot" style="background:var(--cat-sabado);"></span>
+          <span>Sábados Letivos</span>
+        </button>
+        <button type="button" class="filter-chip" data-cat="evento">
+          <span class="cat-dot" style="background:var(--cat-evento);"></span>
+          <span>Eventos & Reuniões</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- LINHA DIVISÓRIA -->
+    <div class="divider-line"></div>
+
+    <!-- ÁREA 1: VISÃO GRADE MENSAL -->
+    <section id="areaVisaoGrade" class="calendar-card">
+      <div class="calendar-weekdays-header">
+        <div>Dom</div>
+        <div>Seg</div>
+        <div>Ter</div>
+        <div>Qua</div>
+        <div>Qui</div>
+        <div>Sex</div>
+        <div>Sáb</div>
+      </div>
+      <div id="calendarDaysGrid" class="calendar-days-grid">
+        <!-- Gerado via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ÁREA 2: VISÃO AGENDA / LISTA -->
+    <section id="areaVisaoAgenda" class="agenda-view-container" style="display: none;">
+      <!-- Gerado via JavaScript -->
+    </section>
+
+    <!-- RODAPÉ -->
+    <footer class="page-footer">
+      <span id="txtAtualizadoHora">Atualizado às --:--:--</span>
+      <span>PresenX · CETEP / LNAB</span>
+    </footer>
+
+  </main>
+
+  <!-- MODAL DE DETALHES DO DIA -->
+  <div id="modalDia" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header-row">
+        <h3 id="modalDataTitulo" class="modal-title-date">Eventos do dia</h3>
+        <button type="button" id="btnFecharModal" class="btn-close-modal">&times;</button>
+      </div>
+      <div id="modalCorpoEventos" style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Inserido dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Estado do Calendário
+    let eventos = [];
+    let dataReferencia = new Date();
+    let visaoAtual = "grade"; // "grade" ou "agenda"
+    let categoriaAtual = "todas";
+
+    const mesesNomes = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+    const diasSemanaNomes = [
+      "Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira",
+      "Quinta-feira", "Sexta-feira", "Sábado"
+    ];
+
+    // Elementos DOM
+    const el = {
+      txtDataCabecalho: document.getElementById("txtDataCabecalho"),
+      txtSubtituloContagem: document.getElementById("txtSubtituloContagem"),
+      txtMesAno: document.getElementById("txtMesAno"),
+      btnMesAnterior: document.getElementById("btnMesAnterior"),
+      btnMesProximo: document.getElementById("btnMesProximo"),
+      btnHoje: document.getElementById("btnHoje"),
+      btnVisaoGrade: document.getElementById("btnVisaoGrade"),
+      btnVisaoAgenda: document.getElementById("btnVisaoAgenda"),
+      areaVisaoGrade: document.getElementById("areaVisaoGrade"),
+      areaVisaoAgenda: document.getElementById("areaVisaoAgenda"),
+      calendarDaysGrid: document.getElementById("calendarDaysGrid"),
+      filterChips: document.querySelectorAll(".filter-chip"),
+      txtAtualizadoHora: document.getElementById("txtAtualizadoHora"),
+      modalDia: document.getElementById("modalDia"),
+      modalDataTitulo: document.getElementById("modalDataTitulo"),
+      modalCorpoEventos: document.getElementById("modalCorpoEventos"),
+      btnFecharModal: document.getElementById("btnFecharModal")
+    };
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Identificar categoria a partir de palavras-chave no título/descrição
+    function identificarCategoria(ev) {
+      const texto = `${ev.titulo || ""} ${ev.descricao || ""}`.toLowerCase();
+      if (texto.includes("prova") || texto.includes("avalia") || texto.includes("simulado") || texto.includes("recupera")) {
+        return { slug: "avaliacao", rotulo: "Avaliação", cor: "cat-avaliacao" };
+      }
+      if (texto.includes("feriado") || texto.includes("recesso") || texto.includes("facultativo")) {
+        return { slug: "feriado", rotulo: "Feriado", cor: "cat-feriado" };
+      }
+      if (texto.includes("sábado") || texto.includes("sabado") || texto.includes("letivo")) {
+        return { slug: "sabado", rotulo: "Sábado Letivo", cor: "cat-sabado" };
+      }
+      if (texto.includes("conselho") || texto.includes("acadêmico") || texto.includes("planejamento") || texto.includes("unidade")) {
+        return { slug: "academico", rotulo: "Acadêmico", cor: "cat-academico" };
+      }
+      return { slug: "evento", rotulo: "Evento / Reunião", cor: "cat-evento" };
+    }
+
+    // Atualiza a data estática do cabeçalho
+    function atualizarCabecalhoData() {
+      const agora = new Date();
+      const diaSemana = diasSemanaNomes[agora.getDay()];
+      const dia = agora.getDate();
+      const mes = mesesNomes[agora.getMonth()].toLowerCase();
+      if (el.txtDataCabecalho) {
+        el.txtDataCabecalho.textContent = `${diaSemana}, ${dia} de ${mes}`;
+      }
+    }
+    atualizarCabecalhoData();
+
+    // Carregar eventos da API
+    let ultimoJson = "";
+    async function carregarEventos() {
+      try {
+        const res = await fetch(`/api/eventos?_t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const novos = Array.isArray(data.eventos) ? data.eventos : [];
+        const strJson = JSON.stringify(novos);
+        if (strJson !== ultimoJson) {
+          ultimoJson = strJson;
+          eventos = novos;
+          renderizarCalendario();
+        }
+      } catch (err) {
+        console.warn("Falha ao carregar eventos:", err);
+      }
+    }
+
+    // Filtrar eventos por categoria
+    function filtrarEventos(lista) {
+      if (categoriaAtual === "todas") return lista;
+      return lista.filter(ev => identificarCategoria(ev).slug === categoriaAtual);
+    }
+
+    // Renderizar a tela atual
+    function renderizarCalendario() {
+      const ano = dataReferencia.getFullYear();
+      const mes = dataReferencia.getMonth();
+
+      if (el.txtMesAno) {
+        el.txtMesAno.textContent = `${mesesNomes[mes]} ${ano}`;
+      }
+
+      const totalFiltrados = filtrarEventos(eventos).length;
+      if (el.txtSubtituloContagem) {
+        el.txtSubtituloContagem.textContent = `${totalFiltrados} evento${totalFiltrados === 1 ? '' : 's'} programado${totalFiltrados === 1 ? '' : 's'}`;
+      }
+
+      if (visaoAtual === "grade") {
+        renderizarGradeMensal(ano, mes);
+      } else {
+        renderizarAgendaLista(ano, mes);
+      }
+    }
+
+    // Renderização da Grade Mensal
+    function renderizarGradeMensal(ano, mes) {
+      if (!el.calendarDaysGrid) return;
+
+      const hoje = new Date();
+      const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+
+      // Primeiro dia da semana do mês (0 = domingo)
+      const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+      // Total de dias no mês
+      const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
+      // Total de dias no mês anterior
+      const totalDiasMesAnterior = new Date(ano, mes, 0).getDate();
+
+      let html = "";
+
+      // Dias do mês anterior para preencher a primeira linha
+      for (let i = primeiroDiaSemana - 1; i >= 0; i--) {
+        const diaNum = totalDiasMesAnterior - i;
+        html += `<div class="day-cell other-month"><div class="day-header"><span class="day-num">${diaNum}</span></div></div>`;
+      }
+
+      // Dias do mês atual
+      for (let dia = 1; dia <= totalDiasMes; dia++) {
+        const diaStr = String(dia).padStart(2, '0');
+        const mesStr = String(mes + 1).padStart(2, '0');
+        const dataIso = `${ano}-${mesStr}-${diaStr}`;
+        const ehHoje = dataIso === hojeIso;
+
+        // Buscar eventos do dia
+        const eventosDoDia = filtrarEventos(eventos.filter(e => e.data === dataIso));
+
+        let pillsHtml = "";
+        const maxExibir = 3;
+        eventosDoDia.slice(0, maxExibir).forEach(ev => {
+          const cat = identificarCategoria(ev);
+          pillsHtml += `<span class="event-pill ${cat.cor}" title="${escapeHtml(ev.titulo)}">${escapeHtml(ev.titulo)}</span>`;
+        });
+
+        if (eventosDoDia.length > maxExibir) {
+          pillsHtml += `<span class="more-events-tag">+ ${eventosDoDia.length - maxExibir} mais</span>`;
+        }
+
+        html += `
+          <div class="day-cell ${ehHoje ? 'today' : ''}" onclick="abrirDetalhesDia('${dataIso}')">
+            <div class="day-header">
+              <span class="day-num">${dia}</span>
+            </div>
+            <div class="events-pill-list">${pillsHtml}</div>
+          </div>
+        `;
+      }
+
+      // Preencher o restante da última linha
+      const diasRenderizados = primeiroDiaSemana + totalDiasMes;
+      const resto = (7 - (diasRenderizados % 7)) % 7;
+      for (let dia = 1; dia <= resto; dia++) {
+        html += `<div class="day-cell other-month"><div class="day-header"><span class="day-num">${dia}</span></div></div>`;
+      }
+
+      el.calendarDaysGrid.innerHTML = html;
+    }
+
+    // Renderização da Visão Agenda / Lista
+    function renderizarAgendaLista(ano, mes) {
+      if (!el.areaVisaoAgenda) return;
+
+      const mesStr = String(mes + 1).padStart(2, '0');
+      const prefixoMes = `${ano}-${mesStr}`;
+
+      // Filtrar eventos do mês selecionado
+      const eventosMes = filtrarEventos(eventos.filter(e => e.data && e.data.startsWith(prefixoMes)));
+      eventosMes.sort((a, b) => a.data.localeCompare(b.data));
+
+      if (eventosMes.length === 0) {
+        el.areaVisaoAgenda.innerHTML = `
+          <div class="empty-calendar-box">
+            Nenhum evento programado para ${mesesNomes[mes]} de ${ano}.
+          </div>
+        `;
+        return;
+      }
+
+      el.areaVisaoAgenda.innerHTML = eventosMes.map(ev => {
+        const cat = identificarCategoria(ev);
+        const partes = ev.data.split("-");
+        const diaNum = partes[2];
+        const dt = new Date(`${ev.data}T12:00:00`);
+        const diaSemana = diasSemanaNomes[dt.getDay()];
+
+        return `
+          <article class="agenda-item-card">
+            <div class="agenda-date-box">
+              <span class="agenda-date-day">${diaNum}</span>
+              <span class="agenda-date-month">${mesesNomes[mes].slice(0, 3)}</span>
+              <span class="agenda-date-weekday">${diaSemana.slice(0, 3)}</span>
+            </div>
+            <div class="agenda-info">
+              <div class="agenda-meta-row">
+                <span class="agenda-cat-badge event-pill ${cat.cor}">${cat.rotulo}</span>
+              </div>
+              <h3 class="agenda-titulo">${escapeHtml(ev.titulo)}</h3>
+              ${ev.descricao ? `<p class="agenda-descricao">${escapeHtml(ev.descricao)}</p>` : ""}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    // Modal de Detalhes do Dia
+    function abrirDetalhesDia(dataIso) {
+      const eventosDoDia = eventos.filter(e => e.data === dataIso);
+      if (eventosDoDia.length === 0) return;
+
+      const partes = dataIso.split("-");
+      const dt = new Date(`${dataIso}T12:00:00`);
+      const diaSemana = diasSemanaNomes[dt.getDay()];
+      const dataFmt = `${partes[2]} de ${mesesNomes[Number(partes[1]) - 1]} (${diaSemana})`;
+
+      el.modalDataTitulo.textContent = dataFmt;
+
+      el.modalCorpoEventos.innerHTML = eventosDoDia.map(ev => {
+        const cat = identificarCategoria(ev);
+        return `
+          <div style="padding:14px; background:#FAF8F5; border-radius:10px; border-left:4px solid var(--${cat.cor});">
+            <span class="agenda-cat-badge event-pill ${cat.cor}" style="display:inline-block; margin-bottom:6px;">${cat.rotulo}</span>
+            <h4 style="font-family:var(--font-display); font-size:17px; color:var(--brand-navy); margin-bottom:4px;">${escapeHtml(ev.titulo)}</h4>
+            ${ev.descricao ? `<p style="font-size:14px; color:var(--text-body); line-height:1.5;">${escapeHtml(ev.descricao)}</p>` : ""}
+          </div>
+        `;
+      }).join("");
+
+      el.modalDia.style.display = "flex";
+    }
+
+    function fecharModal() {
+      if (el.modalDia) el.modalDia.style.display = "none";
+    }
+
+    if (el.btnFecharModal) el.btnFecharModal.addEventListener("click", fecharModal);
+    if (el.modalDia) {
+      el.modalDia.addEventListener("click", (e) => {
+        if (e.target === el.modalDia) fecharModal();
+      });
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") fecharModal();
+    });
+
+    // Controles de Navegação de Mês
+    if (el.btnMesAnterior) {
+      el.btnMesAnterior.addEventListener("click", () => {
+        dataReferencia.setMonth(dataReferencia.getMonth() - 1);
+        renderizarCalendario();
+      });
+    }
+
+    if (el.btnMesProximo) {
+      el.btnMesProximo.addEventListener("click", () => {
+        dataReferencia.setMonth(dataReferencia.getMonth() + 1);
+        renderizarCalendario();
+      });
+    }
+
+    if (el.btnHoje) {
+      el.btnHoje.addEventListener("click", () => {
+        dataReferencia = new Date();
+        renderizarCalendario();
+      });
+    }
+
+    // Alternador de Visão
+    if (el.btnVisaoGrade) {
+      el.btnVisaoGrade.addEventListener("click", () => {
+        visaoAtual = "grade";
+        el.btnVisaoGrade.classList.add("active");
+        el.btnVisaoAgenda.classList.remove("active");
+        el.areaVisaoGrade.style.display = "block";
+        el.areaVisaoAgenda.style.display = "none";
+        renderizarCalendario();
+      });
+    }
+
+    if (el.btnVisaoAgenda) {
+      el.btnVisaoAgenda.addEventListener("click", () => {
+        visaoAtual = "agenda";
+        el.btnVisaoAgenda.classList.add("active");
+        el.btnVisaoGrade.classList.remove("active");
+        el.areaVisaoGrade.style.display = "none";
+        el.areaVisaoAgenda.style.display = "flex";
+        renderizarCalendario();
+      });
+    }
+
+    // Filtros por Categoria
+    el.filterChips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        el.filterChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        categoriaAtual = chip.getAttribute("data-cat") || "todas";
+        renderizarCalendario();
+      });
+    });
+
+    // Atualizar rodapé
+    function registrarAtualizacao() {
+      const agora = new Date();
+      const h = String(agora.getHours()).padStart(2, "0");
+      const m = String(agora.getMinutes()).padStart(2, "0");
+      const s = String(agora.getSeconds()).padStart(2, "0");
+      if (el.txtAtualizadoHora) {
+        el.txtAtualizadoHora.textContent = `Atualizado às ${h}:${m}:${s}`;
+      }
+    }
+
+    // Inicialização
+    async function inicializar() {
+      await carregarEventos();
+      registrarAtualizacao();
+    }
+    inicializar();
+
+    // Auto-atualização periódica a cada 4 segundos
+    setInterval(async () => {
+      await carregarEventos();
+      registrarAtualizacao();
+    }, 4000);
+
+    // Atualização instantânea ao focar na janela
+    window.addEventListener("focus", () => {
+      carregarEventos();
+      registrarAtualizacao();
+    });
+  </script>
+</body>
+</html>

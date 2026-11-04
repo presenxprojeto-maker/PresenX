@@ -243,6 +243,11 @@
       grid-template-columns: 1fr 340px;
       gap: 48px;
       align-items: start;
+      transition: all 0.2s ease;
+    }
+
+    .content-grid.sem-eventos {
+      grid-template-columns: 1fr;
     }
 
     /* ─── COLUNA ESQUERDA: LISTA DE AVISOS ─── */
@@ -471,6 +476,7 @@
         <a href="./login-gestao.html" class="nav-link">Início</a>
         <a href="./painel.html" class="nav-link">Painel de salas</a>
         <a href="./mural.html" class="nav-link nav-pill-active">Avisos</a>
+        <a href="./calendario.html" class="nav-link">Calendário</a>
         <a href="./login-gestao.html#cardLogin" class="nav-link">Gestão</a>
         <span class="header-datetime" id="txtDataHoraCabecalho">Quarta-feira, 4 de novembro</span>
       </nav>
@@ -516,8 +522,13 @@
       </section>
 
       <!-- COLUNA LATERAL: PRÓXIMOS EVENTOS -->
-      <aside class="eventos-col">
-        <h2 class="eventos-titulo">Próximos eventos</h2>
+      <aside class="eventos-col" id="colunaEventos">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <h2 class="eventos-titulo" style="margin-bottom:0;">Próximos eventos</h2>
+          <a href="./calendario.html" style="font-size:12px; font-weight:700; color:var(--brand-blue); text-decoration:none;" title="Ver calendário escolar completo">
+            Ver calendário &rarr;
+          </a>
+        </div>
         <div id="listaEventosContainer" class="eventos-lista">
           <!-- Renderizado dinamicamente via JS -->
         </div>
@@ -548,6 +559,8 @@
       botoesFiltro: document.querySelectorAll(".filter-btn"),
       listaAvisosContainer: document.getElementById("listaAvisosContainer"),
       listaEventosContainer: document.getElementById("listaEventosContainer"),
+      contentGrid: document.querySelector(".content-grid"),
+      colunaEventos: document.getElementById("colunaEventos"),
       txtAtualizadoHora: document.getElementById("txtAtualizadoHora")
     };
 
@@ -744,14 +757,16 @@
         .filter(ev => !ev.data || ev.data >= hoje)
         .sort((a, b) => (a.data || "").localeCompare(b.data || ""));
 
+      // Se não houver nenhum evento futuro, oculta a coluna lateral e expande os avisos!
       if (futuros.length === 0) {
-        el.listaEventosContainer.innerHTML = `
-          <div class="eventos-vazio">
-            Nenhum evento programado.
-          </div>
-        `;
+        if (el.colunaEventos) el.colunaEventos.style.display = "none";
+        if (el.contentGrid) el.contentGrid.classList.add("sem-eventos");
         return;
       }
+
+      // Se houver eventos, exibe a coluna lateral
+      if (el.colunaEventos) el.colunaEventos.style.display = "flex";
+      if (el.contentGrid) el.contentGrid.classList.remove("sem-eventos");
 
       el.listaEventosContainer.innerHTML = futuros.slice(0, 6).map(ev => {
         const dataFmt = formatarDiaMes(ev.data);
