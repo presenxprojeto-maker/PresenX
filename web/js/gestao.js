@@ -154,7 +154,6 @@ const el = {
   alertaLeitorOffline: document.getElementById("alertaLeitorOffline"),
   alertaLeitorTitulo: document.getElementById("alertaLeitorTitulo"),
   alertaLeitorTexto: document.getElementById("alertaLeitorTexto"),
-  btnVerLeitoresAlerta: document.getElementById("btnVerLeitoresAlerta"),
   leitorNomeDash: document.getElementById("leitorNomeDash"),
   leitorBadgeDash: document.getElementById("leitorBadgeDash"),
   leitorIpDash: document.getElementById("leitorIpDash"),
@@ -169,7 +168,6 @@ const el = {
   txtProximaAula: document.getElementById("txtProximaAula"),
   vazioUltimosRegistros: document.getElementById("vazioUltimosRegistros"),
   txtDescVazioRegistros: document.getElementById("txtDescVazioRegistros"),
-  txtDadosDeHora: document.getElementById("txtDadosDeHora"),
 
   // Navegação
   navBtns: document.querySelectorAll(".nav-btn"),
@@ -461,9 +459,6 @@ function atualizarSubtituloHoje() {
     if (el.pageSubtitle) {
       el.pageSubtitle.textContent = `${formatarDataHoje()} · atualizado às ${nowBRTime()}`;
     }
-  }
-  if (el.txtDadosDeHora) {
-    el.txtDadosDeHora.textContent = `Dados de ${nowBRTime()}`;
   }
 }
 
@@ -787,12 +782,6 @@ function initNavegacao() {
       aplicarNavegacao(botao.dataset.section);
     });
   });
-
-  if (el.btnVerLeitoresAlerta) {
-    el.btnVerLeitoresAlerta.addEventListener("click", () => {
-      aplicarNavegacao("turnos");
-    });
-  }
 
   // Aplica imediatamente a aba inicial ("dashboard" / Hoje)
   aplicarNavegacao("dashboard");
