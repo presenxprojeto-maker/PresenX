@@ -38,6 +38,11 @@
       padding: 0;
     }
 
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
     body {
       background-color: var(--bg-page);
       font-family: var(--font-body);
@@ -57,6 +62,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
     /* ─── TOPO / CABEÇALHO ─── */
@@ -516,25 +522,99 @@
     /* ─── RESPONSIVIDADE ─── */
     @media (max-width: 900px) {
       .main-container {
-        padding: 20px 20px 40px 20px;
+        padding: 18px 16px 40px 16px;
+      }
+
+      .site-header {
+        padding: 8px 0 20px 0;
+        gap: 12px;
+      }
+
+      .brand-title {
+        font-size: 22px;
+      }
+
+      .header-nav {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .nav-link {
+        font-size: 13px;
+        padding: 5px 8px;
+      }
+
+      .nav-pill-active {
+        padding: 5px 12px;
+        font-size: 13px;
+      }
+
+      .header-datetime {
+        display: none;
       }
 
       .content-grid {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 32px;
       }
 
       .title-row {
         flex-direction: column;
         align-items: stretch;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .page-title {
+        font-size: 32px;
+        letter-spacing: -0.8px;
       }
 
       .search-wrap {
         width: 100%;
       }
 
-      .header-nav {
-        gap: 14px;
+      .filter-chips-row {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+        padding-bottom: 6px;
+        scrollbar-width: none;
+      }
+
+      .filter-chips-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .filter-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 12.5px;
+        padding: 6px 14px;
+      }
+
+      .divider-line {
+        margin-bottom: 22px;
+      }
+
+      .aviso-item {
+        padding: 20px 20px;
+        border-radius: 14px;
+      }
+
+      .aviso-titulo {
+        font-size: 20px;
+      }
+
+      .aviso-corpo {
+        font-size: 14.5px;
+      }
+
+      .evento-item {
+        padding: 14px 16px;
+        border-radius: 12px;
       }
     }
   </style>
