@@ -855,12 +855,9 @@ async function init() {
   await carregarTurnos();
   await carregarDadosPainel();
   await carregarPresencas();
-  await carregarAvisos();
-  await carregarEventos();
   await carregarStatusLeitor();
 
   render();
-  iniciarAutoScrollLateral();
 
   // Loop de 1s para relógio e grade
   setInterval(() => {
@@ -880,11 +877,9 @@ async function init() {
   // Paginação automática de salas
   agendarProximaPaginaSalas();
 
-  // Polling de dados a cada 5s
+  // Polling de dados a cada 4s
   setInterval(async () => {
     await carregarPresencas();
-    await carregarAvisos();
-    await carregarEventos();
     await carregarStatusLeitor();
   }, 4000);
 

@@ -351,7 +351,7 @@ body.hide-cursor, body.hide-cursor * {
 .legenda-cor.cinza   { background: var(--gray); }
 
 /* =========================================================
-   CORPO PRINCIPAL  70% turmas │ 30% lateral
+   CORPO PRINCIPAL (100% Salas / Turmas)
 ========================================================= */
 
 .painel-corpo {
@@ -359,11 +359,13 @@ body.hide-cursor, body.hide-cursor * {
   min-height: 0;
   display: flex;
   gap: 12px;
+  width: 100%;
 }
 
 /* ── Grade de turmas ── */
 .painel-grade-wrap {
-  flex: 7 1 0%;
+  flex: 1 1 100%;
+  width: 100%;
 
   padding: 18px;
   border-radius: var(--r-xl);
@@ -587,12 +589,7 @@ body.hide-cursor, body.hide-cursor * {
 ========================================================= */
 
 .painel-lateral {
-  flex: 3 1 0%;
-  min-width: 260px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: none !important;
 }
 
 .painel-lateral-bloco {
