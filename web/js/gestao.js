@@ -152,7 +152,9 @@ const el = {
 
   // Monitoramento do Leitor RFID (ESP32)
   alertaLeitorOffline: document.getElementById("alertaLeitorOffline"),
+  alertaLeitorTitulo: document.getElementById("alertaLeitorTitulo"),
   alertaLeitorTexto: document.getElementById("alertaLeitorTexto"),
+  btnVerLeitoresAlerta: document.getElementById("btnVerLeitoresAlerta"),
   leitorNomeDash: document.getElementById("leitorNomeDash"),
   leitorBadgeDash: document.getElementById("leitorBadgeDash"),
   leitorIpDash: document.getElementById("leitorIpDash"),
@@ -161,7 +163,13 @@ const el = {
   textLeitorSidebar: document.getElementById("text-leitor-sidebar"),
   dotLeitorHeader: document.getElementById("dot-leitor-header"),
   textLeitorHeader: document.getElementById("text-leitor-header"),
+  wrapTabelaAusentes: document.getElementById("wrapTabelaAusentes"),
   tbodyAusentesAgora: document.getElementById("tbodyAusentesAgora"),
+  vazioAusentesAgora: document.getElementById("vazioAusentesAgora"),
+  txtProximaAula: document.getElementById("txtProximaAula"),
+  vazioUltimosRegistros: document.getElementById("vazioUltimosRegistros"),
+  txtDescVazioRegistros: document.getElementById("txtDescVazioRegistros"),
+  txtDadosDeHora: document.getElementById("txtDadosDeHora"),
 
   // Navegação
   navBtns: document.querySelectorAll(".nav-btn"),
@@ -451,8 +459,11 @@ function atualizarSubtituloHoje() {
   if (!secaoAtiva || secaoAtiva.id === "dashboardSection") {
     if (el.pageTitle) el.pageTitle.textContent = "Hoje";
     if (el.pageSubtitle) {
-      el.pageSubtitle.textContent = `${formatarDataHoje()} • atualizado às ${nowBRTime()}`;
+      el.pageSubtitle.textContent = `${formatarDataHoje()} · atualizado às ${nowBRTime()}`;
     }
+  }
+  if (el.txtDadosDeHora) {
+    el.txtDadosDeHora.textContent = `Dados de ${nowBRTime()}`;
   }
 }
 
@@ -506,8 +517,8 @@ function aplicarNavegacao(secaoAlvo) {
 
   if (secaoAlvo === "dashboard") {
     if (el.pageTitle) el.pageTitle.textContent = "Hoje";
-    if (telemetryHeader) telemetryHeader.classList.remove("hidden");
-    if (sidebarTelemetry) sidebarTelemetry.classList.add("hidden");
+    if (telemetryHeader) telemetryHeader.classList.add("hidden");
+    if (sidebarTelemetry) sidebarTelemetry.classList.remove("hidden");
     if (btnNovoProf) btnNovoProf.classList.add("hidden");
     if (btnNovaDisc) btnNovaDisc.classList.add("hidden");
     if (btnNovaTurma) btnNovaTurma.classList.add("hidden");
@@ -777,6 +788,12 @@ function initNavegacao() {
     });
   });
 
+  if (el.btnVerLeitoresAlerta) {
+    el.btnVerLeitoresAlerta.addEventListener("click", () => {
+      aplicarNavegacao("turnos");
+    });
+  }
+
   // Aplica imediatamente a aba inicial ("dashboard" / Hoje)
   aplicarNavegacao("dashboard");
 }
@@ -917,7 +934,9 @@ async function carregarMonitoramentoLeitores() {
       if (el.dotLeitorHeader) el.dotLeitorHeader.className = "telemetry-dot offline";
       if (el.textLeitorHeader) el.textLeitorHeader.textContent = "Leitor Portaria: sem sinal";
       if (el.alertaLeitorOffline) el.alertaLeitorOffline.classList.remove("hidden");
-      if (el.alertaLeitorTexto) el.alertaLeitorTexto.textContent = "Nenhum leitor RFID foi conectado ainda.";
+      if (el.alertaLeitorTitulo) el.alertaLeitorTitulo.textContent = "Leitor Portaria sem sinal";
+      if (el.alertaLeitorTexto) el.alertaLeitorTexto.textContent = "Verifique a energia e o Wi-Fi da escola. Os registros de presença não estão chegando.";
+      if (el.txtDescVazioRegistros) el.txtDescVazioRegistros.textContent = "Com o leitor sem sinal, novas leituras não aparecem aqui.";
       return;
     }
 
@@ -977,14 +996,28 @@ async function carregarMonitoramentoLeitores() {
     }
 
     // Alerta no topo do Dashboard se algum leitor estiver offline
-    if (el.alertaLeitorOffline && el.alertaLeitorTexto) {
+    if (el.alertaLeitorOffline) {
       if (offlineLeitores.length > 0) {
-        const nomes = offlineLeitores.map(l => `"${l.nome}"`).join(", ");
-        el.alertaLeitorTexto.textContent = `O leitor ${nomes} não envia sinal há mais de 2 minutos. Verifique a fonte de alimentação ou a conexão Wi-Fi da escola.`;
+        const off = offlineLeitores[0];
+        const tempo = (off.tempo_decorrido && off.tempo_decorrido !== "offline" && off.tempo_decorrido !== "nunca" && off.tempo_decorrido !== "desconectado")
+          ? off.tempo_decorrido
+          : "2 min";
+        const nomeLeitor = off.nome || "Portaria";
+        if (el.alertaLeitorTitulo) {
+          el.alertaLeitorTitulo.textContent = `Leitor ${nomeLeitor} sem sinal há ${tempo}`;
+        }
+        if (el.alertaLeitorTexto) {
+          el.alertaLeitorTexto.textContent = "Verifique a energia e o Wi-Fi da escola. Os registros de presença não estão chegando.";
+        }
+        if (el.txtDescVazioRegistros) {
+          el.txtDescVazioRegistros.textContent = "Com o leitor sem sinal, novas leituras não aparecem aqui.";
+        }
         el.alertaLeitorOffline.classList.remove("hidden");
-        renderIcons();
       } else {
         el.alertaLeitorOffline.classList.add("hidden");
+        if (el.txtDescVazioRegistros) {
+          el.txtDescVazioRegistros.textContent = "Aguardando leituras de cartão RFID...";
+        }
       }
     }
   } catch (err) {
@@ -2147,7 +2180,7 @@ async function carregarPresencasPorData() {
 
 function formatarKpiNum(n) {
   const num = Number(n) || 0;
-  return String(num).padStart(2, "0");
+  return String(num);
 }
 
 function horaParaMinutos(h) {
@@ -2237,21 +2270,24 @@ function atualizarDashboard() {
 }
 
 function renderUltimosRegistros() {
-  if (!el.ultimosRegistros) return;
+  const container = el.ultimosRegistros || document.getElementById("ultimosRegistros");
+  const vazioCard = el.vazioUltimosRegistros || document.getElementById("vazioUltimosRegistros");
+  if (!container) return;
+
   const lista = Object.entries(presencas)
     .map(([uid, p]) => ({ uid, ...p }))
     .sort((a, b) => norm(b.hora_entrada || "").localeCompare(norm(a.hora_entrada || "")))
     .slice(0, 6);
 
   if (lista.length === 0) {
-    el.ultimosRegistros.innerHTML = `
-      <div class="dash-empty-registros">
-        Nenhum registro de presença hoje
-      </div>`;
+    container.style.display = "none";
+    if (vazioCard) vazioCard.style.display = "flex";
     return;
   }
 
-  el.ultimosRegistros.innerHTML = lista.map(item => {
+  if (vazioCard) vazioCard.style.display = "none";
+  container.style.display = "block";
+  container.innerHTML = lista.map(item => {
     const salaInfo = obterSalaDoProfessorHoje(item.nome, item.uid);
     const localTexto = salaInfo ? `Sala ${salaInfo.replace(/^sala\s*/i, "")}` : "Portaria";
     const hora = item.hora_entrada ? item.hora_entrada.slice(0, 5) : "--:--";
@@ -2273,43 +2309,91 @@ function renderUltimosRegistros() {
   }).join("");
 }
 
+function descobrirProximaAulaTexto() {
+  const agora = minutosAgora();
+  const d = new Date();
+  const diaNum = d.getDay(); // 0 dom, 1 seg, ..., 6 sab
+
+  let primeiroHorarioGeral = "07:00";
+  let todosHorariosHoje = [];
+
+  if (turnosDinamicos) {
+    for (const [turno, faixas] of Object.entries(turnosDinamicos)) {
+      for (const [chave, faixa] of Object.entries(faixas)) {
+        if (chave !== "intervalo" && faixa.inicio) {
+          const iniMin = horaParaMinutos(faixa.inicio);
+          todosHorariosHoje.push({ inicio: faixa.inicio, min: iniMin });
+        }
+      }
+    }
+  } else if (typeof turnosListaConfig !== "undefined" && turnosListaConfig.length > 0) {
+    turnosListaConfig.forEach(f => {
+      if (f.chave !== "intervalo" && f.inicio) {
+        todosHorariosHoje.push({ inicio: f.inicio, min: horaParaMinutos(f.inicio) });
+      }
+    });
+  }
+
+  if (todosHorariosHoje.length > 0) {
+    todosHorariosHoje.sort((a, b) => a.min - b.min);
+    primeiroHorarioGeral = todosHorariosHoje[0].inicio;
+  }
+
+  if (diaNum >= 1 && diaNum <= 5) {
+    const proximasHoje = todosHorariosHoje.filter(h => h.min > agora);
+    if (proximasHoje.length > 0) {
+      return `Próxima aula: hoje às ${proximasHoje[0].inicio}`;
+    }
+  }
+
+  if (diaNum === 5 || diaNum === 6) {
+    return `Próxima aula: segunda-feira às ${primeiroHorarioGeral}`;
+  } else if (diaNum === 0) {
+    return `Próxima aula: amanhã às ${primeiroHorarioGeral}`;
+  } else {
+    return `Próxima aula: amanhã às ${primeiroHorarioGeral}`;
+  }
+}
+
 function renderAusentesAgora() {
   const tbody = el.tbodyAusentesAgora || document.getElementById("tbodyAusentesAgora");
-  if (!tbody) return;
+  const wrap = el.wrapTabelaAusentes || document.getElementById("wrapTabelaAusentes");
+  const vazio = el.vazioAusentesAgora || document.getElementById("vazioAusentesAgora");
+  const txtProx = el.txtProximaAula || document.getElementById("txtProximaAula");
 
   const dia = diaSemanaKey();
   const faixa = descobrirFaixaAtual();
 
   if (dia === "dom" || dia === "sab" || !faixa) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" class="dash-empty-cell">
-          Fora do horário letivo • Nenhum professor com aula agora
-        </td>
-      </tr>
-    `;
+    if (wrap) wrap.style.display = "none";
+    if (vazio) {
+      vazio.style.display = "flex";
+      const h3 = vazio.querySelector(".dash-empty-title");
+      if (h3) h3.textContent = "Nenhuma aula neste horário.";
+      if (txtProx) txtProx.textContent = descobrirProximaAulaTexto();
+    }
     return;
   }
 
   if (faixa.horario === "intervalo") {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" class="dash-empty-cell">
-          Intervalo em andamento • Próxima aula às ${faixa.fim}
-        </td>
-      </tr>
-    `;
+    if (wrap) wrap.style.display = "none";
+    if (vazio) {
+      vazio.style.display = "flex";
+      const h3 = vazio.querySelector(".dash-empty-title");
+      if (h3) h3.textContent = "Intervalo em andamento.";
+      if (txtProx) txtProx.textContent = `Próxima aula: hoje às ${faixa.fim}`;
+    }
     return;
   }
 
   if (!painelDadosTurmas) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" class="dash-empty-cell">
-          Carregando grade horária...
-        </td>
-      </tr>
-    `;
+    if (wrap) wrap.style.display = "none";
+    if (vazio) {
+      vazio.style.display = "flex";
+      const h3 = vazio.querySelector(".dash-empty-title");
+      if (h3) h3.textContent = "Carregando grade horária...";
+      if (txtProx) txtProx.textContent = "Aguarde um instante";
+    }
     return;
   }
 
@@ -2349,24 +2433,28 @@ function renderAusentesAgora() {
   });
 
   if (ausentesNaFaixa.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" class="dash-empty-cell success-state">
-          Todos os professores com aula neste horário registraram presença.
-        </td>
-      </tr>
-    `;
+    if (wrap) wrap.style.display = "none";
+    if (vazio) {
+      vazio.style.display = "flex";
+      const h3 = vazio.querySelector(".dash-empty-title");
+      if (h3) h3.textContent = "Nenhum professor ausente.";
+      if (txtProx) txtProx.textContent = "Todos os professores com aula neste horário registraram presença.";
+    }
     return;
   }
 
-  tbody.innerHTML = ausentesNaFaixa.map(item => `
-    <tr>
-      <td>${escapeHtml(item.nome)}</td>
-      <td>${escapeHtml(item.disciplina)}</td>
-      <td>${escapeHtml(item.sala)}</td>
-      <td class="mono-cell">${escapeHtml(item.inicio)}</td>
-    </tr>
-  `).join("");
+  if (vazio) vazio.style.display = "none";
+  if (wrap) wrap.style.display = "block";
+  if (tbody) {
+    tbody.innerHTML = ausentesNaFaixa.map(item => `
+      <tr>
+        <td>${escapeHtml(item.nome)}</td>
+        <td>${escapeHtml(item.disciplina)}</td>
+        <td>${escapeHtml(item.sala)}</td>
+        <td class="mono-cell">${escapeHtml(item.inicio)}</td>
+      </tr>
+    `).join("");
+  }
 }
 
 function renderAusentes() {

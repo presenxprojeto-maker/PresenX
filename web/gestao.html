@@ -162,23 +162,19 @@
       <!-- 1. DASHBOARD / PAINEL SECTION -->
       <section id="dashboardSection" class="page-section active">
 
-        <!-- ALERTA DE LEITOR OFFLINE -->
+        <!-- ALERTA DE LEITOR OFFLINE (MOCKUP) -->
         <div id="alertaLeitorOffline" class="alerta-leitor-banner hidden">
           <div class="alerta-leitor-conteudo">
-            <i data-lucide="alert-triangle" style="width:24px; height:24px; color:var(--danger); flex-shrink:0;"></i>
-            <div>
-              <strong style="color:var(--danger);">Atenção: Leitor RFID desconectado ou sem energia!</strong>
-              <div id="alertaLeitorTexto" style="font-size:13px; color:var(--muted); margin-top:2px;">
-                O leitor não envia sinal há mais de 2 minutos. Verifique a fonte de alimentação ou a conexão Wi-Fi.
-              </div>
-            </div>
+            <span class="alerta-leitor-titulo-tag" id="alertaLeitorTitulo">Leitor Portaria sem sinal há [X] min</span>
+            <span class="alerta-leitor-msg" id="alertaLeitorTexto">Verifique a energia e o Wi-Fi da escola. Os registros de presença não estão chegando.</span>
+            <a href="javascript:void(0)" id="btnVerLeitoresAlerta" class="alerta-leitor-link">Ver leitores</a>
           </div>
         </div>
 
         <!-- KPI BAR (4 COLUNAS EM CARD ÚNICO) -->
         <div class="kpi-container-bar">
           <div class="kpi-col">
-            <div class="kpi-col-number" id="kpiPresentes">00</div>
+            <div class="kpi-col-number" id="kpiPresentes">0</div>
             <div class="kpi-col-label">
               <span class="dot-kpi dot-green"></span>
               <span>Presentes</span>
@@ -186,7 +182,7 @@
           </div>
 
           <div class="kpi-col">
-            <div class="kpi-col-number" id="kpiAusentes">00</div>
+            <div class="kpi-col-number" id="kpiAusentes">0</div>
             <div class="kpi-col-label">
               <span class="dot-kpi dot-red"></span>
               <span>Ausentes</span>
@@ -194,7 +190,7 @@
           </div>
 
           <div class="kpi-col">
-            <div class="kpi-col-number" id="kpiSemRegistro">00</div>
+            <div class="kpi-col-number" id="kpiSemRegistro">0</div>
             <div class="kpi-col-label">
               <span class="dot-kpi dot-gray"></span>
               <span>Sem registro</span>
@@ -202,7 +198,7 @@
           </div>
 
           <div class="kpi-col">
-            <div class="kpi-col-number" id="kpiCadastrados">00</div>
+            <div class="kpi-col-number" id="kpiCadastrados">0</div>
             <div class="kpi-col-label">
               <span>Professores cadastrados</span>
             </div>
@@ -219,7 +215,7 @@
               <p class="dash-card-subtitle">Professores com aula neste horário e sem registro de presença.</p>
             </div>
 
-            <div class="dash-table-wrapper">
+            <div class="dash-table-wrapper" id="wrapTabelaAusentes">
               <table class="dash-table" id="tabelaAusentesAgora">
                 <thead>
                   <tr>
@@ -230,11 +226,12 @@
                   </tr>
                 </thead>
                 <tbody id="tbodyAusentesAgora">
-                  <tr>
-                    <td colspan="4" class="dash-empty-cell">Carregando horários e presenças...</td>
-                  </tr>
                 </tbody>
               </table>
+            </div>
+            <div id="vazioAusentesAgora" class="dash-empty-state-card" style="display:none;">
+              <h3 class="dash-empty-title">Nenhuma aula neste horário.</h3>
+              <p class="dash-empty-desc" id="txtProximaAula">Próxima aula: hoje às --:--</p>
             </div>
           </div>
 
@@ -245,8 +242,10 @@
               <p class="dash-card-subtitle">Leituras de cartão RFID de hoje.</p>
             </div>
 
-            <div id="ultimosRegistros" class="ultimos-registros-list">
-              <div class="dash-empty-registros">Aguardando leituras de cartão RFID...</div>
+            <div id="ultimosRegistros" class="ultimos-registros-list"></div>
+            <div id="vazioUltimosRegistros" class="dash-empty-state-card" style="display:none;">
+              <h3 class="dash-empty-title">Nenhum registro hoje.</h3>
+              <p class="dash-empty-desc" id="txtDescVazioRegistros">Com o leitor sem sinal, novas leituras não aparecem aqui.</p>
             </div>
           </div>
 
@@ -1031,9 +1030,10 @@
         </div>
       </section>
 
-      <!-- FOOTER -->
-      <footer class="footer">
-        PresenX • Sistema Administrativo Escolar
+      <!-- FOOTER (MOCKUP) -->
+      <footer class="dash-page-footer">
+        <span>PresenX · CETEP / LNAB</span>
+        <span id="txtDadosDeHora">Dados de --:--:--</span>
       </footer>
 
     </div>

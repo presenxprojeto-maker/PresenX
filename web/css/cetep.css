@@ -1987,16 +1987,15 @@ textarea:focus{
 }
 
 /* =========================================================
-   ALERTA DE LEITOR RFID OFFLINE / DESCONECTADO
+   ALERTA DE LEITOR RFID OFFLINE / DESCONECTADO (MOCKUP DESIGN)
 ========================================================= */
 
 .alerta-leitor-banner {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.13));
-  border: 1.5px solid rgba(239, 68, 68, 0.35);
-  border-radius: var(--radius);
-  padding: 14px 20px;
-  margin-bottom: 20px;
-  animation: pulseAlertLeitor 2.5s infinite ease-in-out;
+  background: #FDF2F0;
+  border: 1.5px solid #F87171;
+  border-radius: 10px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
 }
 
 .alerta-leitor-banner.hidden {
@@ -2006,13 +2005,78 @@ textarea:focus{
 .alerta-leitor-conteudo {
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-@keyframes pulseAlertLeitor {
-  0%   { border-color: rgba(239, 68, 68, 0.35); box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
-  50%  { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 10px rgba(239, 68, 68, 0.15); }
-  100% { border-color: rgba(239, 68, 68, 0.35); box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+.alerta-leitor-titulo-tag {
+  color: #991B1B;
+  font-weight: 800;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.alerta-leitor-msg {
+  color: #374151;
+  font-size: 13.5px;
+  flex: 1;
+  min-width: 250px;
+  font-family: 'Inter', sans-serif;
+}
+
+.alerta-leitor-link {
+  color: #991B1B;
+  font-weight: 700;
+  font-size: 13.5px;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s ease;
+}
+
+.alerta-leitor-link:hover {
+  opacity: 0.8;
+}
+
+/* Empty states para os cards do dashboard (Mockup) */
+.dash-empty-state-card {
+  padding: 36px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-empty-state-card .dash-empty-title {
+  font-family: 'Bricolage Grotesque', 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #101a4a;
+  margin: 0;
+}
+
+.dash-empty-state-card .dash-empty-desc {
+  font-size: 14px;
+  color: #64748B;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Rodapé inferior da Gestão (Mockup) */
+.dash-page-footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: #64748B;
+  font-family: 'Inter', sans-serif;
+  flex-wrap: wrap;
 }
 
 /* =========================================================
