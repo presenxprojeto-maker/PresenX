@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
+const { Pool } = require("pg");
 const dns = require("dns");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
@@ -31,14 +32,85 @@ function verifyPassword(senha, storedHash) {
 }
 
 // ======================================================
-// BANCO DE DADOS SQLITE UNIFICADO
+// BANCO DE DADOS HÍBRIDO (SUPABASE POSTGRESQL / SQLITE FALLBACK)
 // ======================================================
-const dbPath = path.join(__dirname, "presenx.db");
-const db = new sqlite3.Database(dbPath);
+const SUPABASE_DEFAULT_URL = "postgresql://postgres.rvjdibvuekvlxvsntnnp:projectpresenx26@aws-1-us-west-2.pooler.supabase.com:6543/postgres";
+const connStr = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL || SUPABASE_DEFAULT_URL;
+let isPostgres = false;
+let pgPool = null;
+let sqliteDb = null;
+
+if (connStr) {
+  try {
+    pgPool = new Pool({
+      connectionString: connStr,
+      ssl: { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000
+    });
+    isPostgres = true;
+    console.log(">> Conectado ao Banco em Nuvem Principal: Supabase PostgreSQL!");
+  } catch (err) {
+    console.warn("Aviso ao inicializar Pool Postgres:", err.message);
+  }
+}
+
+if (!isPostgres) {
+  const dbPath = path.join(__dirname, "presenx.db");
+  sqliteDb = new sqlite3.Database(dbPath);
+  console.log(">> Conectado ao Banco SQLite Local (Fallback)");
+}
+
+function translateSql(sql) {
+  let s = sql.trim();
+  
+  if (/^INSERT\s+OR\s+IGNORE\s+INTO/i.test(s)) {
+    s = s.replace(/^INSERT\s+OR\s+IGNORE\s+INTO/i, "INSERT INTO");
+    if (!/ON\s+CONFLICT/i.test(s)) {
+      s += " ON CONFLICT DO NOTHING";
+    }
+  }
+
+  if (/^INSERT\s+OR\s+REPLACE\s+INTO\s+admin_usuarios/i.test(s)) {
+    s = s.replace(/^INSERT\s+OR\s+REPLACE\s+INTO/i, "INSERT INTO");
+    s += " ON CONFLICT(email) DO UPDATE SET senha = EXCLUDED.senha";
+  } else if (/^INSERT\s+OR\s+REPLACE\s+INTO\s+grade_horarios/i.test(s)) {
+    s = s.replace(/^INSERT\s+OR\s+REPLACE\s+INTO/i, "INSERT INTO");
+    s += " ON CONFLICT(id) DO UPDATE SET turma_id = EXCLUDED.turma_id, dia = EXCLUDED.dia, horario = EXCLUDED.horario, disciplina = EXCLUDED.disciplina, professor = EXCLUDED.professor";
+  } else if (/^INSERT\s+OR\s+REPLACE\s+INTO\s+avisos/i.test(s)) {
+    s = s.replace(/^INSERT\s+OR\s+REPLACE\s+INTO/i, "INSERT INTO");
+    s += " ON CONFLICT(id) DO UPDATE SET titulo = EXCLUDED.titulo, mensagem = EXCLUDED.mensagem, prioridade = EXCLUDED.prioridade, expiracao = EXCLUDED.expiracao, ativo = EXCLUDED.ativo";
+  } else if (/^INSERT\s+OR\s+REPLACE\s+INTO\s+eventos/i.test(s)) {
+    s = s.replace(/^INSERT\s+OR\s+REPLACE\s+INTO/i, "INSERT INTO");
+    s += " ON CONFLICT(id) DO UPDATE SET titulo = EXCLUDED.titulo, descricao = EXCLUDED.descricao, data = EXCLUDED.data";
+  } else if (/^UPDATE\s+OR\s+IGNORE/i.test(s)) {
+    s = s.replace(/^UPDATE\s+OR\s+IGNORE/i, "UPDATE");
+  }
+
+  if (/^INSERT\s+INTO\s+(avisos|eventos|disciplinas|grade_horarios|turnos_horarios|admin_usuarios|presencas)/i.test(s) && !/RETURNING/i.test(s)) {
+    s += " RETURNING id";
+  }
+
+  let paramIndex = 1;
+  s = s.replace(/\?/g, () => `$${paramIndex++}`);
+  return s;
+}
 
 function runAsync(sql, params = []) {
+  if (isPostgres && pgPool) {
+    return new Promise((resolve, reject) => {
+      const tSql = translateSql(sql);
+      pgPool.query(tSql, params)
+        .then(res => {
+          const lastID = res.rows && res.rows[0] && res.rows[0].id ? res.rows[0].id : null;
+          resolve({ changes: res.rowCount, lastID: lastID });
+        })
+        .catch(reject);
+    });
+  }
   return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
+    sqliteDb.run(sql, params, function (err) {
       if (err) reject(err);
       else resolve(this);
     });
@@ -46,8 +118,16 @@ function runAsync(sql, params = []) {
 }
 
 function allAsync(sql, params = []) {
+  if (isPostgres && pgPool) {
+    return new Promise((resolve, reject) => {
+      const tSql = translateSql(sql);
+      pgPool.query(tSql, params)
+        .then(res => resolve(res.rows || []))
+        .catch(reject);
+    });
+  }
   return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
+    sqliteDb.all(sql, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows || []);
     });
@@ -55,8 +135,16 @@ function allAsync(sql, params = []) {
 }
 
 function getAsync(sql, params = []) {
+  if (isPostgres && pgPool) {
+    return new Promise((resolve, reject) => {
+      const tSql = translateSql(sql);
+      pgPool.query(tSql, params)
+        .then(res => resolve(res.rows[0] || null))
+        .catch(reject);
+    });
+  }
   return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
+    sqliteDb.get(sql, params, (err, row) => {
       if (err) reject(err);
       else resolve(row);
     });
@@ -510,7 +598,18 @@ async function sincronizarBancoComFirebase() {
 // ======================================================
 async function inicializarBancoESincronizacao() {
   try {
-  db.run(`
+    if (isPostgres) {
+      console.log(">> [Supabase] Banco de Dados PostgreSQL Ativo como Fonte Única da Verdade.");
+      try {
+        await runAsync("UPDATE leitores_rfid SET ultimo_ping = 0, ip = '' WHERE ultimo_ping < ?", [Date.now() - 3600 * 1000]);
+      } catch (_) {}
+      return;
+    }
+
+    if (!sqliteDb) return;
+    const db = sqliteDb;
+
+    db.run(`
     CREATE TABLE IF NOT EXISTS pavilhoes (
       id TEXT PRIMARY KEY,
       nome TEXT NOT NULL,
@@ -2318,8 +2417,8 @@ app.get("/api/backup/status", authAdmin, async (req, res) => {
     }
 
     ok(res, {
-      firebaseConectado: Boolean(firebaseDb),
-      bancoNuvem: "Firebase Realtime Database",
+      firebaseConectado: isPostgres ? true : Boolean(firebaseDb),
+      bancoNuvem: isPostgres ? "Supabase (PostgreSQL)" : "Firebase Realtime Database",
       totais
     });
   } catch (err) {

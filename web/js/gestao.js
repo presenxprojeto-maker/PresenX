@@ -3155,8 +3155,8 @@ async function carregarStatusBackup() {
     if (dot) dot.className = res.firebaseConectado ? "telemetry-dot online" : "telemetry-dot offline";
     if (txt) {
       txt.textContent = res.firebaseConectado
-        ? "Firebase RTDB: Conectado e Sincronizado"
-        : "Firebase RTDB: Desconectado (Configurar FIREBASE_SERVICE_ACCOUNT no Render)";
+        ? `${res.bancoNuvem || "Supabase PostgreSQL"}: Conectado e Ativo`
+        : "Banco em Nuvem: Desconectado";
     }
 
     const t = res.totais || {};
