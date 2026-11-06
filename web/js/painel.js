@@ -249,10 +249,9 @@ function montarListaAtual() {
     }
 
     let classeCor = "cinza";
-    let statusTexto = "Sem aula";
+    let statusTexto = "SEM AULA";
     let statusTipo = "sem-aula";
     let disciplina = "Sem aula";
-    let professorStr = "";
 
     if (faixa.horario === "intervalo") {
       disciplina = "Intervalo";
@@ -261,14 +260,13 @@ function montarListaAtual() {
       classeCor = "cinza";
     } else if (aula) {
       disciplina = aula.disciplina || "-";
-      professorStr = aula.professor || "";
       const listaProfsDetalhes = Array.isArray(aula.professores_detalhes) ? aula.professores_detalhes : [];
       const listaProfessores = Array.isArray(aula.professores) ? aula.professores : (aula.professor ? [aula.professor] : []);
       
       const presente = algumProfessorPresente(listaProfsDetalhes, listaProfessores);
       classeCor = presente ? "verde" : "vermelho";
-      statusTexto = presente ? "PROFESSOR PRESENTE" : "AGUARDANDO PROFESSOR";
-      statusTipo = presente ? "presente" : "aguardando";
+      statusTexto = presente ? "PRESENTE" : "AUSENTE";
+      statusTipo = presente ? "presente" : "ausente";
     }
 
     return {
@@ -278,8 +276,7 @@ function montarListaAtual() {
       classeCor,
       statusTexto,
       statusTipo,
-      disciplina,
-      professor: professorStr
+      disciplina
     };
   });
 
@@ -398,12 +395,16 @@ function render() {
   const cardHtml = item => {
     let iconeStatus = "clock";
     if (item.statusTipo === "presente") iconeStatus = "check-circle-2";
+    else if (item.statusTipo === "ausente" || item.statusTipo === "aguardando") iconeStatus = "x-circle";
     else if (item.statusTipo === "intervalo") iconeStatus = "coffee";
     else if (item.statusTipo === "sem-aula") iconeStatus = "minus";
 
     const badgePavilhao = pavilhaoAtivo === "todos"
       ? `<span class="painel-badge-pavilhao ${item.pavilhao === 'luis_viana' ? 'luis-viana' : 'acm'}">${item.pavilhao === 'luis_viana' ? 'Luís Viana' : 'ACM'}</span>`
       : "";
+
+    const nomePrincipalSala = item.sala && item.sala.trim() ? item.sala : item.turma;
+    const nomeSecundarioTurma = (item.turma && item.sala && norm(item.turma) !== norm(item.sala)) ? item.turma : null;
 
     return `
       <article class="painel-quadro ${item.classeCor}">
@@ -414,27 +415,19 @@ function render() {
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             ${badgePavilhao}
-            ${norm(item.sala) === norm(item.turma) ? "" : `
-            <div class="painel-sala-info">
-              <span class="painel-label-pequena">Sala:</span>
-              <span class="painel-sala-nome">${escapeHtml(item.sala)}</span>
-            </div>
-            `}
           </div>
         </div>
 
-        <div class="painel-turma">${escapeHtml(item.turma)}</div>
+        <div class="painel-turma-container">
+          <div class="painel-turma">${escapeHtml(nomePrincipalSala)}</div>
+          ${nomeSecundarioTurma ? `<span class="painel-subturma-tag">${escapeHtml(nomeSecundarioTurma)}</span>` : ""}
+        </div>
+
         <div class="painel-conteudo">
           <div class="painel-linha">
             <span class="painel-label-pequena">DISCIPLINA:</span>
             <span class="painel-valor">${escapeHtml(item.disciplina)}</span>
           </div>
-          ${item.professor ? `
-          <div class="painel-linha">
-            <span class="painel-label-pequena">PROFESSOR:</span>
-            <span class="painel-valor">${escapeHtml(item.professor)}</span>
-          </div>
-          ` : ""}
         </div>
       </article>
     `;
