@@ -163,6 +163,17 @@ const el = {
   sidebarLeitoresContainer: document.getElementById("sidebarLeitoresContainer"),
   tbodyLeitoresBackup: document.getElementById("tbodyLeitoresBackup"),
   btnResetLeitores: document.getElementById("btnResetLeitores"),
+  btnNovoLeitor: document.getElementById("btnNovoLeitor"),
+  modalEditarLeitor: document.getElementById("modalEditarLeitor"),
+  modalLeitorTitulo: document.getElementById("modalLeitorTitulo"),
+  modalLeitorSubtitulo: document.getElementById("modalLeitorSubtitulo"),
+  editLeitorId: document.getElementById("editLeitorId"),
+  editLeitorNome: document.getElementById("editLeitorNome"),
+  editLeitorLocal: document.getElementById("editLeitorLocal"),
+  msgModalLeitor: document.getElementById("msgModalLeitor"),
+  btnModalLeitorSalvar: document.getElementById("btnModalLeitorSalvar"),
+  btnModalLeitorExcluir: document.getElementById("btnModalLeitorExcluir"),
+  btnModalLeitorCancelar: document.getElementById("btnModalLeitorCancelar"),
   dotLeitorHeader: document.getElementById("dot-leitor-header"),
   textLeitorHeader: document.getElementById("text-leitor-header"),
   wrapTabelaAusentes: document.getElementById("wrapTabelaAusentes"),
@@ -997,6 +1008,8 @@ async function carregarMonitoramentoLeitores() {
       }
     }
 
+    leitoresCache = leitores;
+
     // 3. Atualiza Tabela de Leitores na Seção de Backup & Nuvem
     if (el.tbodyLeitoresBackup) {
       el.tbodyLeitoresBackup.innerHTML = leitores.map(l => {
@@ -1011,6 +1024,9 @@ async function carregarMonitoramentoLeitores() {
             <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
             <td class="mono" style="font-size:12px;">${escapeHtml(tempo)}</td>
             <td class="mono" style="font-size:12px; font-weight:700;">${l.total_leituras_hoje || 0}</td>
+            <td style="text-align:right;">
+              <button class="btn-action-edit" data-action="editar-leitor" data-id="${escapeHtml(l.id)}" type="button" style="font-size:12px; padding:4px 10px;">Configurar</button>
+            </td>
           </tr>
         `;
       }).join("");
@@ -1051,6 +1067,108 @@ async function carregarMonitoramentoLeitores() {
     if (el.textLeitorSidebar) el.textLeitorSidebar.textContent = "Leitor: sem sinal";
     if (el.dotLeitorHeader) el.dotLeitorHeader.className = "telemetry-dot offline";
     if (el.textLeitorHeader) el.textLeitorHeader.textContent = "Leitor Portaria: sem sinal";
+  }
+}
+
+let leitoresCache = [];
+
+function abrirModalEditarLeitor(leitorId) {
+  if (!el.modalEditarLeitor) return;
+  const l = leitoresCache.find(x => x.id === leitorId);
+
+  if (l) {
+    if (el.modalLeitorTitulo) el.modalLeitorTitulo.textContent = "Configurar leitor RFID";
+    if (el.modalLeitorSubtitulo) el.modalLeitorSubtitulo.textContent = `Ajustar nome e local para ${l.id}`;
+    if (el.editLeitorId) {
+      el.editLeitorId.value = l.id;
+      el.editLeitorId.readOnly = true;
+      el.editLeitorId.style.backgroundColor = "#f1f5f9";
+    }
+    if (el.editLeitorNome) el.editLeitorNome.value = l.nome || "";
+    if (el.editLeitorLocal) el.editLeitorLocal.value = l.local || "";
+    if (el.btnModalLeitorExcluir) el.btnModalLeitorExcluir.style.display = "inline-flex";
+  } else {
+    if (el.modalLeitorTitulo) el.modalLeitorTitulo.textContent = "Adicionar leitor RFID";
+    if (el.modalLeitorSubtitulo) el.modalLeitorSubtitulo.textContent = "Cadastre um novo leitor antes de conectá-lo";
+    if (el.editLeitorId) {
+      el.editLeitorId.value = "";
+      el.editLeitorId.readOnly = false;
+      el.editLeitorId.style.backgroundColor = "#fff";
+    }
+    if (el.editLeitorNome) el.editLeitorNome.value = "";
+    if (el.editLeitorLocal) el.editLeitorLocal.value = "";
+    if (el.btnModalLeitorExcluir) el.btnModalLeitorExcluir.style.display = "none";
+  }
+
+  if (el.msgModalLeitor) {
+    el.msgModalLeitor.textContent = "";
+    el.msgModalLeitor.className = "msg-box";
+  }
+
+  el.modalEditarLeitor.classList.remove("hidden");
+  if (el.editLeitorNome) el.editLeitorNome.focus();
+}
+
+function fecharModalEditarLeitor() {
+  if (el.modalEditarLeitor) el.modalEditarLeitor.classList.add("hidden");
+}
+
+async function salvarConfiguracaoLeitor() {
+  const id = (el.editLeitorId?.value || "").trim().toLowerCase();
+  const nome = (el.editLeitorNome?.value || "").trim();
+  const local = (el.editLeitorLocal?.value || "").trim();
+
+  if (!id) {
+    if (el.msgModalLeitor) {
+      el.msgModalLeitor.textContent = "Informe o identificador do leitor (ex: leitor_portaria).";
+      el.msgModalLeitor.className = "msg-box error";
+    }
+    return;
+  }
+  if (!nome) {
+    if (el.msgModalLeitor) {
+      el.msgModalLeitor.textContent = "Informe o nome de exibição do leitor.";
+      el.msgModalLeitor.className = "msg-box error";
+    }
+    return;
+  }
+
+  try {
+    const res = await apiSend(`/api/leitores/${encodeURIComponent(id)}`, "PUT", { nome, local });
+    if (res && res.ok) {
+      toast.success("Leitor configurado com sucesso!");
+      fecharModalEditarLeitor();
+      await carregarMonitoramentoLeitores();
+    } else {
+      if (el.msgModalLeitor) {
+        el.msgModalLeitor.textContent = res?.erro || "Erro ao salvar configurações do leitor.";
+        el.msgModalLeitor.className = "msg-box error";
+      }
+    }
+  } catch (err) {
+    if (el.msgModalLeitor) {
+      el.msgModalLeitor.textContent = "Erro ao conectar com o servidor.";
+      el.msgModalLeitor.className = "msg-box error";
+    }
+  }
+}
+
+async function excluirLeitorConfigurado() {
+  const id = (el.editLeitorId?.value || "").trim().toLowerCase();
+  if (!id) return;
+  if (!confirm(`Deseja realmente remover o leitor "${id}" do sistema?`)) return;
+
+  try {
+    const res = await apiSend(`/api/leitores/${encodeURIComponent(id)}`, "DELETE", {});
+    if (res && res.ok) {
+      toast.success("Leitor removido com sucesso!");
+      fecharModalEditarLeitor();
+      await carregarMonitoramentoLeitores();
+    } else {
+      toast.error(res?.erro || "Erro ao remover leitor.");
+    }
+  } catch (err) {
+    toast.error("Erro ao remover leitor.");
   }
 }
 
@@ -3698,6 +3816,29 @@ async function start() {
         toast.error("Erro ao resetar sinal dos leitores.");
       }
     });
+  }
+
+  if (el.btnNovoLeitor) {
+    el.btnNovoLeitor.addEventListener("click", () => abrirModalEditarLeitor(null));
+  }
+
+  if (el.tbodyLeitoresBackup) {
+    el.tbodyLeitoresBackup.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action='editar-leitor']");
+      if (btn && btn.dataset.id) {
+        abrirModalEditarLeitor(btn.dataset.id);
+      }
+    });
+  }
+
+  if (el.btnModalLeitorSalvar) {
+    el.btnModalLeitorSalvar.addEventListener("click", salvarConfiguracaoLeitor);
+  }
+  if (el.btnModalLeitorCancelar) {
+    el.btnModalLeitorCancelar.addEventListener("click", fecharModalEditarLeitor);
+  }
+  if (el.btnModalLeitorExcluir) {
+    el.btnModalLeitorExcluir.addEventListener("click", excluirLeitorConfigurado);
   }
 
   // Carregamento de dados

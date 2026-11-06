@@ -1037,7 +1037,10 @@
                 <h2 class="dash-card-title">Leitores RFID Conectados</h2>
                 <p class="dash-card-subtitle" style="margin-top:4px;">Dispositivos físicos ESP32 registrando presenças na escola</p>
               </div>
-              <button id="btnResetLeitores" type="button" class="btn-filter-outline" style="font-size:12px; padding:6px 12px;">Resetar sinal</button>
+              <div style="display:flex; gap:8px;">
+                <button id="btnNovoLeitor" type="button" class="btn-filter-primary" style="font-size:12px; padding:6px 14px;">+ Adicionar leitor</button>
+                <button id="btnResetLeitores" type="button" class="btn-filter-outline" style="font-size:12px; padding:6px 12px;">Resetar sinal</button>
+              </div>
             </div>
 
             <div class="table-wrapper">
@@ -1050,11 +1053,12 @@
                     <th>Status</th>
                     <th>Último Sinal</th>
                     <th>Leituras Hoje</th>
+                    <th style="text-align:right;">Ações</th>
                   </tr>
                 </thead>
                 <tbody id="tbodyLeitoresBackup">
                   <tr>
-                    <td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">Carregando leitores...</td>
+                    <td colspan="7" style="text-align:center; padding:16px; color:var(--text-muted);">Carregando leitores...</td>
                   </tr>
                 </tbody>
               </table>
@@ -1165,6 +1169,42 @@
       <div class="modal-copiar-actions" style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
         <button id="btnCopiarGradeConfirmar" type="button" class="btn-form-salvar" style="width: 100%; min-height: 44px; font-size: 15px; font-weight: 700;">Copiar grade</button>
         <button id="btnCopiarGradeCancelar" type="button" class="btn-form-cancelar" style="width: 100%; min-height: 40px;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR LEITOR RFID -->
+  <div id="modalEditarLeitor" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 440px; text-align: left;">
+      <h3 id="modalLeitorTitulo" style="margin-bottom: 4px; font-family: 'Bricolage Grotesque', sans-serif;">Configurar leitor RFID</h3>
+      <p id="modalLeitorSubtitulo" style="font-size: 13.5px; color: #4b5481; margin-bottom: 20px;">Defina o nome de exibição e o local do ponto de leitura</p>
+
+      <div class="form-field">
+        <label for="editLeitorId" class="form-label">Identificador do ESP32 (leitor_id)</label>
+        <input id="editLeitorId" type="text" class="form-input" placeholder="Ex: leitor_portaria, leitor_sala_prof" />
+      </div>
+
+      <div class="form-field">
+        <label for="editLeitorNome" class="form-label">Nome de exibição</label>
+        <input id="editLeitorNome" type="text" class="form-input" placeholder="Ex: Portaria Principal, Sala dos Professores" />
+      </div>
+
+      <div class="form-field">
+        <label for="editLeitorLocal" class="form-label">Localização na escola</label>
+        <input id="editLeitorLocal" type="text" class="form-input" placeholder="Ex: Portaria, Pavilhão 1, Entrada ACM" />
+      </div>
+
+      <div id="msgModalLeitor" class="msg-box" style="margin-top: 6px;"></div>
+
+      <div class="modal-slot-actions" style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
+        <button id="btnModalLeitorSalvar" type="button" class="btn-form-salvar" style="width: 100%; min-height: 44px; font-size: 15px; font-weight: 700;">Salvar configurações</button>
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button id="btnModalLeitorExcluir" type="button" class="btn-action-delete" style="flex: 1; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
+            <span>Excluir</span>
+          </button>
+          <button id="btnModalLeitorCancelar" type="button" class="btn-form-cancelar" style="flex: 1; min-height: 40px;">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>

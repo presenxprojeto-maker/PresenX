@@ -1,3 +1,32 @@
+// Configura Fuso Horário Oficial do Brasil (UTC-3)
+process.env.TZ = "America/Sao_Paulo";
+
+function getAgoraBrasil() {
+  const agora = new Date();
+  const formatter = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+  const partes = formatter.formatToParts(agora);
+  const map = {};
+  partes.forEach(p => { map[p.type] = p.value; });
+  const data = `${map.year}-${map.month}-${map.day}`;
+  const hora = `${map.hour}:${map.minute}:${map.second}`;
+  return {
+    data,
+    hora,
+    horaNum: Number(map.hour),
+    minNum: Number(map.minute),
+    secNum: Number(map.second)
+  };
+}
+
 const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
@@ -988,20 +1017,13 @@ app.get("/api/ping", (req, res) => {
 });
 
 app.get("/api/hora", (req, res) => {
-  const agora = new Date();
-  const y = agora.getFullYear();
-  const m = String(agora.getMonth() + 1).padStart(2, "0");
-  const d = String(agora.getDate()).padStart(2, "0");
-  const hh = String(agora.getHours()).padStart(2, "0");
-  const mm = String(agora.getMinutes()).padStart(2, "0");
-  const ss = String(agora.getSeconds()).padStart(2, "0");
-
+  const agora = getAgoraBrasil();
   res.json({
     ok: true,
-    data: `${y}-${m}-${d}`,
-    hora: `${hh}:${mm}:${ss}`,
-    horaNum: Number(hh),
-    minNum: Number(mm)
+    data: agora.data,
+    hora: agora.hora,
+    horaNum: agora.horaNum,
+    minNum: agora.minNum
   });
 });
 
@@ -1688,19 +1710,19 @@ app.get("/api/presencas", async (req, res) => {
 app.post("/api/leitores/ping", async (req, res) => {
   try {
     const id = String(req.body.id || req.body.leitor_id || "leitor_portaria").trim().toLowerCase();
-    const nome = String(req.body.nome || req.body.leitor_nome || "Leitor Portaria").trim();
-    const local = String(req.body.local || "Portaria").trim();
+    const nomePadrao = String(req.body.nome || req.body.leitor_nome || "Leitor Portaria").trim();
+    const localPadrao = String(req.body.local || "Portaria").trim();
     const ip = String(req.body.ip || req.ip || "").replace(/^.*:/, "").trim();
 
     await runAsync(
       `INSERT INTO leitores_rfid (id, nome, local, ip, ultimo_ping, total_leituras_hoje)
        VALUES (?, ?, ?, ?, ?, 0)
        ON CONFLICT(id) DO UPDATE SET
-         nome = excluded.nome,
-         local = excluded.local,
+         nome = CASE WHEN leitores_rfid.nome != '' THEN leitores_rfid.nome ELSE excluded.nome END,
+         local = CASE WHEN leitores_rfid.local != '' THEN leitores_rfid.local ELSE excluded.local END,
          ip = CASE WHEN excluded.ip != '' THEN excluded.ip ELSE leitores_rfid.ip END,
          ultimo_ping = excluded.ultimo_ping`,
-      [id, nome, local, ip, Date.now()]
+      [id, nomePadrao, localPadrao, ip, Date.now()]
     );
 
     ok(res, { msg: "Ping do leitor registrado com sucesso" });
@@ -1768,6 +1790,61 @@ app.get("/api/servidor/info", (req, res) => {
   });
 });
 
+app.put("/api/leitores/:id", async (req, res) => {
+  try {
+    const id = String(req.params.id || "").trim().toLowerCase();
+    const nome = String(req.body.nome || "").trim();
+    const local = String(req.body.local || "").trim();
+
+    if (!id) return fail(res, 400, "ID do leitor é obrigatório");
+    if (!nome) return fail(res, 400, "Nome do leitor é obrigatório");
+
+    await runAsync(
+      `INSERT INTO leitores_rfid (id, nome, local, ip, ultimo_ping, total_leituras_hoje)
+       VALUES (?, ?, ?, '', 0, 0)
+       ON CONFLICT(id) DO UPDATE SET
+         nome = excluded.nome,
+         local = excluded.local`,
+      [id, nome, local]
+    );
+
+    if (firebaseDb) {
+      firebaseDb.ref(`leitores/${id}`).update({ nome, local }).catch(() => {});
+    }
+
+    ok(res, { msg: "Configurações do leitor salvas com sucesso", leitor: { id, nome, local } });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post("/api/leitores", async (req, res) => {
+  try {
+    const id = String(req.body.id || "").trim().toLowerCase().replace(/\s+/g, "_");
+    const nome = String(req.body.nome || "").trim();
+    const local = String(req.body.local || "").trim();
+
+    if (!id || !nome) return fail(res, 400, "ID e Nome do leitor são obrigatórios");
+
+    await runAsync(
+      `INSERT INTO leitores_rfid (id, nome, local, ip, ultimo_ping, total_leituras_hoje)
+       VALUES (?, ?, ?, '', 0, 0)
+       ON CONFLICT(id) DO UPDATE SET
+         nome = excluded.nome,
+         local = excluded.local`,
+      [id, nome, local]
+    );
+
+    if (firebaseDb) {
+      firebaseDb.ref(`leitores/${id}`).update({ nome, local }).catch(() => {});
+    }
+
+    ok(res, { msg: "Leitor cadastrado com sucesso", leitor: { id, nome, local } });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
 app.delete("/api/leitores/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -1789,37 +1866,34 @@ app.post("/api/leitores/reset-status", async (req, res) => {
 
 app.post("/api/presenca", async (req, res) => {
   try {
-    const agora = new Date();
-    const y = agora.getFullYear();
-    const m = String(agora.getMonth() + 1).padStart(2, "0");
-    const d = String(agora.getDate()).padStart(2, "0");
-    const hh = String(agora.getHours()).padStart(2, "0");
-    const mm = String(agora.getMinutes()).padStart(2, "0");
-    const ss = String(agora.getSeconds()).padStart(2, "0");
-
-    const dataPadrao = `${y}-${m}-${d}`;
-    const horaPadrao = `${hh}:${mm}:${ss}`;
-
-    const data = String(req.body.data || dataPadrao).trim();
-    const hora = String(req.body.hora || horaPadrao).trim();
+    const agoraBrasil = getAgoraBrasil();
+    const data = String(req.body.data || agoraBrasil.data).trim();
+    const hora = String(req.body.hora || agoraBrasil.hora).trim();
     const uid = String(req.body.uid || req.body.identifier || "").trim().toUpperCase();
     const leitorId = String(req.body.leitor_id || req.body.leitor || "leitor_portaria").trim().toLowerCase();
-    const leitorNome = String(req.body.leitor_nome || "Leitor Portaria").trim();
     const ipCliente = String(req.ip || "").replace(/^.*:/, "").trim();
 
     if (!uid) {
       return fail(res, 400, "uid é obrigatório");
     }
 
-    // Registra/atualiza heartbeat do leitor que enviou o cartão
+    // Busca configurações personalizadas do leitor definidas na Gestão
+    const leitorCadastrado = await getAsync("SELECT * FROM leitores_rfid WHERE id = ?", [leitorId]);
+    const leitorNomePadrao = String(req.body.leitor_nome || "Leitor Portaria").trim();
+    const leitorNomeFinal = (leitorCadastrado && leitorCadastrado.nome) ? leitorCadastrado.nome : leitorNomePadrao;
+    const leitorLocalFinal = (leitorCadastrado && leitorCadastrado.local) ? leitorCadastrado.local : "Portaria";
+
+    // Registra/atualiza heartbeat do leitor que enviou o cartão (preservando nome e local customizados)
     await runAsync(
       `INSERT INTO leitores_rfid (id, nome, local, ip, ultimo_ping, total_leituras_hoje)
-       VALUES (?, ?, 'Portaria', ?, ?, 1)
+       VALUES (?, ?, ?, ?, ?, 1)
        ON CONFLICT(id) DO UPDATE SET
          ultimo_ping = excluded.ultimo_ping,
+         nome = CASE WHEN leitores_rfid.nome != '' THEN leitores_rfid.nome ELSE excluded.nome END,
+         local = CASE WHEN leitores_rfid.local != '' THEN leitores_rfid.local ELSE excluded.local END,
          ip = CASE WHEN excluded.ip != '' THEN excluded.ip ELSE leitores_rfid.ip END,
          total_leituras_hoje = leitores_rfid.total_leituras_hoje + 1`,
-      [leitorId, leitorNome, ipCliente, Date.now()]
+      [leitorId, leitorNomeFinal, leitorLocalFinal, ipCliente, Date.now()]
     );
 
     const usuario = await getAsync("SELECT * FROM usuarios WHERE uid = ?", [uid]);
@@ -1832,7 +1906,7 @@ app.post("/api/presenca", async (req, res) => {
         data,
         status: "Desconhecido",
         leitor_id: leitorId,
-        leitor_nome: leitorNome
+        leitor_nome: leitorNomeFinal
       });
       return res.status(200).json({
         ok: false,
@@ -1844,7 +1918,7 @@ app.post("/api/presenca", async (req, res) => {
         name: "Não cadastrado",
         uid,
         leitor_id: leitorId,
-        leitor_nome: leitorNome,
+        leitor_nome: leitorNomeFinal,
         mensagem: "Cartão não cadastrado",
         message: "Cartao nao cadastrado"
       });
@@ -1860,7 +1934,7 @@ app.post("/api/presenca", async (req, res) => {
         nome: usuario.nome,
         name: usuario.nome,
         leitor_id: leitorId,
-        leitor_nome: leitorNome,
+        leitor_nome: leitorNomeFinal,
         mensagem: "Usuário inativo",
         message: "Usuario inativo"
       });
@@ -1875,7 +1949,7 @@ app.post("/api/presenca", async (req, res) => {
       await runAsync(
         `INSERT INTO presencas (data, uid, nome, curso, status, hora_entrada, hora_saida, sincronizado, leitor_id, leitor_nome)
          VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
-        [data, uid, usuario.nome, usuario.curso || "", "Presente", hora, "", leitorId, leitorNome]
+        [data, uid, usuario.nome, usuario.curso || "", "Presente", hora, "", leitorId, leitorNomeFinal]
       );
 
       await salvarUltimoAcesso({
@@ -1886,7 +1960,7 @@ app.post("/api/presenca", async (req, res) => {
         data,
         status: "Presente",
         leitor_id: leitorId,
-        leitor_nome: leitorNome
+        leitor_nome: leitorNomeFinal
       });
 
       if (firebaseDb) {
@@ -1900,7 +1974,7 @@ app.post("/api/presenca", async (req, res) => {
           hora_saida: "",
           data,
           leitor_id: leitorId,
-          leitor_nome: leitorNome,
+          leitor_nome: leitorNomeFinal,
           timestamp: Date.now()
         }).catch(e => console.warn("Aviso ao sincronizar presenca no Firebase:", e.message));
       }
@@ -1916,7 +1990,7 @@ app.post("/api/presenca", async (req, res) => {
         curso: usuario.curso,
         hora,
         leitor_id: leitorId,
-        leitor_nome: leitorNome,
+        leitor_nome: leitorNomeFinal,
         mensagem: "Entrada liberada",
         message: "Entrada liberada"
       });
@@ -1931,7 +2005,7 @@ app.post("/api/presenca", async (req, res) => {
        SET status = ?, hora_entrada = ?, hora_saida = ?, nome = ?, curso = ?, sincronizado = 0,
            leitor_id = ?, leitor_nome = ?
        WHERE data = ? AND uid = ?`,
-      [novoStatus, novaEntrada, novaSaida, usuario.nome, usuario.curso || "", leitorId, leitorNome, data, uid]
+      [novoStatus, novaEntrada, novaSaida, usuario.nome, usuario.curso || "", leitorId, leitorNomeFinal, data, uid]
     );
 
     await salvarUltimoAcesso({
@@ -1942,7 +2016,7 @@ app.post("/api/presenca", async (req, res) => {
       data,
       status: novoStatus,
       leitor_id: leitorId,
-      leitor_nome: leitorNome
+      leitor_nome: leitorNomeFinal
     });
 
     if (firebaseDb) {
@@ -1956,7 +2030,7 @@ app.post("/api/presenca", async (req, res) => {
         hora_saida: novaSaida,
         data,
         leitor_id: leitorId,
-        leitor_nome: leitorNome,
+        leitor_nome: leitorNomeFinal,
         timestamp: Date.now()
       }).catch(e => console.warn("Aviso ao sincronizar presenca no Firebase:", e.message));
     }
@@ -1972,7 +2046,7 @@ app.post("/api/presenca", async (req, res) => {
       curso: usuario.curso,
       hora,
       leitor_id: leitorId,
-      leitor_nome: leitorNome,
+      leitor_nome: leitorNomeFinal,
       mensagem: novoStatus === "Presente" ? "Entrada liberada" : "Saída liberada",
       message: novoStatus === "Presente" ? "Entrada liberada" : "Saida liberada"
     });
