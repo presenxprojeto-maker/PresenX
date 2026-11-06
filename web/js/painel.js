@@ -724,9 +724,11 @@ async function carregarStatusLeitor() {
         txt.textContent = `${leitorPrincipal.nome}: Desconectado`;
       }
     } else {
+      const nomes = leitores.map(l => l.nome).join(", ");
+      tag.title = leitores.map(l => `${l.nome}: ${l.online ? 'Online' : 'Offline'}`).join(" | ");
       if (offlineCount === 0) {
         tag.className = "painel-leitor-tag online";
-        txt.textContent = `${leitores.length} Leitores Conectados`;
+        txt.textContent = `${leitores.length} Leitores Conectados (${nomes})`;
       } else {
         tag.className = "painel-leitor-tag offline";
         txt.textContent = `${offlineCount} de ${leitores.length} Leitores Offline`;

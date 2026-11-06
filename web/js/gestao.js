@@ -160,6 +160,9 @@ const el = {
   leitorTempoDash: document.getElementById("leitorTempoDash"),
   dotLeitorSidebar: document.getElementById("dot-leitor-sidebar"),
   textLeitorSidebar: document.getElementById("text-leitor-sidebar"),
+  sidebarLeitoresContainer: document.getElementById("sidebarLeitoresContainer"),
+  tbodyLeitoresBackup: document.getElementById("tbodyLeitoresBackup"),
+  btnResetLeitores: document.getElementById("btnResetLeitores"),
   dotLeitorHeader: document.getElementById("dot-leitor-header"),
   textLeitorHeader: document.getElementById("text-leitor-header"),
   wrapTabelaAusentes: document.getElementById("wrapTabelaAusentes"),
@@ -803,6 +806,9 @@ async function verificarCartaoDesconhecido() {
           rfidDesconhecidoDetectado = uid;
           if (el.rfidBanner && el.rfidBannerUid) {
             el.rfidBannerUid.textContent = uid;
+            const leitorTxt = ult.leitor_nome ? ` no ${ult.leitor_nome}` : "";
+            const tagMsg = el.rfidBanner.querySelector(".rfid-banner-info strong");
+            if (tagMsg) tagMsg.textContent = `Cartão RFID detectado${leitorTxt}!`;
             el.rfidBanner.classList.remove("hidden");
             renderIcons();
           }
@@ -918,6 +924,14 @@ async function carregarMonitoramentoLeitores() {
     const leitores = res?.leitores || [];
 
     if (leitores.length === 0) {
+      if (el.sidebarLeitoresContainer) {
+        el.sidebarLeitoresContainer.innerHTML = `
+          <div class="sidebar-telemetry-item">
+            <span class="telemetry-dot offline"></span>
+            <span class="telemetry-label">Leitor: sem sinal</span>
+          </div>
+        `;
+      }
       if (el.dotLeitorSidebar) el.dotLeitorSidebar.className = "telemetry-dot offline";
       if (el.textLeitorSidebar) el.textLeitorSidebar.textContent = "Leitor: sem sinal";
       if (el.dotLeitorHeader) el.dotLeitorHeader.className = "telemetry-dot offline";
@@ -926,75 +940,98 @@ async function carregarMonitoramentoLeitores() {
       if (el.alertaLeitorTitulo) el.alertaLeitorTitulo.textContent = "Leitor Portaria sem sinal";
       if (el.alertaLeitorTexto) el.alertaLeitorTexto.textContent = "Verifique a energia e o Wi-Fi da escola. Os registros de presença não estão chegando.";
       if (el.txtDescVazioRegistros) el.txtDescVazioRegistros.textContent = "Com o leitor sem sinal, novas leituras não aparecem aqui.";
+      if (el.tbodyLeitoresBackup) {
+        el.tbodyLeitoresBackup.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">Nenhum leitor registrado ainda.</td>
+          </tr>
+        `;
+      }
       return;
     }
 
     const offlineLeitores = leitores.filter(l => !l.online);
     const leitorPrincipal = leitores[0];
 
-    // Atualiza telemetry no cabeçalho (Mockup)
-    if (el.dotLeitorHeader && el.textLeitorHeader) {
-      if (offlineLeitores.length === 0) {
-        el.dotLeitorHeader.className = "telemetry-dot online";
-        el.textLeitorHeader.textContent = "Leitor Portaria: online";
-      } else {
-        el.dotLeitorHeader.className = "telemetry-dot offline";
-        const off = offlineLeitores[0];
-        const tempo = off?.tempo_decorrido || "offline";
-        el.textLeitorHeader.textContent = tempo !== "offline" && tempo !== "nunca" && tempo !== "desconectado"
-          ? `Leitor Portaria: sem sinal (${tempo})`
-          : "Leitor Portaria: sem sinal";
-      }
-    }
-
-    // Atualiza status na barra lateral
-    if (el.dotLeitorSidebar && el.textLeitorSidebar) {
+    // 1. Atualiza Leitores Dinamicamente na Barra Lateral (exibe todos os aparelhos ativos)
+    if (el.sidebarLeitoresContainer) {
+      el.sidebarLeitoresContainer.innerHTML = leitores.map(l => {
+        const dotClass = l.online ? "online" : "offline";
+        const tempo = (l.tempo_decorrido && l.tempo_decorrido !== "offline" && l.tempo_decorrido !== "nunca" && l.tempo_decorrido !== "desconectado")
+          ? ` (${l.tempo_decorrido})`
+          : "";
+        const statusTxt = l.online ? "online" : `sem sinal${tempo}`;
+        return `
+          <div class="sidebar-telemetry-item" title="${escapeHtml(l.nome)} (${escapeHtml(l.local || 'Escola')}) - ${l.online ? 'Online' : 'Offline'}">
+            <span class="telemetry-dot ${dotClass}"></span>
+            <span class="telemetry-label">${escapeHtml(l.nome)}: ${statusTxt}</span>
+          </div>
+        `;
+      }).join("");
+    } else if (el.dotLeitorSidebar && el.textLeitorSidebar) {
       if (offlineLeitores.length === 0) {
         el.dotLeitorSidebar.className = "telemetry-dot online";
-        el.textLeitorSidebar.textContent = "Leitor: online";
+        el.textLeitorSidebar.textContent = leitores.length > 1 ? `${leitores.length} Leitores: online` : "Leitor: online";
       } else {
         el.dotLeitorSidebar.className = "telemetry-dot offline";
         const off = offlineLeitores[0];
         const tempo = off?.tempo_decorrido || "offline";
         el.textLeitorSidebar.textContent = tempo !== "offline" && tempo !== "nunca" && tempo !== "desconectado"
-          ? `Leitor: sem sinal (${tempo})`
-          : "Leitor: sem sinal";
+          ? `${off.nome}: sem sinal (${tempo})`
+          : `${off.nome}: sem sinal`;
       }
     }
 
-    // Atualiza Card de Monitoramento no Dashboard
-    if (el.leitorNomeDash) el.leitorNomeDash.textContent = leitorPrincipal.nome;
-    if (el.leitorIpDash) el.leitorIpDash.textContent = leitorPrincipal.ip ? `IP: ${leitorPrincipal.ip}` : "IP: Local";
-    if (el.leitorTempoDash) {
-      if (leitorPrincipal.online) {
-        el.leitorTempoDash.textContent = `Sinal: ativo (${leitorPrincipal.tempo_decorrido})`;
+    // 2. Atualiza telemetry no cabeçalho (se ativo)
+    if (el.dotLeitorHeader && el.textLeitorHeader) {
+      if (offlineLeitores.length === 0) {
+        el.dotLeitorHeader.className = "telemetry-dot online";
+        el.textLeitorHeader.textContent = leitores.length > 1 ? `${leitores.length} Leitores: online` : `${leitorPrincipal.nome}: online`;
       } else {
-        el.leitorTempoDash.textContent = (leitorPrincipal.tempo_decorrido && leitorPrincipal.tempo_decorrido !== "nunca" && leitorPrincipal.tempo_decorrido !== "desconectado")
-          ? `Sem sinal (${leitorPrincipal.tempo_decorrido})`
-          : "Sem sinal";
-      }
-    }
-    if (el.leitorBadgeDash) {
-      if (leitorPrincipal.online) {
-        el.leitorBadgeDash.className = "status-badge ativo";
-        el.leitorBadgeDash.textContent = "Online";
-      } else {
-        el.leitorBadgeDash.className = "status-badge inativo";
-        el.leitorBadgeDash.textContent = "Offline";
+        el.dotLeitorHeader.className = "telemetry-dot offline";
+        const off = offlineLeitores[0];
+        const tempo = off?.tempo_decorrido || "offline";
+        el.textLeitorHeader.textContent = tempo !== "offline" && tempo !== "nunca" && tempo !== "desconectado"
+          ? `${off.nome}: sem sinal (${tempo})`
+          : `${off.nome}: sem sinal`;
       }
     }
 
-    // Alerta no topo do Dashboard se algum leitor estiver offline
+    // 3. Atualiza Tabela de Leitores na Seção de Backup & Nuvem
+    if (el.tbodyLeitoresBackup) {
+      el.tbodyLeitoresBackup.innerHTML = leitores.map(l => {
+        const badgeClass = l.online ? "ativo" : "inativo";
+        const badgeText = l.online ? "Online" : "Offline";
+        const tempo = l.tempo_decorrido || "—";
+        return `
+          <tr>
+            <td><strong>${escapeHtml(l.nome)}</strong></td>
+            <td class="mono" style="font-size:12px;">${escapeHtml(l.id)}</td>
+            <td>${escapeHtml(l.local || "—")}</td>
+            <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+            <td class="mono" style="font-size:12px;">${escapeHtml(tempo)}</td>
+            <td class="mono" style="font-size:12px; font-weight:700;">${l.total_leituras_hoje || 0}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // 4. Alerta no topo do Dashboard se algum leitor estiver offline
     if (el.alertaLeitorOffline) {
       if (offlineLeitores.length > 0) {
-        const off = offlineLeitores[0];
-        const tempo = (off.tempo_decorrido && off.tempo_decorrido !== "offline" && off.tempo_decorrido !== "nunca" && off.tempo_decorrido !== "desconectado")
-          ? off.tempo_decorrido
-          : "2 min";
-        const nomeLeitor = off.nome || "Portaria";
-        if (el.alertaLeitorTitulo) {
-          el.alertaLeitorTitulo.textContent = `Leitor ${nomeLeitor} sem sinal há ${tempo}`;
+        let tituloAlerta = "";
+        if (offlineLeitores.length === 1) {
+          const off = offlineLeitores[0];
+          const tempo = (off.tempo_decorrido && off.tempo_decorrido !== "offline" && off.tempo_decorrido !== "nunca" && off.tempo_decorrido !== "desconectado")
+            ? off.tempo_decorrido
+            : "2 min";
+          tituloAlerta = `Leitor ${off.nome} sem sinal há ${tempo}`;
+        } else {
+          const nomesOff = offlineLeitores.map(l => l.nome).join(", ");
+          tituloAlerta = `${offlineLeitores.length} leitores sem sinal: ${nomesOff}`;
         }
+
+        if (el.alertaLeitorTitulo) el.alertaLeitorTitulo.textContent = tituloAlerta;
         if (el.alertaLeitorTexto) {
           el.alertaLeitorTexto.textContent = "Verifique a energia e o Wi-Fi da escola. Os registros de presença não estão chegando.";
         }
@@ -2156,7 +2193,9 @@ async function carregarPresencasPorData() {
         status: p.status,
         hora_entrada: p.hora_entrada,
         hora_saida: p.hora_saida,
-        nome: p.nome
+        nome: p.nome,
+        leitor_id: p.leitor_id,
+        leitor_nome: p.leitor_nome
       };
     });
     atualizarDashboard();
@@ -2279,17 +2318,22 @@ function renderUltimosRegistros() {
   container.innerHTML = lista.map(item => {
     const salaInfo = obterSalaDoProfessorHoje(item.nome, item.uid);
     const localTexto = salaInfo ? `Sala ${salaInfo.replace(/^sala\s*/i, "")}` : "Portaria";
-    const hora = item.hora_entrada ? item.hora_entrada.slice(0, 5) : "--:--";
+    const nomeLeitor = item.leitor_nome || (item.leitor_id === "leitor_acm" ? "Leitor ACM" : "Leitor Portaria");
+    const isSaida = item.status === "Ausente";
+    const hora = (isSaida && item.hora_saida)
+      ? item.hora_saida.slice(0, 5)
+      : (item.hora_entrada ? item.hora_entrada.slice(0, 5) : "--:--");
+    const acaoTexto = isSaida ? "registrou saída" : "registrou presença";
 
     return `
       <div class="ultimo-registro-row">
         <div class="reg-title">
           <span class="reg-time">${escapeHtml(hora)}</span>
           <span class="reg-prof">${escapeHtml(item.nome || "Professor")}</span>
-          <span class="reg-action">registrou presença</span>
+          <span class="reg-action">${acaoTexto}</span>
         </div>
         <div class="reg-sub">
-          <span>Leitor Portaria</span>
+          <span>${escapeHtml(nomeLeitor)}</span>
           <span class="reg-sep">•</span>
           <span>${escapeHtml(localTexto)}</span>
         </div>
@@ -2499,12 +2543,14 @@ function obterListaRelatorio() {
         const temAula = professorTemAulaNaData(u.nome, uid, dataSelecionada);
         status = temAula ? "Ausente" : "Sem aula";
       }
+      const nomeLeitor = p?.leitor_nome || (p?.leitor_id === "leitor_acm" ? "Leitor ACM" : (p?.hora_entrada ? "Leitor Portaria" : "—"));
       return {
         nome: u.nome,
         uid,
         status,
         entrada: p?.hora_entrada || "—",
-        saida: p?.hora_saida || "—"
+        saida: p?.hora_saida || "—",
+        leitor: nomeLeitor
       };
     });
 
@@ -2531,6 +2577,7 @@ function buildTabela() {
       <td><span class="status-pill ${getStatusClass(item.status)}">${escapeHtml(item.status)}</span></td>
       <td class="mono">${escapeHtml(item.entrada)}</td>
       <td class="mono">${escapeHtml(item.saida)}</td>
+      <td style="font-size:12.5px; color:#4b5481;">${escapeHtml(item.leitor)}</td>
       <td class="mono">${escapeHtml(item.uid)}</td>
     </tr>
   `).join("");
@@ -2546,9 +2593,9 @@ function buildTabela() {
 }
 
 function exportCSV() {
-  const rows = [["Data", "Professor", "Status", "Entrada", "Saida", "UID"]];
+  const rows = [["Data", "Professor", "Status", "Entrada", "Saida", "Ponto / Leitor", "UID"]];
   obterListaRelatorio().forEach(item => {
-    rows.push([dataSelecionada, item.nome, item.status, item.entrada, item.saida, item.uid]);
+    rows.push([dataSelecionada, item.nome, item.status, item.entrada, item.saida, item.leitor, item.uid]);
   });
   const csv = rows.map(r => r.map(v => `"${v}"`).join(";")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -3640,6 +3687,18 @@ async function start() {
 
   const btnRestaurar = document.getElementById("btnExecutarRestauracao");
   if (btnRestaurar) btnRestaurar.addEventListener("click", restaurarBackupJson);
+
+  if (el.btnResetLeitores) {
+    el.btnResetLeitores.addEventListener("click", async () => {
+      try {
+        await apiSend("/api/leitores/reset-status", "POST", {});
+        toast.success("Status dos leitores resetado com sucesso.");
+        carregarMonitoramentoLeitores();
+      } catch (e) {
+        toast.error("Erro ao resetar sinal dos leitores.");
+      }
+    });
+  }
 
   // Carregamento de dados
   await carregarDisciplinas();

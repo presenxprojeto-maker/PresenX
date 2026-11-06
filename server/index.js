@@ -747,9 +747,16 @@ async function inicializarBancoESincronizacao() {
       hora TEXT,
       data TEXT,
       status TEXT,
-      sincronizado INTEGER NOT NULL DEFAULT 0
+      sincronizado INTEGER NOT NULL DEFAULT 0,
+      leitor_id TEXT DEFAULT 'leitor_portaria',
+      leitor_nome TEXT DEFAULT 'Leitor Portaria'
     )
   `);
+
+  db.run("ALTER TABLE presencas ADD COLUMN leitor_id TEXT DEFAULT 'leitor_portaria'", () => {});
+  db.run("ALTER TABLE presencas ADD COLUMN leitor_nome TEXT DEFAULT 'Leitor Portaria'", () => {});
+  db.run("ALTER TABLE ultimo_acesso ADD COLUMN leitor_id TEXT DEFAULT 'leitor_portaria'", () => {});
+  db.run("ALTER TABLE ultimo_acesso ADD COLUMN leitor_nome TEXT DEFAULT 'Leitor Portaria'", () => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS leitores_rfid (
@@ -1617,10 +1624,12 @@ app.delete("/api/usuarios/:uid", authAdmin, async (req, res) => {
 // ======================================================
 // ROTAS DE PRESENÇAS & ÚLTIMO ACESSO
 // ======================================================
-async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status }) {
+async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status, leitor_id, leitor_nome }) {
+  const lId = leitor_id || "leitor_portaria";
+  const lNome = leitor_nome || "Leitor Portaria";
   await runAsync(
-    `INSERT INTO ultimo_acesso (chave, uid, nome, curso, hora, data, status, sincronizado)
-     VALUES ('ultimo', ?, ?, ?, ?, ?, ?, 0)
+    `INSERT INTO ultimo_acesso (chave, uid, nome, curso, hora, data, status, sincronizado, leitor_id, leitor_nome)
+     VALUES ('ultimo', ?, ?, ?, ?, ?, ?, 0, ?, ?)
      ON CONFLICT(chave) DO UPDATE SET
        uid = excluded.uid,
        nome = excluded.nome,
@@ -1628,8 +1637,10 @@ async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status }) {
        hora = excluded.hora,
        data = excluded.data,
        status = excluded.status,
+       leitor_id = excluded.leitor_id,
+       leitor_nome = excluded.leitor_nome,
        sincronizado = 0`,
-    [uid, nome, curso || "", hora, data, status]
+    [uid, nome, curso || "", hora, data, status, lId, lNome]
   );
 
   if (firebaseDb) {
@@ -1640,6 +1651,8 @@ async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status }) {
       hora,
       data,
       status,
+      leitor_id: lId,
+      leitor_nome: lNome,
       timestamp: Date.now()
     }).catch(e => console.warn("Aviso ao sincronizar ultimo_acesso com Firebase:", e.message));
   }
@@ -1817,7 +1830,9 @@ app.post("/api/presenca", async (req, res) => {
         curso: "",
         hora,
         data,
-        status: "Desconhecido"
+        status: "Desconhecido",
+        leitor_id: leitorId,
+        leitor_nome: leitorNome
       });
       return res.status(200).json({
         ok: false,
@@ -1828,6 +1843,8 @@ app.post("/api/presenca", async (req, res) => {
         nome: "Não cadastrado",
         name: "Não cadastrado",
         uid,
+        leitor_id: leitorId,
+        leitor_nome: leitorNome,
         mensagem: "Cartão não cadastrado",
         message: "Cartao nao cadastrado"
       });
@@ -1842,6 +1859,8 @@ app.post("/api/presenca", async (req, res) => {
         action: "bloqueado",
         nome: usuario.nome,
         name: usuario.nome,
+        leitor_id: leitorId,
+        leitor_nome: leitorNome,
         mensagem: "Usuário inativo",
         message: "Usuario inativo"
       });
@@ -1854,9 +1873,9 @@ app.post("/api/presenca", async (req, res) => {
 
     if (!presenca) {
       await runAsync(
-        `INSERT INTO presencas (data, uid, nome, curso, status, hora_entrada, hora_saida, sincronizado)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-        [data, uid, usuario.nome, usuario.curso || "", "Presente", hora, ""]
+        `INSERT INTO presencas (data, uid, nome, curso, status, hora_entrada, hora_saida, sincronizado, leitor_id, leitor_nome)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+        [data, uid, usuario.nome, usuario.curso || "", "Presente", hora, "", leitorId, leitorNome]
       );
 
       await salvarUltimoAcesso({
@@ -1865,7 +1884,9 @@ app.post("/api/presenca", async (req, res) => {
         curso: usuario.curso,
         hora,
         data,
-        status: "Presente"
+        status: "Presente",
+        leitor_id: leitorId,
+        leitor_nome: leitorNome
       });
 
       if (firebaseDb) {
@@ -1878,6 +1899,8 @@ app.post("/api/presenca", async (req, res) => {
           hora_entrada: hora,
           hora_saida: "",
           data,
+          leitor_id: leitorId,
+          leitor_nome: leitorNome,
           timestamp: Date.now()
         }).catch(e => console.warn("Aviso ao sincronizar presenca no Firebase:", e.message));
       }
@@ -1892,6 +1915,8 @@ app.post("/api/presenca", async (req, res) => {
         name: usuario.nome,
         curso: usuario.curso,
         hora,
+        leitor_id: leitorId,
+        leitor_nome: leitorNome,
         mensagem: "Entrada liberada",
         message: "Entrada liberada"
       });
@@ -1903,9 +1928,10 @@ app.post("/api/presenca", async (req, res) => {
 
     await runAsync(
       `UPDATE presencas
-       SET status = ?, hora_entrada = ?, hora_saida = ?, nome = ?, curso = ?, sincronizado = 0
+       SET status = ?, hora_entrada = ?, hora_saida = ?, nome = ?, curso = ?, sincronizado = 0,
+           leitor_id = ?, leitor_nome = ?
        WHERE data = ? AND uid = ?`,
-      [novoStatus, novaEntrada, novaSaida, usuario.nome, usuario.curso || "", data, uid]
+      [novoStatus, novaEntrada, novaSaida, usuario.nome, usuario.curso || "", leitorId, leitorNome, data, uid]
     );
 
     await salvarUltimoAcesso({
@@ -1914,7 +1940,9 @@ app.post("/api/presenca", async (req, res) => {
       curso: usuario.curso,
       hora,
       data,
-      status: novoStatus
+      status: novoStatus,
+      leitor_id: leitorId,
+      leitor_nome: leitorNome
     });
 
     if (firebaseDb) {
@@ -1927,6 +1955,8 @@ app.post("/api/presenca", async (req, res) => {
         hora_entrada: novaEntrada,
         hora_saida: novaSaida,
         data,
+        leitor_id: leitorId,
+        leitor_nome: leitorNome,
         timestamp: Date.now()
       }).catch(e => console.warn("Aviso ao sincronizar presenca no Firebase:", e.message));
     }
@@ -1941,6 +1971,8 @@ app.post("/api/presenca", async (req, res) => {
       name: usuario.nome,
       curso: usuario.curso,
       hora,
+      leitor_id: leitorId,
+      leitor_nome: leitorNome,
       mensagem: novoStatus === "Presente" ? "Entrada liberada" : "Saída liberada",
       message: novoStatus === "Presente" ? "Entrada liberada" : "Saida liberada"
     });

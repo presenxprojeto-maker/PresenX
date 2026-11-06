@@ -109,9 +109,11 @@
           <span class="telemetry-dot online" id="dot-status-sidebar"></span>
           <span class="telemetry-label" id="text-status-sidebar">API local: online</span>
         </div>
-        <div class="sidebar-telemetry-item">
-          <span class="telemetry-dot offline" id="dot-leitor-sidebar"></span>
-          <span class="telemetry-label" id="text-leitor-sidebar">Leitor: sem sinal</span>
+        <div id="sidebarLeitoresContainer" style="display:flex; flex-direction:column; gap:8px;">
+          <div class="sidebar-telemetry-item">
+            <span class="telemetry-dot offline" id="dot-leitor-sidebar"></span>
+            <span class="telemetry-label" id="text-leitor-sidebar">Leitor: sem sinal</span>
+          </div>
         </div>
       </div>
       <div class="sidebar-divider"></div>
@@ -691,6 +693,7 @@
                   <th>Status</th>
                   <th>Entrada</th>
                   <th>Saída</th>
+                  <th>Ponto / Leitor</th>
                   <th>UID</th>
                 </tr>
               </thead>
@@ -1025,6 +1028,37 @@
             </div>
 
             <div id="msgRestauracao" class="msg-box" style="margin-top:14px;"></div>
+          </div>
+
+          <!-- CARD LARGURA TOTAL: LEITORES RFID ATIVOS -->
+          <div class="dash-card" style="grid-column: 1 / -1; margin-top: 8px;">
+            <div class="dash-card-header" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2 class="dash-card-title">Leitores RFID Conectados</h2>
+                <p class="dash-card-subtitle" style="margin-top:4px;">Dispositivos físicos ESP32 registrando presenças na escola</p>
+              </div>
+              <button id="btnResetLeitores" type="button" class="btn-filter-outline" style="font-size:12px; padding:6px 12px;">Resetar sinal</button>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="tabela-gestao">
+                <thead>
+                  <tr>
+                    <th>Nome do Leitor</th>
+                    <th>Identificador</th>
+                    <th>Local</th>
+                    <th>Status</th>
+                    <th>Último Sinal</th>
+                    <th>Leituras Hoje</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyLeitoresBackup">
+                  <tr>
+                    <td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">Carregando leitores...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
