@@ -1805,7 +1805,7 @@ app.post("/api/presenca", async (req, res) => {
        ON CONFLICT(id) DO UPDATE SET
          ultimo_ping = excluded.ultimo_ping,
          ip = CASE WHEN excluded.ip != '' THEN excluded.ip ELSE leitores_rfid.ip END,
-         total_leituras_hoje = total_leituras_hoje + 1`,
+         total_leituras_hoje = leitores_rfid.total_leituras_hoje + 1`,
       [leitorId, leitorNome, ipCliente, Date.now()]
     );
 
