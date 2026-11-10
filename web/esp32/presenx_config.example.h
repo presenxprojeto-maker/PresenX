@@ -5,9 +5,25 @@
 // ====================================================================
 #pragma once
 
-// 1. Rede Wi-Fi
-#define PRESENX_WIFI_SSID     "SEU_WIFI_AQUI"
-#define PRESENX_WIFI_PASSWORD "SUA_SENHA_AQUI"
+// 1. Redes Wi-Fi (Multi-Rede / Fallback Automático)
+// O ESP32 procura e conecta automaticamente na rede com melhor sinal disponível.
+// Ideal para feiras e apresentações: cadastre o 4G do seu celular e a rede de casa/escola!
+
+// Rede 1: Ponto de Acesso / Roteador 4G do seu Celular (para a feira)
+#define PRESENX_WIFI_SSID_1     "Ponto de Acesso Celular"
+#define PRESENX_WIFI_PASS_1     "senha1234"
+
+// Rede 2: Wi-Fi Residencial / Colégio / CETEP
+#define PRESENX_WIFI_SSID_2     "WiFi_Principal"
+#define PRESENX_WIFI_PASS_2     "senha_wifi"
+
+// Rede 3: Terceira rede de contingência (Opcional, deixe "" se não for usar)
+#define PRESENX_WIFI_SSID_3     ""
+#define PRESENX_WIFI_PASS_3     ""
+
+// Compatibilidade caso algum código antigo ainda utilize
+#define PRESENX_WIFI_SSID       PRESENX_WIFI_SSID_1
+#define PRESENX_WIFI_PASSWORD   PRESENX_WIFI_PASS_1
 
 // 2. Endereço do Servidor PresenX (sem barra no final)
 // Em produção no Render (padrão):

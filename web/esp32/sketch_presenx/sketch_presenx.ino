@@ -4,6 +4,7 @@
 // ====================================================================
 
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <Wire.h>
@@ -38,6 +39,7 @@
 
 MFRC522 rfid(SS_PIN, RST_PIN);
 LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 16, 2);
+WiFiMulti wifiMulti;
 
 // Controle de Wi-Fi e Heartbeat (Ping)
 unsigned long lastWifiAttempt = 0;
@@ -72,7 +74,7 @@ void bipErro() {
 void showWelcome() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("PresenX | CETEP");
+  lcd.print("PresenX - CETEP");
   lcd.setCursor(0, 1);
   lcd.print("Aproxime cartao");
 }
@@ -101,46 +103,91 @@ String extrairCampoJson(const String& json, const String& campo) {
 }
 
 // ====================================================================
-// CONEXÃO WI-FI
+// CONEXÃO WI-FI (Multi-Rede / Fallback Automático)
 // ====================================================================
+void inicializarWifiMulti() {
+  WiFi.mode(WIFI_STA);
+
+  #ifdef PRESENX_WIFI_SSID_1
+  if (strlen(PRESENX_WIFI_SSID_1) > 0) {
+    wifiMulti.addAP(PRESENX_WIFI_SSID_1, PRESENX_WIFI_PASS_1);
+    Serial.printf("[Wi-Fi] Rede 1 cadastrada: %s\n", PRESENX_WIFI_SSID_1);
+  }
+  #endif
+
+  #ifdef PRESENX_WIFI_SSID_2
+  if (strlen(PRESENX_WIFI_SSID_2) > 0) {
+    wifiMulti.addAP(PRESENX_WIFI_SSID_2, PRESENX_WIFI_PASS_2);
+    Serial.printf("[Wi-Fi] Rede 2 cadastrada: %s\n", PRESENX_WIFI_SSID_2);
+  }
+  #endif
+
+  #ifdef PRESENX_WIFI_SSID_3
+  if (strlen(PRESENX_WIFI_SSID_3) > 0) {
+    wifiMulti.addAP(PRESENX_WIFI_SSID_3, PRESENX_WIFI_PASS_3);
+    Serial.printf("[Wi-Fi] Rede 3 cadastrada: %s\n", PRESENX_WIFI_SSID_3);
+  }
+  #endif
+
+  // Compatibilidade com configurações legadas (rede única)
+  #if defined(PRESENX_WIFI_SSID) && !defined(PRESENX_WIFI_SSID_1)
+  if (strlen(PRESENX_WIFI_SSID) > 0) {
+    wifiMulti.addAP(PRESENX_WIFI_SSID, PRESENX_WIFI_PASSWORD);
+    Serial.printf("[Wi-Fi] Rede padrao cadastrada: %s\n", PRESENX_WIFI_SSID);
+  }
+  #endif
+}
+
 void connectWifi() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("PresenX");
   lcd.setCursor(0, 1);
-  lcd.print("Conectando WiFi");
+  lcd.print("Buscando WiFi...");
 
-  Serial.print("Conectando ao Wi-Fi: ");
-  Serial.println(PRESENX_WIFI_SSID);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(PRESENX_WIFI_SSID, PRESENX_WIFI_PASSWORD);
+  Serial.println("[Wi-Fi] Escaneando redes configuradas...");
 
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 25) {
-    delay(400);
+  while (wifiMulti.run() != WL_CONNECTED && attempts < 20) {
+    delay(500);
     Serial.print(".");
     attempts++;
   }
   Serial.println();
 
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("Wi-Fi Conectado! IP do leitor: ");
-    Serial.println(WiFi.localIP());
+    String rede = WiFi.SSID();
+    Serial.printf("[Wi-Fi] Conectado na rede: %s\n", rede.c_str());
+    Serial.printf("[Wi-Fi] IP do Leitor: %s | RSSI: %d dBm\n",
+                  WiFi.localIP().toString().c_str(),
+                  WiFi.RSSI());
+
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("WiFi Conectado!");
     lcd.setCursor(0, 1);
-    lcd.print(WiFi.localIP().toString().substring(0, 16));
-    delay(1200);
-    showWelcome();
-  } else {
-    Serial.println("Falha ao conectar no Wi-Fi. Tentara novamente em segundo plano.");
+    if (rede.length() > 16) {
+      lcd.print(rede.substring(0, 16));
+    } else {
+      lcd.print(rede);
+    }
+    delay(1400);
+
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Erro de conexao");
+    lcd.print("IP do Leitor:");
     lcd.setCursor(0, 1);
+    lcd.print(WiFi.localIP().toString().substring(0, 16));
+    delay(1200);
+
+    showWelcome();
+  } else {
+    Serial.println("[Wi-Fi] Nenhuma rede configurada disponivel. O leitor tentara novamente em segundo plano.");
+    lcd.clear();
+    lcd.setCursor(0, 0);
     lcd.print("Sem sinal WiFi");
+    lcd.setCursor(0, 1);
+    lcd.print("Tentando de novo");
     lastWifiAttempt = millis();
   }
 }
@@ -148,7 +195,15 @@ void connectWifi() {
 bool ensureWifi() {
   if (WiFi.status() == WL_CONNECTED) return true;
   if (millis() - lastWifiAttempt >= WIFI_RETRY_INTERVAL) {
-    connectWifi();
+    lastWifiAttempt = millis();
+    Serial.println("[Wi-Fi] Tentando reconectar via WiFiMulti...");
+    if (wifiMulti.run() == WL_CONNECTED) {
+      Serial.printf("[Wi-Fi] Reconectado na rede: %s | IP: %s\n",
+                    WiFi.SSID().c_str(),
+                    WiFi.localIP().toString().c_str());
+      showWelcome();
+      return true;
+    }
   }
   return WiFi.status() == WL_CONNECTED;
 }
@@ -295,7 +350,8 @@ void setup() {
   lcd.init();
   lcd.backlight();
 
-  // Conecta Wi-Fi
+  // Configura e conecta Wi-Fi Multi-Rede
+  inicializarWifiMulti();
   connectWifi();
   if (WiFi.status() == WL_CONNECTED) {
     enviarHeartbeatPing();

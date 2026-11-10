@@ -31,15 +31,19 @@ Este firmware conecta o leitor RFID (RC522) e display LCD ao sistema **PresenX**
 
 ## ⚙️ 2. Como Configurar no Arduino IDE
 
-1. Abra a pasta `web/esp32`.
-2. Duplique o arquivo `presenx_config.example.h` e renomeie a cópia para **`presenx_config.h`**.
-3. Abra o `presenx_config.h` e preencha:
-   - `PRESENX_WIFI_SSID`: Nome da sua rede Wi-Fi.
-   - `PRESENX_WIFI_PASSWORD`: Senha do seu Wi-Fi.
-   - `PRESENX_SERVER_URL`: `"https://presenx.onrender.com"` (ou `http://192.168.x.x:3000` se testar em rede local).
+1. Abra a pasta `web/esp32/sketch_presenx`.
+2. O arquivo `presenx_config.h` já suporta **Multi-Wi-Fi (várias redes simultâneas)**:
+   - `PRESENX_WIFI_SSID_1` / `PRESENX_WIFI_PASS_1`: Roteador / Ponto de Acesso 4G do seu celular (ótimo para feiras e apresentações externas).
+   - `PRESENX_WIFI_SSID_2` / `PRESENX_WIFI_PASS_2`: Wi-Fi residencial ou da escola.
+   - `PRESENX_SERVER_URL`: `"https://presenx.onrender.com"`.
+3. **⚠️ Dica importante para Ponto de Acesso do celular (Feiras):**
+   - O ESP32 opera apenas na frequência **2.4 GHz**.
+   - No **iPhone**: Ative a opção **"Maximizar Compatibilidade"** em *Ajustes > Acesso Pessoal*.
+   - No **Android**: Em *Ponto de Acesso Wi-Fi*, certifique-se de que a banda AP está em **2.4 GHz** (não deixe somente em 5 GHz).
 4. No Arduino IDE, instale as bibliotecas (Menu *Sketch > Incluir Biblioteca > Gerenciar Bibliotecas*):
    - **MFRC522** (por GithubCommunity)
    - **LiquidCrystal_I2C** (por Frank de Brabander ou Marco Schwartz)
+   *(A biblioteca `WiFiMulti` já é nativa do pacote de placas ESP32).*
 5. Selecione a sua placa (**ESP32 Dev Module**) e a porta COM correspondente.
 6. Clique em **Carregar (Upload)**.
 
