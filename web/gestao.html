@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PresenX  Administrativo</title>
+  <title>PresenX - Administrativo</title>
   <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -161,6 +161,30 @@
         </div>
       </header>
 
+      <!-- BANNER RFID DESCONHECIDO (VISÍVEL EM TODAS AS ABAS) -->
+      <div id="rfidBanner" class="rfid-banner hidden">
+        <div class="rfid-banner-conteudo">
+          <div class="rfid-banner-info">
+            <i data-lucide="credit-card" style="width:22px; height:22px; color:var(--primary);"></i>
+            <div>
+              <strong id="rfidBannerTitulo">Cartão RFID detectado!</strong>
+              <span>UID: <code id="rfidBannerUid">---</code> — Não cadastrado no sistema</span>
+            </div>
+          </div>
+          <div class="rfid-banner-acoes">
+            <button id="btnRfidPreencher" type="button">
+              <i data-lucide="user-plus" style="width:14px; height:14px;"></i>
+              <span>Cadastrar com este UID</span>
+            </button>
+            <button id="btnRfidVincular" type="button" class="btn-secondary">
+              <i data-lucide="link" style="width:14px; height:14px;"></i>
+              <span>Vincular a professor existente</span>
+            </button>
+            <button id="btnRfidFechar" type="button" class="link-btn" style="font-size:12px;">Fechar</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 1. DASHBOARD / PAINEL SECTION -->
       <section id="dashboardSection" class="page-section active">
 
@@ -256,30 +280,6 @@
 
       <!-- 2. PROFESSORES SECTION -->
       <section id="professoresSection" class="page-section">
-
-        <!-- BANNER RFID DESCONHECIDO -->
-        <div id="rfidBanner" class="rfid-banner hidden">
-          <div class="rfid-banner-conteudo">
-            <div class="rfid-banner-info">
-              <i data-lucide="credit-card" style="width:22px; height:22px; color:var(--primary);"></i>
-              <div>
-                <strong>Cartão RFID detectado!</strong>
-                <span>UID: <code id="rfidBannerUid">---</code> — Não cadastrado no sistema</span>
-              </div>
-            </div>
-            <div class="rfid-banner-acoes">
-              <button id="btnRfidPreencher" type="button">
-                <i data-lucide="user-plus" style="width:14px; height:14px;"></i>
-                <span>Cadastrar com este UID</span>
-              </button>
-              <button id="btnRfidVincular" type="button" class="btn-secondary">
-                <i data-lucide="link" style="width:14px; height:14px;"></i>
-                <span>Vincular a professor existente</span>
-              </button>
-              <button id="btnRfidFechar" type="button" class="link-btn" style="font-size:12px;">Fechar</button>
-            </div>
-          </div>
-        </div>
 
         <div class="professores-grid-two-cols">
           <!-- CARD ESQUERDA: BUSCA E LISTA DE PROFESSORES -->

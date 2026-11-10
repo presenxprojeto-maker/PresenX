@@ -725,7 +725,7 @@ async function carregarStatusLeitor() {
       }
     } else {
       const nomes = leitores.map(l => l.nome).join(", ");
-      tag.title = leitores.map(l => `${l.nome}: ${l.online ? 'Online' : 'Offline'}`).join(" | ");
+      tag.title = leitores.map(l => `${l.nome}: ${l.online ? 'Online' : 'Offline'}`).join(" • ");
       if (offlineCount === 0) {
         tag.className = "painel-leitor-tag online";
         txt.textContent = `${leitores.length} Leitores Conectados (${nomes})`;

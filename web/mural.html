@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Avisos | PresenX - CETEP / LNAB</title>
+  <title>Avisos - PresenX - CETEP / LNAB</title>
   <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
 
   <!-- Google Fonts: Bricolage Grotesque & Inter -->
@@ -206,7 +206,20 @@
       align-items: center;
       gap: 10px;
       margin-bottom: 24px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .filter-chips-row::-webkit-scrollbar {
+      display: none;
     }
 
     .filter-btn {
@@ -577,11 +590,17 @@
       .filter-chips-row {
         display: flex;
         flex-wrap: nowrap;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         overflow-x: auto;
+        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
         gap: 8px;
-        padding-bottom: 6px;
+        padding-bottom: 8px;
         scrollbar-width: none;
+        -ms-overflow-style: none;
       }
 
       .filter-chips-row::-webkit-scrollbar {
@@ -593,6 +612,7 @@
         white-space: nowrap;
         font-size: 12.5px;
         padding: 6px 14px;
+        touch-action: pan-x;
       }
 
       .divider-line {
@@ -1011,9 +1031,70 @@
       }
     }
 
+    // Habilitar rolagem horizontal suave e arrasto (Desktop Mouse & Mobile Touch)
+    const chipsRow = document.querySelector(".filter-chips-row");
+    let isMouseDown = false;
+    let rowMoved = false;
+    let mouseStartX = 0;
+    let mouseScrollStart = 0;
+    let touchStartX = 0;
+
+    if (chipsRow) {
+      // Touch: o navegador já faz rolagem nativa suave com momentum; detectamos movimento para evitar cliques acidentais nos chips durante o swipe
+      chipsRow.addEventListener("touchstart", (e) => {
+        rowMoved = false;
+        touchStartX = e.touches[0].pageX;
+      }, { passive: true });
+
+      chipsRow.addEventListener("touchmove", (e) => {
+        const dist = Math.abs(e.touches[0].pageX - touchStartX);
+        if (dist > 6) {
+          rowMoved = true;
+        }
+      }, { passive: true });
+
+      chipsRow.addEventListener("touchend", () => {
+        setTimeout(() => { rowMoved = false; }, 80);
+      }, { passive: true });
+
+      // Mouse drag (Desktop)
+      chipsRow.addEventListener("mousedown", (e) => {
+        isMouseDown = true;
+        rowMoved = false;
+        mouseStartX = e.pageX;
+        mouseScrollStart = chipsRow.scrollLeft;
+        chipsRow.style.cursor = "grabbing";
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isMouseDown) return;
+        const dist = e.pageX - mouseStartX;
+        if (Math.abs(dist) > 4) {
+          rowMoved = true;
+          chipsRow.scrollLeft = mouseScrollStart - dist;
+        }
+      });
+
+      window.addEventListener("mouseup", () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          chipsRow.style.cursor = "grab";
+          setTimeout(() => { rowMoved = false; }, 80);
+        }
+      });
+
+      chipsRow.addEventListener("click", (e) => {
+        if (rowMoved) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }, true);
+    }
+
     // Filtros por chip
     el.botoesFiltro.forEach(btn => {
       btn.addEventListener("click", () => {
+        if (rowMoved) return;
         el.botoesFiltro.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         filtroAtual = btn.getAttribute("data-filtro") || "todos";

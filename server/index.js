@@ -786,6 +786,18 @@ async function inicializarBancoESincronizacao() {
   db.run("ALTER TABLE presencas ADD COLUMN leitor_nome TEXT DEFAULT 'Leitor Portaria'", () => {});
   db.run("ALTER TABLE ultimo_acesso ADD COLUMN leitor_id TEXT DEFAULT 'leitor_portaria'", () => {});
   db.run("ALTER TABLE ultimo_acesso ADD COLUMN leitor_nome TEXT DEFAULT 'Leitor Portaria'", () => {});
+  db.run("ALTER TABLE ultimo_acesso ADD COLUMN timestamp INTEGER DEFAULT 0", () => {});
+  db.run(`
+    CREATE TABLE IF NOT EXISTS leituras_desconhecidas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      uid TEXT NOT NULL,
+      leitor_id TEXT,
+      leitor_nome TEXT,
+      data TEXT NOT NULL,
+      hora TEXT NOT NULL,
+      timestamp INTEGER NOT NULL
+    )
+  `, () => {});
 
   db.run(`
     CREATE TABLE IF NOT EXISTS leitores_rfid (
@@ -1646,12 +1658,13 @@ app.delete("/api/usuarios/:uid", authAdmin, async (req, res) => {
 // ======================================================
 // ROTAS DE PRESENÇAS & ÚLTIMO ACESSO
 // ======================================================
-async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status, leitor_id, leitor_nome }) {
+async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status, leitor_id, leitor_nome, timestamp }) {
   const lId = leitor_id || "leitor_portaria";
   const lNome = leitor_nome || "Leitor Portaria";
+  const ts = Number(timestamp) || Date.now();
   await runAsync(
-    `INSERT INTO ultimo_acesso (chave, uid, nome, curso, hora, data, status, sincronizado, leitor_id, leitor_nome)
-     VALUES ('ultimo', ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    `INSERT INTO ultimo_acesso (chave, uid, nome, curso, hora, data, status, sincronizado, leitor_id, leitor_nome, timestamp)
+     VALUES ('ultimo', ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
      ON CONFLICT(chave) DO UPDATE SET
        uid = excluded.uid,
        nome = excluded.nome,
@@ -1661,8 +1674,9 @@ async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status, leitor
        status = excluded.status,
        leitor_id = excluded.leitor_id,
        leitor_nome = excluded.leitor_nome,
+       timestamp = excluded.timestamp,
        sincronizado = 0`,
-    [uid, nome, curso || "", hora, data, status, lId, lNome]
+    [uid, nome, curso || "", hora, data, status, lId, lNome, ts]
   );
 
   if (firebaseDb) {
@@ -1675,7 +1689,7 @@ async function salvarUltimoAcesso({ uid, nome, curso, hora, data, status, leitor
       status,
       leitor_id: lId,
       leitor_nome: lNome,
-      timestamp: Date.now()
+      timestamp: ts
     }).catch(e => console.warn("Aviso ao sincronizar ultimo_acesso com Firebase:", e.message));
   }
 }
@@ -1686,6 +1700,23 @@ app.get("/api/ultimo-acesso", async (req, res) => {
     ok(res, { ultimoAcesso: row || null });
   } catch (err) {
     fail(res, 500, err.message);
+  }
+});
+
+app.get("/api/leitores/desconhecidos", async (req, res) => {
+  try {
+    const dataFiltro = String(req.query.data || "").trim();
+    let query = "SELECT * FROM leituras_desconhecidas";
+    let params = [];
+    if (dataFiltro) {
+      query += " WHERE data = ?";
+      params.push(dataFiltro);
+    }
+    query += " ORDER BY id DESC LIMIT 20";
+    const rows = await allAsync(query, params);
+    ok(res, { desconhecidos: rows || [] });
+  } catch (err) {
+    ok(res, { desconhecidos: [] });
   }
 });
 
@@ -1898,6 +1929,7 @@ app.post("/api/presenca", async (req, res) => {
 
     const usuario = await getAsync("SELECT * FROM usuarios WHERE uid = ?", [uid]);
     if (!usuario) {
+      const tsLeitura = Date.now();
       await salvarUltimoAcesso({
         uid,
         nome: "Cartão Não Cadastrado",
@@ -1906,8 +1938,16 @@ app.post("/api/presenca", async (req, res) => {
         data,
         status: "Desconhecido",
         leitor_id: leitorId,
-        leitor_nome: leitorNomeFinal
+        leitor_nome: leitorNomeFinal,
+        timestamp: tsLeitura
       });
+
+      await runAsync(
+        `INSERT INTO leituras_desconhecidas (uid, leitor_id, leitor_nome, data, hora, timestamp)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [uid, leitorId, leitorNomeFinal, data, hora, tsLeitura]
+      ).catch(e => console.warn("Erro ao salvar leitura desconhecida:", e.message));
+
       return res.status(200).json({
         ok: false,
         status: "fail",
@@ -1960,7 +2000,8 @@ app.post("/api/presenca", async (req, res) => {
         data,
         status: "Presente",
         leitor_id: leitorId,
-        leitor_nome: leitorNomeFinal
+        leitor_nome: leitorNomeFinal,
+        timestamp: Date.now()
       });
 
       if (firebaseDb) {
@@ -2016,7 +2057,8 @@ app.post("/api/presenca", async (req, res) => {
       data,
       status: novoStatus,
       leitor_id: leitorId,
-      leitor_nome: leitorNomeFinal
+      leitor_nome: leitorNomeFinal,
+      timestamp: Date.now()
     });
 
     if (firebaseDb) {

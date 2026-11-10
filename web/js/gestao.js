@@ -215,6 +215,9 @@ let turnosDinamicos = null;
 
 let rfidDesconhecidoDetectado = null;
 let rfidUltimoDescartado = null;
+let rfidUltimoTimestamp = 0;
+let rfidTimestampDescartado = 0;
+let listaLeiturasDesconhecidas = [];
 
 let modoEdicaoUid = null;
 let modoEdicaoDiscId = null;
@@ -810,19 +813,28 @@ async function verificarCartaoDesconhecido() {
     const ult = res?.ultimoAcesso;
     if (ult && ult.status === "Desconhecido" && ult.uid) {
       const uid = ult.uid.trim().toUpperCase();
+      const ts = Number(ult.timestamp) || 0;
       // Verifica se o UID já foi cadastrado em algum professor ativo
       const jaCadastrado = Object.keys(usuarios).some(u => u.toUpperCase() === uid);
       if (!jaCadastrado) {
-        if (rfidUltimoDescartado !== uid) {
+        // Se for um novo evento de leitura (timestamp mudou) ou novo UID:
+        const ehNovoEvento = ts > 0 ? (ts !== rfidUltimoTimestamp) : (rfidDesconhecidoDetectado !== uid);
+        const foiDescartado = (ts > 0 && ts === rfidTimestampDescartado) || (ts === 0 && rfidUltimoDescartado === uid);
+
+        if (ehNovoEvento && !foiDescartado) {
           rfidDesconhecidoDetectado = uid;
+          rfidUltimoTimestamp = ts;
           if (el.rfidBanner && el.rfidBannerUid) {
             el.rfidBannerUid.textContent = uid;
             const leitorTxt = ult.leitor_nome ? ` no ${ult.leitor_nome}` : "";
-            const tagMsg = el.rfidBanner.querySelector(".rfid-banner-info strong");
+            const tagMsg = document.getElementById("rfidBannerTitulo") || el.rfidBanner.querySelector(".rfid-banner-info strong");
             if (tagMsg) tagMsg.textContent = `Cartão RFID detectado${leitorTxt}!`;
             el.rfidBanner.classList.remove("hidden");
             renderIcons();
+            toast.warning(`Cartão não cadastrado detectado: ${uid}${leitorTxt}`);
           }
+          // Atualiza lista em Últimos Registros
+          carregarDesconhecidosRecentes();
         }
       } else {
         // Se já está cadastrado, esconde o banner
@@ -834,31 +846,47 @@ async function verificarCartaoDesconhecido() {
   }
 }
 
+async function carregarDesconhecidosRecentes() {
+  try {
+    const res = await apiGet(`/api/leitores/desconhecidos?data=${encodeURIComponent(dataSelecionada)}`);
+    if (res && Array.isArray(res.desconhecidos)) {
+      listaLeiturasDesconhecidas = res.desconhecidos;
+      renderUltimosRegistros();
+    }
+  } catch (e) {}
+}
+
 function fecharBannerRfid() {
   if (rfidDesconhecidoDetectado) {
     rfidUltimoDescartado = rfidDesconhecidoDetectado;
+    rfidTimestampDescartado = rfidUltimoTimestamp;
   }
   if (el.rfidBanner) el.rfidBanner.classList.add("hidden");
 }
 
-function preencherUidDesconhecido() {
-  if (!rfidDesconhecidoDetectado) return;
+function preencherUidDesconhecido(uidParam) {
+  const uidAlvo = uidParam || rfidDesconhecidoDetectado;
+  if (!uidAlvo) return;
   // Muda para a seção de professores
   const btnProf = document.querySelector(`.nav-btn[data-section="professores"]`);
   if (btnProf) btnProf.click();
 
-  if (el.uidInput) {
-    el.uidInput.value = rfidDesconhecidoDetectado;
-    el.uidInput.classList.remove("input-error");
+  if (el.cadUid) {
+    el.cadUid.value = uidAlvo;
+    el.cadUid.classList.remove("input-error");
   }
-  if (el.nomeInput) {
-    el.nomeInput.focus();
+  if (el.cadNome) {
+    el.cadNome.focus();
   }
   if (el.msgProfessor) {
     el.msgProfessor.style.color = "var(--primary)";
-    el.msgProfessor.textContent = `Cartão ${rfidDesconhecidoDetectado} preenchido! Digite o nome do professor e salve.`;
+    el.msgProfessor.textContent = `Cartão ${uidAlvo} preenchido! Digite o nome do professor e clique em Salvar.`;
   }
 }
+
+window.cadastrarRfidDireto = function(uid) {
+  preencherUidDesconhecido(uid);
+};
 
 function abrirModalVincularCartao() {
   if (!rfidDesconhecidoDetectado) return;
@@ -2420,10 +2448,36 @@ function renderUltimosRegistros() {
   const vazioCard = el.vazioUltimosRegistros || document.getElementById("vazioUltimosRegistros");
   if (!container) return;
 
-  const lista = Object.entries(presencas)
-    .map(([uid, p]) => ({ uid, ...p }))
-    .sort((a, b) => norm(b.hora_entrada || "").localeCompare(norm(a.hora_entrada || "")))
-    .slice(0, 6);
+  const listaPresencas = Object.entries(presencas).map(([uid, p]) => {
+    const isSaida = p.status === "Ausente";
+    const hora = (isSaida && p.hora_saida)
+      ? p.hora_saida.slice(0, 5)
+      : (p.hora_entrada ? p.hora_entrada.slice(0, 5) : "--:--");
+    return {
+      tipo: "presenca",
+      uid,
+      nome: p.nome,
+      status: p.status,
+      hora,
+      leitor_id: p.leitor_id,
+      leitor_nome: p.leitor_nome
+    };
+  });
+
+  const listaDesc = (listaLeiturasDesconhecidas || []).map(d => ({
+    tipo: "desconhecido",
+    uid: d.uid,
+    nome: "Cartão Não Cadastrado",
+    status: "Desconhecido",
+    hora: d.hora ? d.hora.slice(0, 5) : "--:--",
+    leitor_id: d.leitor_id,
+    leitor_nome: d.leitor_nome,
+    timestamp: d.timestamp
+  }));
+
+  const lista = [...listaPresencas, ...listaDesc]
+    .sort((a, b) => norm(b.hora || "").localeCompare(norm(a.hora || "")))
+    .slice(0, 8);
 
   if (lista.length === 0) {
     container.style.display = "none";
@@ -2434,19 +2488,39 @@ function renderUltimosRegistros() {
   if (vazioCard) vazioCard.style.display = "none";
   container.style.display = "block";
   container.innerHTML = lista.map(item => {
+    if (item.tipo === "desconhecido") {
+      const nomeLeitor = item.leitor_nome || (item.leitor_id === "leitor_acm" ? "Leitor ACM" : "Leitor Portaria");
+      return `
+        <div class="ultimo-registro-row" style="background: rgba(239,68,68,0.06); border-left: 3px solid #ef4444; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px;">
+          <div class="reg-title" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+            <div>
+              <span class="reg-time" style="color:#ef4444; font-weight:700;">${escapeHtml(item.hora)}</span>
+              <span class="reg-prof" style="color:#b91c1c; font-weight:800;">Cartão Não Cadastrado</span>
+              <span class="reg-action" style="color:#ef4444; font-size:12px;">tentativa de acesso</span>
+            </div>
+            <button type="button" onclick="window.cadastrarRfidDireto('${escapeHtml(item.uid)}')" style="background:#1e3a8a; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer;">
+              Cadastrar
+            </button>
+          </div>
+          <div class="reg-sub" style="margin-top:4px;">
+            <span>${escapeHtml(nomeLeitor)}</span>
+            <span class="reg-sep">•</span>
+            <code style="background:rgba(239,68,68,0.12); color:#b91c1c; padding:2px 6px; border-radius:4px; font-size:11.5px; font-weight:800; font-family:monospace;">UID: ${escapeHtml(item.uid)}</code>
+          </div>
+        </div>
+      `;
+    }
+
     const salaInfo = obterSalaDoProfessorHoje(item.nome, item.uid);
     const localTexto = salaInfo ? `Sala ${salaInfo.replace(/^sala\s*/i, "")}` : "Portaria";
     const nomeLeitor = item.leitor_nome || (item.leitor_id === "leitor_acm" ? "Leitor ACM" : "Leitor Portaria");
     const isSaida = item.status === "Ausente";
-    const hora = (isSaida && item.hora_saida)
-      ? item.hora_saida.slice(0, 5)
-      : (item.hora_entrada ? item.hora_entrada.slice(0, 5) : "--:--");
     const acaoTexto = isSaida ? "registrou saída" : "registrou presença";
 
     return `
       <div class="ultimo-registro-row">
         <div class="reg-title">
-          <span class="reg-time">${escapeHtml(hora)}</span>
+          <span class="reg-time">${escapeHtml(item.hora)}</span>
           <span class="reg-prof">${escapeHtml(item.nome || "Professor")}</span>
           <span class="reg-action">${acaoTexto}</span>
         </div>
@@ -3852,6 +3926,7 @@ async function start() {
   await carregarConfigTurnos();
 
   // Detecção inicial de cartão RFID e monitoramento de leitores
+  await carregarDesconhecidosRecentes();
   await verificarCartaoDesconhecido();
   await carregarMonitoramentoLeitores();
 
@@ -3865,13 +3940,14 @@ async function start() {
   // Auto-refresh a cada 10s
   setInterval(() => {
     carregarPresencasPorData();
+    carregarDesconhecidosRecentes();
     carregarAvisos();
     carregarEventos();
     carregarPainelDadosGrade();
   }, 10000);
 
-  // Verificação periódica de cartão RFID desconhecido a cada 3s
-  setInterval(verificarCartaoDesconhecido, 3000);
+  // Verificação periódica de cartão RFID desconhecido a cada 1.5s
+  setInterval(verificarCartaoDesconhecido, 1500);
 
   // Monitoramento periódico dos leitores RFID a cada 5s
   setInterval(carregarMonitoramentoLeitores, 5000);

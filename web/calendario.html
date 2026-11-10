@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calendário Escolar | PresenX - CETEP / LNAB</title>
+  <title>Calendário Escolar - PresenX - CETEP / LNAB</title>
   <link rel="icon" type="image/svg+xml" href="./assets/presenx-icon.svg" />
 
   <!-- Google Fonts: Bricolage Grotesque & Inter -->
@@ -281,7 +281,22 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      flex-wrap: nowrap;
+      padding: 4px 2px 10px 2px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      cursor: grab;
+    }
+
+    .filter-chips-row::-webkit-scrollbar {
+      display: none;
     }
 
     .filter-chip {
@@ -298,6 +313,11 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      touch-action: pan-x;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .filter-chip:hover {
@@ -776,11 +796,17 @@
       .filter-chips-row {
         display: flex;
         flex-wrap: nowrap;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         overflow-x: auto;
+        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
         gap: 8px;
-        padding: 2px 0 6px 0;
+        padding: 4px 2px 10px 2px;
         scrollbar-width: none;
+        -ms-overflow-style: none;
       }
 
       .filter-chips-row::-webkit-scrollbar {
@@ -790,8 +816,9 @@
       .filter-chip {
         flex-shrink: 0;
         white-space: nowrap;
-        font-size: 12px;
-        padding: 6px 12px;
+        font-size: 12.5px;
+        padding: 6px 13px;
+        touch-action: pan-x;
       }
 
       .divider-line {
@@ -1325,9 +1352,70 @@
       });
     }
 
+    // Habilitar rolagem horizontal suave e arrasto (Desktop Mouse & Mobile Touch)
+    const chipsRow = document.querySelector(".filter-chips-row");
+    let isMouseDown = false;
+    let rowMoved = false;
+    let mouseStartX = 0;
+    let mouseScrollStart = 0;
+    let touchStartX = 0;
+
+    if (chipsRow) {
+      // Touch: o navegador já faz rolagem nativa suave com momentum; detectamos movimento para evitar cliques acidentais nos chips durante o swipe
+      chipsRow.addEventListener("touchstart", (e) => {
+        rowMoved = false;
+        touchStartX = e.touches[0].pageX;
+      }, { passive: true });
+
+      chipsRow.addEventListener("touchmove", (e) => {
+        const dist = Math.abs(e.touches[0].pageX - touchStartX);
+        if (dist > 6) {
+          rowMoved = true;
+        }
+      }, { passive: true });
+
+      chipsRow.addEventListener("touchend", () => {
+        setTimeout(() => { rowMoved = false; }, 80);
+      }, { passive: true });
+
+      // Mouse drag (Desktop)
+      chipsRow.addEventListener("mousedown", (e) => {
+        isMouseDown = true;
+        rowMoved = false;
+        mouseStartX = e.pageX;
+        mouseScrollStart = chipsRow.scrollLeft;
+        chipsRow.style.cursor = "grabbing";
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isMouseDown) return;
+        const dist = e.pageX - mouseStartX;
+        if (Math.abs(dist) > 4) {
+          rowMoved = true;
+          chipsRow.scrollLeft = mouseScrollStart - dist;
+        }
+      });
+
+      window.addEventListener("mouseup", () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          chipsRow.style.cursor = "grab";
+          setTimeout(() => { rowMoved = false; }, 80);
+        }
+      });
+
+      chipsRow.addEventListener("click", (e) => {
+        if (rowMoved) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }, true);
+    }
+
     // Filtros por Categoria
     el.filterChips.forEach(chip => {
-      chip.addEventListener("click", () => {
+      chip.addEventListener("click", (e) => {
+        if (rowMoved) return;
         el.filterChips.forEach(c => c.classList.remove("active"));
         chip.classList.add("active");
         categoriaAtual = chip.getAttribute("data-cat") || "todas";
