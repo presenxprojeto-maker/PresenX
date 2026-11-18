@@ -29,8 +29,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # Builds e Arquivos Temporários
-frontend/dist/
-frontend/.env.local
 scratch/
 .vscode/
+
+# Nova versao (desenvolvimento isolado)
+presenx-v2/
 
